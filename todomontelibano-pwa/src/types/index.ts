@@ -93,7 +93,7 @@ export interface Job {
   category: string;
   status: 'draft' | 'published' | 'closed' | 'archived';
   organization: Organization;
-  posted_by: User;
+  posted_by: string | User;
   created_at: string;
   updated_at: string;
   expires_at?: string;
@@ -101,7 +101,7 @@ export interface Job {
   is_featured: boolean;
   is_active: boolean;
   company_name: string;
-  currency: string;
+  skills?: string[];
   posted_at: string;
   logo?: string;
 }

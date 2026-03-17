@@ -30,11 +30,34 @@ const CreateJob: React.FC = () => {
     job_type: 'full_time' as JobType,
     category: '',
     expires_at: '',
+    skills: [] as string[],
   });
-
+  const [newSkill, setNewSkill] = useState('');
   const [benefits, setBenefits] = useState<string[]>([]);
   const [newBenefit, setNewBenefit] = useState('');
 
+  const addSkill = () => {
+    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()]
+      }));
+      setNewSkill('');
+    }
+  };
+  const removeSkill = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index)
+    }));
+  };
+  const handleSkillKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill();
+    }
+  };
+  
   const categories = [
     'Tecnología',
     'Ventas',
@@ -71,11 +94,13 @@ const CreateJob: React.FC = () => {
       salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
       salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
       benefits: benefits.length > 0 ? benefits : undefined,
+      skills: formData.skills.length > 0 ? formData.skills : undefined,  // ← AGREGAR
       status: 'published' as const,
     };
 
     createJob.mutate(jobData, {
       onSuccess: (data) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         navigate(`/jobs/${data.id}/`);
       },
     });
@@ -248,8 +273,55 @@ const CreateJob: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </div>          
+          {/* Skills */}
+          <div className="card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Briefcase className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Habilidades requeridas</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyPress={handleSkillKeyPress}
+                  className="input-field flex-1"
+                  placeholder="Ej: Python, React, Django..."
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="btn-primary px-4"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
 
+              {formData.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(index)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           {/* Salario */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
@@ -318,7 +390,6 @@ const CreateJob: React.FC = () => {
               </p>
             </div>
           </div>
-
           {/* Beneficios */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">

@@ -13,13 +13,14 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import { useAdminJobs } from '../../hooks/useJobs';
+import { useAdminJobs, useDeleteJob } from '../../hooks/useJobs';
 import type { Job } from '../../types';
 
 const MyOffers: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  
+  const deleteMutation = useDeleteJob();
+
   // Verificar que sea manager/empresa
   const isManager = user?.role === 'manager';
   
@@ -54,9 +55,11 @@ const MyOffers: React.FC = () => {
     return types[type] || type;
   };
 
-  const handleDelete = (jobId: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta oferta?')) {
-      console.log('Eliminar job:', jobId);
+  const handleDelete = (jobId: string) => {
+    if (confirm('¿Estás seguro de que deseas eliminar esta oferta?')) {
+      deleteMutation.mutate(jobId, {
+        onSuccess: () => navigate('/jobs/my_offers')
+      });
     }
   };
 
@@ -207,7 +210,7 @@ const MyOffers: React.FC = () => {
                         <Eye className="w-4 h-4 mr-1" /><span className="text-sm">Ver</span>
                       </button>
                       
-                      <button onClick={() => navigate(`/jobs/${job.id}/applications`)} className="flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <button onClick={() => navigate(`/applications/received`)} className="flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
                         <Users className="w-4 h-4 mr-1" />
                         <span className="text-sm">Aplicaciones {job.applications_count > 0 && `(${job.applications_count})`}</span>
                       </button>
@@ -216,7 +219,7 @@ const MyOffers: React.FC = () => {
                         <Edit className="w-4 h-4" />
                       </button>
                       
-                      <button onClick={() => handleDelete(job.id)} className="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+                      <button onClick={() => handleDelete(job.id.toString())} className="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

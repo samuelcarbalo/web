@@ -28,6 +28,7 @@ type JobFormData = {
   category: string;
   expires_at: string;
   status: Job['status']; // Usamos el tipo literal del Job
+  skills?: string[];  // ← AGREGAR
 };
 
 const EditJob: React.FC = () => {
@@ -51,16 +52,18 @@ const EditJob: React.FC = () => {
     category: '',
     expires_at: '',
     status: 'published',
+    skills: [] as string[],
   });
 
   const [benefits, setBenefits] = useState<string[]>([]);
   const [newBenefit, setNewBenefit] = useState('');
+  const [newSkill, setNewSkill] = useState('');
 
   // Cargar datos del job cuando esté disponible
   useEffect(() => {
     if (job) {
       // Verificar si el usuario es el dueño (comparando IDs)
-      const isOwner = user?.id === job.posted_by.id || user?.role === 'manager';
+      const isOwner = user?.role === 'manager' && user?.id === job?.posted_by;
       
       if (!isOwner) {
         navigate(`/jobs/${jobId}`);
@@ -79,6 +82,7 @@ const EditJob: React.FC = () => {
         category: job.category,
         expires_at: job.expires_at ? job.expires_at.split('T')[0] : '',
         status: job.status, // Ahora es compatible
+        skills: job.skills || [],
       });
       
       // Si hay beneficios en el job, cargarlos
@@ -87,7 +91,27 @@ const EditJob: React.FC = () => {
       }
     }
   }, [job, user, jobId, navigate]);
-
+  const addSkill = () => {
+    if (newSkill.trim() && !formData.skills?.includes(newSkill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills || [], newSkill.trim()]
+      }));
+      setNewSkill('');
+    }
+  };
+  const removeSkill = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills?.filter((_, i) => i !== index) || []
+    }));
+  };
+  const handleSkillKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill();
+    }
+  };
   const categories = [
     'Tecnología', 'Ventas', 'Administrativo', 'Operaciones', 
     'Marketing', 'Recursos Humanos', 'Contabilidad', 'Servicios',
@@ -130,6 +154,7 @@ const EditJob: React.FC = () => {
       category: formData.category,
       expires_at: formData.expires_at || undefined,
       status: formData.status, // Ahora es compatible
+      skills: formData.skills?.length ? formData.skills : undefined,
     };
 
     // Solo agregamos benefits si existen (no está en el tipo Job base)
@@ -141,6 +166,7 @@ const EditJob: React.FC = () => {
       { id: jobId, data: updateData },
       {
         onSuccess: () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
           navigate(`/jobs/my_offers`);
         },
       }
@@ -358,7 +384,55 @@ const EditJob: React.FC = () => {
               </div>
             </div>
           </div>
+          {/* Skills */}
+          <div className="card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Briefcase className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Habilidades requeridas</h2>
+            </div>
 
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyPress={handleSkillKeyPress}
+                  className="input-field flex-1"
+                  placeholder="Ej: Python, React, Django..."
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="btn-primary px-4"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+
+              {formData.skills?.length && formData.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(index)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           {/* Salario */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">

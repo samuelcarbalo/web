@@ -9,7 +9,7 @@ npm run dev
 # git
 
 D:
-cd D:\app_multitenant_front
+cd D:\app_multitenant_front\web
 git add .
 git commit -m "dashboard"
 git push origin main

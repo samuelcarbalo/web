@@ -30,7 +30,7 @@ const JobDetail: React.FC = () => {
   const deleteMutation = useDeleteJob();
 
   // Agrega el ?. después de posted_by también
-  const isOwner = user?.id === job?.posted_by?.id || user?.role === 'manager';
+  const isOwner = user?.role === 'manager' && user?.id === job?.posted_by;
   const hasApplied = false; // TODO: Check if user already applied
 
   const handleApply = (e: React.FormEvent) => {
@@ -52,7 +52,7 @@ const JobDetail: React.FC = () => {
   const handleDelete = () => {
     if (confirm('¿Estás seguro de que deseas eliminar esta oferta?')) {
       deleteMutation.mutate(jobId, {
-        onSuccess: () => navigate('/jobs')
+        onSuccess: () => navigate('/jobs/my_offers')
       });
     }
   };
