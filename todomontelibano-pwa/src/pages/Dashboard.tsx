@@ -11,7 +11,7 @@ import {
   Settings
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useMyApplications, useJobs } from '../hooks/useJobs';
+import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -24,12 +24,17 @@ const Dashboard: React.FC = () => {
     console.log(user?.id)
     isCompany = true;
   }
-  const { data: myJobs } = useJobs(
+  const adminResult = useAdminJobs(
     { posted_by: user?.id },
-    {
-      enabled: isCompany, // ← Solo ejecuta si es true
-    }
+    { enabled: !!(isManager && user?.id) }
   );
+  
+  const userResult = useJobs(
+    { posted_by: user?.id },
+    { enabled: !!(!isManager && user?.id) }
+  );
+  const myJobs = isManager ? adminResult.data : userResult.data;
+  console.log("my jobs", JSON.stringify(myJobs))
   const statusConfig: Record<string, string> = {
     applied: 'bg-yellow-100 text-yellow-800',     // Pendiente/Esperando
     interview: 'bg-blue-100 text-blue-800',       // En proceso (Azul suele ser mejor para esto)
@@ -40,14 +45,14 @@ const Dashboard: React.FC = () => {
   const stats = isCompany ? [
     { 
       title: 'Mis empleos activos', 
-      value: (myJobs as any)?.links?.count || 0,
+      value: (myJobs as any)?.count || 0,
       icon: Briefcase,
       color: 'bg-blue-500',
-      link: '/jobs/manage'
+      link: '/jobs/my_offers'
     },
     { 
       title: 'Aplicaciones recibidas', 
-      value: (myJobs as any)?.results?.reduce((acc: number, job: any) => acc + job.applications_count, 0) || 0, 
+      value: (applications as any)?.count || 0, 
       icon: User,
       color: 'bg-green-500',
       link: '/applications/received'
@@ -62,7 +67,7 @@ const Dashboard: React.FC = () => {
   ] : [
     { 
       title: 'Mis aplicaciones', 
-      value: applications?.count || 0, 
+      value: (applications as any)?.count || 0, 
       icon: Briefcase,
       color: 'bg-blue-500',
       link: '/applications'

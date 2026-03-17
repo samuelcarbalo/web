@@ -16,6 +16,18 @@ export const useJobs = (filters: any, options: any, params?: any) => {
   });
 };
 
+export const useAdminJobs = (filters: any, options: any, params?: any) => {
+  return useQuery({
+    queryKey: [JOBS_KEY, filters, params],
+    queryFn: async () => {
+      // Nota: Si usas 'filters', deberías pasarlos a tu API aquí
+      const response = await api.get<PaginatedResponse<Job>>('/jobs/offers/my_offers/');
+      return response.data;
+    },
+    ...options, // <--- ESTO ES LO QUE FALTABA
+  });
+};
+
 export const useJob = (id: string) => {
   return useQuery({
     queryKey: [JOBS_KEY, id],
@@ -54,7 +66,7 @@ export const useCreateJob = () => {
   
   return useMutation({
     mutationFn: async (data: Partial<Job>) => {
-      const response = await api.post('/jobs/', data);
+      const response = await api.post('/jobs/offers/?Content-Type=application/json', data);
       return response.data;
     },
     onSuccess: () => {
@@ -68,7 +80,9 @@ export const useUpdateJob = () => {
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Job> }) => {
-      const response = await api.patch(`/jobs/${id}/`, data);
+      console.log('Enviando PATCH:', `/jobs/offers/${id}/`, data);  // ← DEBUG
+      const response = await api.patch(`/jobs/offers/${id}/`, data);
+      console.log('Respuesta:', response.data);  // ← DEBUG
       return response.data;
     },
     onSuccess: (_, variables) => {
@@ -77,13 +91,12 @@ export const useUpdateJob = () => {
     },
   });
 };
-
 export const useDeleteJob = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/jobs/${id}/`);
+      await api.delete(`/jobs/offers/${id}/`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [JOBS_KEY] });
@@ -99,10 +112,10 @@ export const useApplyJob = () => {
       const formData = new FormData();
       formData.append('cover_letter', data.cover_letter);
       if (data.resume) {
-        formData.append('resume', data.resume);
+        formData.append('cv_file', data.resume);
       }
       
-      const response = await api.post(`/jobs/${jobId}/apply/`, formData, {
+      const response = await api.post(`/jobs/offers/${jobId}/apply/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;

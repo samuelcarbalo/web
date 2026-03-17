@@ -161,7 +161,7 @@ const MainLayout: React.FC = () => {
                           Dashboard
                         </Link>
                         {user?.role === 'manager' && (
-                          <Link to="/jobs/manage" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          <Link to="/jobs/offers/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                             Gestionar Empleos
                           </Link>
                         )}

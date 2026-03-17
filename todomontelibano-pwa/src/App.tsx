@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import MyApplications from './pages/Applications/MyApplications';
 import ReceivedApplications from './pages/Applications/ReceivedApplications';
+import MyOffers from './pages/Jobs/MyOffers';
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
@@ -88,7 +89,7 @@ const App: React.FC = () => {
                 <Route index element={<Home />} />
                 <Route path="jobs" element={<JobsList />} />
                 <Route path="jobs/:id" element={<JobDetail />} />
-                
+                <Route path="jobs/my_offers" element={<MyOffers />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
                 <Route path="sports" element={<div className="p-20 text-center text-2xl">Deportes - Próximamente ⚽</div>} />
@@ -104,7 +105,7 @@ const App: React.FC = () => {
                   } 
                 />
                 <Route 
-                  path="jobs/:id/edit" 
+                  path="jobs/edit/:id" 
                   element={
                     <ProtectedRoute allowedRoles={['manager', 'admin']}>
                       <EditJob />

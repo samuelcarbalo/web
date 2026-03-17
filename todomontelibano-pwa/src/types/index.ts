@@ -88,7 +88,7 @@ export interface Job {
   location: string;
   salary_min?: number;
   salary_max?: number;
-  salary_currency: string;
+  currency: string;
   job_type: 'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship';
   category: string;
   status: 'draft' | 'published' | 'closed' | 'archived';

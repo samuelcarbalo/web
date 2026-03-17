@@ -6,6 +6,14 @@ D:\app_multitenant_front\env\Scripts\activate
 cd web\todomontelibano-pwa
 npm run dev
 
+# git
+
+D:
+cd D:\app_multitenant_front
+git add .
+git commit -m "dashboard"
+git push origin main
+
 # Crear proyecto con Vite
 
 npm create vite@latest todomontelibano-pwa -- --template react-ts

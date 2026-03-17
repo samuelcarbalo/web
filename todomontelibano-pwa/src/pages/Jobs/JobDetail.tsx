@@ -29,7 +29,8 @@ const JobDetail: React.FC = () => {
   const applyMutation = useApplyJob();
   const deleteMutation = useDeleteJob();
 
-  const isOwner = user?.id === job?.posted_by.id || user?.role === 'manager';
+  // Agrega el ?. después de posted_by también
+  const isOwner = user?.id === job?.posted_by?.id || user?.role === 'manager';
   const hasApplied = false; // TODO: Check if user already applied
 
   const handleApply = (e: React.FormEvent) => {
@@ -180,7 +181,7 @@ const JobDetail: React.FC = () => {
                   {isOwner ? (
                     <div className="space-y-3">
                       <Link
-                        to={`/jobs/${job.id}/edit`}
+                        to={`/jobs/edit/${job.id}`}
                         className="w-full btn-secondary block text-center"
                       >
                         Editar oferta
@@ -293,22 +294,36 @@ const JobDetail: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CV/Resume (opcional)
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors">
-              <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setApplicationData({ ...applicationData, resume: e.target.files?.[0] || null })}
-                className="hidden"
-                id="resume"
-              />
-              <label htmlFor="resume" className="cursor-pointer text-primary-600 font-medium hover:text-primary-500">
-                {applicationData.resume ? applicationData.resume.name : 'Subir archivo'}
+            {/* Modal content - Sección de CV */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                CV/Resume (Obligatorio) <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-gray-500 mt-1">PDF, DOC hasta 5MB</p>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  applicationData.resume ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-500'
+                }`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files?.[0]) {
+                    setApplicationData({ ...applicationData, resume: e.dataTransfer.files[0] });
+                  }
+                }}
+              >
+                <FileText className={`w-8 h-8 mx-auto mb-2 ${applicationData.resume ? 'text-primary-600' : 'text-gray-400'}`} />
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => setApplicationData({ ...applicationData, resume: e.target.files?.[0] || null })}
+                  className="hidden"
+                  id="resume"
+                />
+                <label htmlFor="resume" className="cursor-pointer text-primary-600 font-medium hover:text-primary-500">
+                  {applicationData.resume ? applicationData.resume.name : 'Haz clic o arrastra tu archivo aquí'}
+                </label>
+                <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX hasta 5MB</p>
+              </div>
             </div>
           </div>
 

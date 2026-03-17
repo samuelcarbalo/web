@@ -23,11 +23,11 @@ type JobFormData = {
   location: string;
   salary_min: string;
   salary_max: string;
-  salary_currency: string;
+  currency: string;
   job_type: Job['job_type']; // Usamos el tipo literal del Job
   category: string;
   expires_at: string;
-  // status: Job['status']; // Usamos el tipo literal del Job
+  status: Job['status']; // Usamos el tipo literal del Job
 };
 
 const EditJob: React.FC = () => {
@@ -46,11 +46,11 @@ const EditJob: React.FC = () => {
     location: '',
     salary_min: '',
     salary_max: '',
-    salary_currency: 'COP',
+    currency: 'COP',
     job_type: 'full_time',
     category: '',
     expires_at: '',
-    // status: 'published',
+    status: 'published',
   });
 
   const [benefits, setBenefits] = useState<string[]>([]);
@@ -74,11 +74,11 @@ const EditJob: React.FC = () => {
         location: job.location,
         salary_min: job.salary_min?.toString() || '',
         salary_max: job.salary_max?.toString() || '',
-        salary_currency: job.salary_currency,
+        currency: job.currency,
         job_type: job.job_type, // Ahora es compatible
         category: job.category,
         expires_at: job.expires_at ? job.expires_at.split('T')[0] : '',
-        // status: job.status, // Ahora es compatible
+        status: job.status, // Ahora es compatible
       });
       
       // Si hay beneficios en el job, cargarlos
@@ -125,11 +125,11 @@ const EditJob: React.FC = () => {
       location: formData.location,
       salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
       salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
-      currency: formData.salary_currency,
+      currency: formData.currency,
       job_type: formData.job_type, // Tipo literal correcto
       category: formData.category,
       expires_at: formData.expires_at || undefined,
-      // status: formData.status, // Ahora es compatible
+      status: formData.status, // Ahora es compatible
     };
 
     // Solo agregamos benefits si existen (no está en el tipo Job base)
@@ -141,7 +141,7 @@ const EditJob: React.FC = () => {
       { id: jobId, data: updateData },
       {
         onSuccess: () => {
-          navigate(`/jobs/${jobId}`);
+          navigate(`/jobs/my_offers`);
         },
       }
     );
@@ -208,7 +208,7 @@ const EditJob: React.FC = () => {
           </button>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Editar oferta</h1>
           <p className="mt-2 text-gray-600">
-            Actualiza los detalles de la vacante #{jobId}
+            Actualiza los detalles de la vacante 
           </p>
         </div>
       </div>
@@ -412,8 +412,8 @@ const EditJob: React.FC = () => {
                   </label>
                   <select
                     id="currency"
-                    value={formData.salary_currency}
-                    onChange={(e) => setFormData({ ...formData, salary_currency: e.target.value })}
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                     className="input-field"
                   >
                     {currencies.map(curr => (
