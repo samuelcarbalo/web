@@ -27,20 +27,20 @@ const Home: React.FC = () => {
       stats: '100+ empleos activos'
     },
     {
-      icon: Calendar,
-      title: 'Eventos',
-      description: 'Descubre eventos sociales, culturales y de networking en la región.',
-      color: 'bg-purple-500',
-      active: false,
-      comingSoon: true,
-      path: '#',
-      stats: 'Próximamente'
-    },
-    {
       icon: Trophy,
       title: 'Deportes',
       description: 'Ligas de fútbol, softbol y otros deportes. Organiza torneos o encuentra equipos.',
       color: 'bg-green-500',
+      active: true,
+      comingSoon: false,
+      path: '/sports',
+      stats: 'Deportes'
+    },
+    {
+      icon: Calendar,
+      title: 'Eventos',
+      description: 'Descubre eventos sociales, culturales y de networking en la región.',
+      color: 'bg-purple-500',
       active: false,
       comingSoon: true,
       path: '#',

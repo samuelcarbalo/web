@@ -8,14 +8,20 @@ import {
   TrendingUp,
   Plus,
   Eye,
-  Settings
+  Settings,
+  Trophy,
+  Users,
+  Calendar
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
+import { useTournaments } from '../hooks/useSports';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { data: applications } = useMyApplications();
+  
+  // Datos de deportes
   
   // Solo para empresas/managers
   let isCompany = false;
@@ -34,14 +40,17 @@ const Dashboard: React.FC = () => {
     { enabled: !!(!isManager && user?.id) }
   );
   const myJobs = isManager ? adminResult.data : userResult.data;
-  console.log("my jobs", JSON.stringify(myJobs))
+  // console.log("my jobs", JSON.stringify(myJobs))
+  
   const statusConfig: Record<string, string> = {
-    applied: 'bg-yellow-100 text-yellow-800',     // Pendiente/Esperando
-    interview: 'bg-blue-100 text-blue-800',       // En proceso (Azul suele ser mejor para esto)
-    hired: 'bg-green-100 text-green-800',         // ¡Éxito! (Verde)
-    rejected: 'bg-red-100 text-red-800',          // No seleccionado (Rojo)
-    default: 'bg-gray-100 text-gray-800',         // Cualquier otro estado
+    applied: 'bg-yellow-100 text-yellow-800',
+    interview: 'bg-blue-100 text-blue-800',
+    hired: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+    default: 'bg-gray-100 text-gray-800',
   };
+ 
+  // Stats principales (empleos)
   const stats = isCompany ? [
     { 
       title: 'Mis empleos activos', 
@@ -74,7 +83,7 @@ const Dashboard: React.FC = () => {
     },
     { 
       title: 'Empleos guardados', 
-      value: 0, // TODO: implementar favoritos
+      value: 0,
       icon: Building2,
       color: 'bg-yellow-500',
       link: '/saved'
@@ -87,6 +96,16 @@ const Dashboard: React.FC = () => {
       link: '/profile'
     },
   ];
+  
+  // Stats de torneos (nuevo)
+  const { data: tournaments } = useTournaments({ status: 'upcoming', enabled: isManager });
+   
+  // Stats de deportes (nuevo)
+  const sportsStats = {
+    activeTournaments: tournaments?.results?.filter((t: any) => t.status === 'active').length || 0,
+    myTournaments: isManager ? (tournaments?.count || 0) : 0,
+    totalTeams: tournaments?.results?.reduce((acc: number, t: any) => acc + (t.teams_count || 0), 0) || 0,
+  };
 
   const quickActions = isCompany ? [
     { label: 'Publicar empleo', icon: Plus, link: '/jobs/create', primary: true },
@@ -96,6 +115,15 @@ const Dashboard: React.FC = () => {
     { label: 'Buscar empleos', icon: Briefcase, link: '/jobs', primary: true },
     { label: 'Editar perfil', icon: User, link: '/profile', primary: false },
     { label: 'Configuración', icon: Settings, link: '/settings', primary: false },
+  ];
+
+  // Acciones rápidas de deportes (nuevo)
+  const sportsQuickActions = isManager ? [
+    { label: 'Crear torneo', icon: Trophy, link: '/sports/tournaments/create', primary: true, color: 'bg-green-600 hover:bg-green-700' },
+    { label: 'Ver torneos', icon: Calendar, link: '/sports', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+  ] : [
+    { label: 'Ver torneos', icon: Trophy, link: '/sports', primary: true, color: 'bg-green-600 hover:bg-green-700' },
+    { label: 'Mis equipos', icon: Users, link: '/sports/teams', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   ];
 
   return (
@@ -109,12 +137,21 @@ const Dashboard: React.FC = () => {
           </h1>
           <p className="mt-2 text-gray-600">
             {isCompany 
-              ? 'Gestiona tus publicaciones y encuentra candidatos' 
-              : 'Encuentra tu próxima oportunidad laboral'}
+              ? 'Gestiona tus publicaciones, torneos y encuentra candidatos' 
+              : 'Encuentra empleos, torneos deportivos y más oportunidades'}
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Empleos */}
+        
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <Briefcase className="w-6 h-6 mr-2 text-blue-600" />
+              Empleos
+            </h2>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {stats.map((stat) => (
             <Link
@@ -135,14 +172,72 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
 
+        {/* NUEVA SECCIÓN: Deportes */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <Trophy className="w-6 h-6 mr-2 text-green-600" />
+              Deportes
+            </h2>
+            <Link to="/sports" className="text-green-600 hover:text-green-700 text-sm font-medium">
+              Ver todos →
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Stat: Torneos activos */}
+            <Link to="/sports/my_tournaments/active" className="card hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white border-green-200">
+              <div className="flex items-center">
+                <div className="p-3 rounded-lg bg-green-500">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Torneos activos</p>
+                  <p className="text-2xl font-bold text-gray-900">{sportsStats.activeTournaments}</p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Stat: Mis torneos (solo managers) */}
+            {isManager && (
+              <Link to="/sports" className="card hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-lg bg-green-600">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Mis torneos</p>
+                    <p className="text-2xl font-bold text-gray-900">{sportsStats.myTournaments}</p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* Stat: Equipos inscritos */}
+            <div className="card">
+              <div className="flex items-center">
+                <div className="p-3 rounded-lg bg-blue-500">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Equipos inscritos</p>
+                  <p className="text-2xl font-bold text-gray-900">{sportsStats.totalTeams}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Quick Actions */}
+            {/* Quick Actions - Empleos */}
             <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Acciones rápidas</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Acciones rápidas - Empleos - Deportes</h2>
               <div className="flex flex-wrap gap-3">
                 {quickActions.map((action) => (
                   <Link
@@ -159,11 +254,75 @@ const Dashboard: React.FC = () => {
                   </Link>
                 ))}
               </div>
+              <br></br>
+              <div className="flex flex-wrap gap-3">
+                {sportsQuickActions.map((action) => (
+                  <Link
+                  key={action.label}
+                  to={action.link}
+                  className={`flex items-center px-4 py-2 rounded-lg font-medium ${
+                    action.primary 
+                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <action.icon className="w-4 h-4 mr-2" />
+                  {action.label}
+                </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Recent Activity */}
+            {/* Torneos destacados (próximos) */}
+            {/* <div className="card">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Trophy className="w-5 h-5 mr-2 text-green-600" />
+                Próximos torneos
+              </h2>
+              {tournaments?.results && tournaments.results.length > 0 ? (
+                <div className="space-y-3">
+                  {tournaments.results.slice(0, 3).map((tournament: any) => (
+                    <Link 
+                      key={tournament.id} 
+                      to={`/sports/tournaments/${tournament.slug}`}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-green-50 transition-colors"
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
+                          tournament.sport_type === 'football' ? 'bg-green-500' :
+                          tournament.sport_type === 'softball' ? 'bg-yellow-500' :
+                          tournament.sport_type === 'basketball' ? 'bg-orange-500' : 'bg-blue-500'
+                        }`}>
+                          <Trophy className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{tournament.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(tournament.start_date).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'short'
+                            })} • {tournament.teams_count}/{tournament.max_teams} equipos
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-green-600 text-sm font-medium">Ver →</span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <Trophy className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No hay torneos próximos</p>
+                  <Link to="/sports" className="text-green-600 text-sm mt-1 inline-block">
+                    Explorar torneos
+                  </Link>
+                </div>
+              )}
+            </div> */}
+
+            {/* Recent Activity - Empleos */}
             <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Actividad reciente</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Actividad reciente - Empleos</h2>
               {applications?.results && applications.results.length > 0 ? (
                 <div className="space-y-4">
                   {applications.results.slice(0, 5).map((app) => (
@@ -256,6 +415,23 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
             )}
+
+            {/* Resumen Deportes (nuevo) */}
+            <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
+              <h2 className="text-lg font-bold mb-2 flex items-center">
+                <Trophy className="w-5 h-5 mr-2" />
+                Deportes
+              </h2>
+              <p className="text-green-100 text-sm mb-4">
+                {sportsStats.activeTournaments} torneos disponibles
+              </p>
+              <Link 
+                to="/sports" 
+                className="block w-full py-2 bg-white text-green-600 rounded-lg font-medium hover:bg-green-50 text-center"
+              >
+                Ver torneos
+              </Link>
+            </div>
           </div>
         </div>
       </div>

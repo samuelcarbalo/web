@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import type { LoginCredentials, RegisterData, User, Profile, Tokens } from '../types';
+import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 // Hook para obtener el perfil completo
@@ -192,3 +192,22 @@ export const useLogout = () => {
     navigate('/login');
   };
 };
+
+
+export const isAdmin = () => {
+  const user = useAuthStore((state) => state.user);
+  if (!user) return false;
+  return user.role === 'admin';
+}
+
+export const isManager = () => {
+  const user = useAuthStore((state) => state.user);
+  if (!user) return false;
+  return user.role === 'manager';
+}
+
+export const isUser = () => {
+  const user = useAuthStore((state) => state.user);
+  if (!user) return false;
+  return user.role === 'user';
+}

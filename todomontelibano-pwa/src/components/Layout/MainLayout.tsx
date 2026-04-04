@@ -45,9 +45,9 @@ const MainLayout: React.FC = () => {
       name: 'Deportes', 
       icon: Trophy, 
       path: '/sports', 
-      active: false,
+      active: true,
       description: 'Fútbol, Softbol y más',
-      comingSoon: true
+      comingSoon: false
     },
     { 
       name: 'Bienes Raíces', 

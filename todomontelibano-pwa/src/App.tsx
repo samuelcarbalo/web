@@ -18,6 +18,10 @@ import Profile from './pages/Profile';
 import MyApplications from './pages/Applications/MyApplications';
 import ReceivedApplications from './pages/Applications/ReceivedApplications';
 import MyOffers from './pages/Jobs/MyOffers';
+import TournamentsList from './pages/Sports/TournamentsList';
+import TournamentDetail from './pages/Sports/TournamentDetail';
+import CreateTournament from './pages/Sports/CreateTournament';
+import EditTournament from './pages/Sports/EditTournament';
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
@@ -90,9 +94,13 @@ const App: React.FC = () => {
                 <Route path="jobs" element={<JobsList />} />
                 <Route path="jobs/:id" element={<JobDetail />} />
                 <Route path="jobs/my_offers" element={<MyOffers />} />
+                <Route path="sports" element={<TournamentsList />} />
+                <Route path="sports/my_tournaments/active" element={<TournamentsList />} />
+                <Route path="sports/tournaments/:slug" element={<TournamentDetail />} />
+                <Route path="sports/tournaments/create" element={<CreateTournament />} />
+                <Route path="sports/tournaments/:slug/edit" element={<EditTournament />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
-                <Route path="sports" element={<div className="p-20 text-center text-2xl">Deportes - Próximamente ⚽</div>} />
                 <Route path="real-estate" element={<div className="p-20 text-center text-2xl">Bienes Raíces - Próximamente 🏠</div>} />
                 
                 {/* Rutas protegidas - SÍ requieren auth */}
