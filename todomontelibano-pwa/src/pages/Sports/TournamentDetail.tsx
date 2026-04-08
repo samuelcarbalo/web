@@ -1,29 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
-//   Trophy, 
   Calendar, 
   Users, 
-//   MapPin, 
   ChevronLeft,
   Share2,
   Edit,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
-import { useTournament, useDeleteTournament } from '../../hooks/useSports';
+
+import { 
+  useTournament, 
+  useDeleteTournament,
+  useTeams,
+  useDeleteTeam
+} from '../../hooks/useSports';
+
 import { useAuthStore } from '../../store/authStore';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
-
+import CreateTeamModal from '../../pages/Sports/CreateTeamModal';
 
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuthStore();
+
   const { data: tournament, isLoading } = useTournament(slug || '');
   const deleteMutation = useDeleteTournament();
+
+  const { data: teams } = useTeams(tournament?.id);
+  const deleteTeamMutation = useDeleteTeam();
+
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+
   const isManager = user?.role === 'manager';
-  if (isManager){
-    console.log(user?.id)
-  }
   const isOwner = isManager && user?.id === tournament?.posted_by;
 
   const formatDate = (dateString: string) => {
@@ -34,9 +44,20 @@ const TournamentDetail: React.FC = () => {
     });
   };
 
+  const isRegistrationStillOpen = () => {
+    if (!tournament?.registration_deadline) return false;
+    return new Date(tournament.registration_deadline) > new Date();
+  };
+
   const handleDelete = () => {
     if (confirm('¿Estás seguro de eliminar este torneo?')) {
       deleteMutation.mutate(slug || '');
+    }
+  };
+
+  const handleDeleteTeam = (teamSlug: string) => {
+    if (confirm('¿Eliminar este equipo?')) {
+      deleteTeamMutation.mutate(teamSlug);
     }
   };
 
@@ -60,6 +81,8 @@ const TournamentDetail: React.FC = () => {
       </div>
     );
   }
+
+  const registrationOpen = isRegistrationStillOpen();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,14 +108,19 @@ const TournamentDetail: React.FC = () => {
             Volver a torneos
           </Link>
           <h1 className="text-4xl font-bold text-white">{tournament.name}</h1>
-          <p className="text-white/80 mt-2 text-lg">{sportTypeLabels[tournament.sport_type]}</p>
+          <p className="text-white/80 mt-2 text-lg">
+            {sportTypeLabels[tournament.sport_type]}
+          </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            
+            {/* Sobre */}
             <div className="card">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Sobre el torneo</h2>
               <p className="text-gray-600 whitespace-pre-line">
@@ -100,9 +128,11 @@ const TournamentDetail: React.FC = () => {
               </p>
             </div>
 
+            {/* Info */}
             <div className="card">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Información general</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                   <div>
@@ -110,6 +140,7 @@ const TournamentDetail: React.FC = () => {
                     <p className="font-medium">{formatDate(tournament.start_date)}</p>
                   </div>
                 </div>
+
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                   <div>
@@ -117,42 +148,129 @@ const TournamentDetail: React.FC = () => {
                     <p className="font-medium">{formatDate(tournament.end_date)}</p>
                   </div>
                 </div>
+
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <Users className="w-5 h-5 text-gray-400 mr-3" />
                   <div>
                     <p className="text-sm text-gray-600">Equipos</p>
-                    <p className="font-medium">{tournament.teams_count} / {tournament.max_teams}</p>
+                    <p className="font-medium">
+                      {tournament.teams_count} / {tournament.max_teams}
+                    </p>
                   </div>
                 </div>
+
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <Users className="w-5 h-5 text-gray-400 mr-3" />
                   <div>
                     <p className="text-sm text-gray-600">Jugadores por equipo</p>
-                    <p className="font-medium">{tournament.min_players_per_team} - {tournament.max_players_per_team}</p>
+                    <p className="font-medium">
+                      {tournament.min_players_per_team} - {tournament.max_players_per_team}
+                    </p>
                   </div>
                 </div>
+
               </div>
             </div>
+
+            {/* Equipos inscritos */}
+            <div className="card">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-green-600" />
+                  Equipos inscritos ({teams?.results?.length || 0})
+                </h3>
+
+                {isOwner && registrationOpen && (
+                  <button 
+                    onClick={() => setIsCreateTeamModalOpen(true)}
+                    className="text-sm text-green-600 hover:text-green-700 font-medium"
+                  >
+                    + Agregar
+                  </button>
+                )}
+              </div>
+              
+              {teams?.results && teams.results.length > 0 ? (
+                <div className="space-y-3">
+                  {teams.results.map((team: any) => (
+                    <div 
+                      key={team.id} 
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center">
+                        {team.logo ? (
+                          <img 
+                            src={team.logo} 
+                            alt="" 
+                            className="w-10 h-10 rounded-full object-cover mr-3" 
+                          />
+                        ) : (
+                          <div 
+                            className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold"
+                            style={{ backgroundColor: team.primary_color }}
+                          >
+                            {team.abbreviation}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium text-gray-900">{team.name}</p>
+                          <p className="text-xs text-gray-600">
+                            {team.coach_name || 'Sin entrenador'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {isOwner && (
+                        <button 
+                          onClick={() => handleDeleteTeam(team.slug)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-4">
+                  No hay equipos inscritos aún
+                </p>
+              )}
+            </div>
+
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Registration Card */}
+
+            {/* Registro */}
             <div className="card bg-green-50 border-green-200">
               <h3 className="font-bold text-gray-900 mb-4">Inscripción</h3>
               
-              {tournament.is_registration_open ? (
+              {registrationOpen ? (
                 <>
                   <div className="flex items-center text-green-700 mb-4">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
                     Inscripciones abiertas
                   </div>
+
                   <p className="text-sm text-gray-600 mb-4">
                     Cierra el {formatDate(tournament.registration_deadline)}
                   </p>
-                  <button className="w-full btn-primary">
-                    Inscribir mi equipo
-                  </button>
+
+                  {isOwner ? (
+                    <button 
+                      onClick={() => setIsCreateTeamModalOpen(true)}
+                      className="w-full btn-primary flex items-center justify-center"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Inscribir equipo
+                    </button>
+                  ) : (
+                    <button className="w-full btn-primary">
+                      Inscribir mi equipo
+                    </button>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-4">
@@ -161,7 +279,7 @@ const TournamentDetail: React.FC = () => {
               )}
             </div>
 
-            {/* Admin Actions */}
+            {/* Gestión */}
             {isOwner && (
               <div className="card">
                 <h3 className="font-bold text-gray-900 mb-4">Gestión</h3>
@@ -173,6 +291,7 @@ const TournamentDetail: React.FC = () => {
                     <Edit className="w-4 h-4 mr-2" />
                     Editar torneo
                   </Link>
+
                   <button 
                     onClick={handleDelete}
                     className="w-full py-2 px-4 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center"
@@ -189,9 +308,18 @@ const TournamentDetail: React.FC = () => {
               <Share2 className="w-5 h-5 mr-2" />
               Compartir torneo
             </button>
+
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      <CreateTeamModal
+        isOpen={isCreateTeamModalOpen}
+        onClose={() => setIsCreateTeamModalOpen(false)}
+        tournamentId={tournament?.id || ''}
+        tournamentName={tournament?.name || ''}
+      />
     </div>
   );
 };

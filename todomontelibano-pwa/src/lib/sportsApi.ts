@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Tournament, CreateTournamentData, PaginatedResponse } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -40,4 +40,31 @@ export const updateTournament = async (slug: string, data: Partial<CreateTournam
 
 export const deleteTournament = async (slug: string) => {
   await api.delete(`/sports/tournaments/${slug}/`);
+};
+
+// --- Funciones para equipos ---
+
+export const getTeams = async (tournamentId?: string) => {
+  const params = tournamentId ? { tournament: tournamentId } : {};
+  const response = await api.get<PaginatedResponse<Team>>('/sports/teams/', { params });
+  return response.data;
+};
+
+export const getTeam = async (slug: string) => {
+  const response = await api.get<Team>(`/sports/teams/${slug}/`);
+  return response.data;
+};
+
+export const createTeam = async (data: CreateTeamData) => {
+  const response = await api.post<Team>('/sports/teams/', data);
+  return response.data;
+};
+
+export const updateTeam = async (slug: string, data: Partial<CreateTeamData>) => {
+  const response = await api.patch<Team>(`/sports/teams/${slug}/`, data);
+  return response.data;
+};
+
+export const deleteTeam = async (slug: string) => {
+  await api.delete(`/sports/teams/${slug}/`);
 };

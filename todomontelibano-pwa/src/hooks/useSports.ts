@@ -5,11 +5,17 @@ import {
   getTournament, 
   createTournament, 
   updateTournament, 
-  deleteTournament 
+  deleteTournament,
+  getTeams,
+  getTeam,
+  createTeam,
+  updateTeam,
+  deleteTeam 
 } from '../lib/sportsApi';
-import type { Tournament, CreateTournamentData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
+const TEAMS_KEY = 'teams';
 
 export const useTournaments = (params?: { 
   sport_type?: string; 
@@ -73,3 +79,53 @@ export const useDeleteTournament = () => {
   });
 };
 
+export const useTeams = (tournamentId?: string) => {
+  return useQuery({
+    queryKey: [TEAMS_KEY, tournamentId],
+    queryFn: () => getTeams(tournamentId),
+    enabled: !!tournamentId,
+  });
+};
+
+export const useTeam = (slug: string) => {
+  return useQuery({
+    queryKey: [TEAMS_KEY, slug],
+    queryFn: () => getTeam(slug),
+    enabled: !!slug,
+  });
+};
+
+export const useCreateTeam = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createTeam,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [TEAMS_KEY, variables.tournament] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY] });
+    },
+  });
+};
+
+export const useUpdateTeam = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ slug, data }: { slug: string; data: Partial<CreateTeamData> }) => 
+      updateTeam(slug, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
+    },
+  });
+};
+
+export const useDeleteTeam = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteTeam,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
+    },
+  });
+};

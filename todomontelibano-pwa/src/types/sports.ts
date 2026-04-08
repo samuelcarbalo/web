@@ -60,3 +60,39 @@ export const sportTypeColors: Record<SportType, string> = {
   basketball: 'bg-orange-500',
   volleyball: 'bg-blue-500',
 };
+
+// Agregar a los tipos existentes
+export interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  abbreviation: string;
+  description?: string;
+  tournament: string;
+  tournament_name?: string;
+  organization: string;
+  primary_color: string;
+  secondary_color: string;
+  logo?: string;
+  coach_name?: string;
+  coach_email?: string;
+  coach_phone?: string;
+  players_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTeamData {
+  name: string;
+  abbreviation: string;
+  description?: string;
+  slug?: string;
+  tournament: string;
+  organization: string;
+  primary_color: string;
+  secondary_color: string;
+  logo?: string;
+  coach_name?: string;
+  coach_email?: string;
+  coach_phone?: string;
+}
