@@ -17,21 +17,17 @@ export const useTournaments = (params?: {
   page?: number;
   enabled?: boolean;
 }) => {
-  if (params?.enabled === true) {
-    console.log('params1:', params);
-    return useQuery({
-      queryKey: [TOURNAMENTS_KEY, params],
-      queryFn: () => getMyTournaments(params),
-      enabled: params?.enabled,
-    });
-  } else {
-    console.log('params2:', params);
-    return useQuery({
-      queryKey: [TOURNAMENTS_KEY, params],
-      queryFn: () => getTournaments(params),
-      enabled: true,
-    });
-  }
+  // 1. Determine which function to use based on the flag
+  const fetchFn = params?.enabled ? getMyTournaments : getTournaments;
+
+  // 2. Call the hook once at the top level
+  return useQuery({
+    // Include the 'enabled' flag in the key if it changes the data source
+    queryKey: [TOURNAMENTS_KEY, params?.enabled, params], 
+    queryFn: () => fetchFn(params),
+    // Ensure the query actually runs if enabled is true
+    enabled: true, 
+  });
 };
 
 export const useTournament = (slug: string) => {

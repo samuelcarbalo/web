@@ -95,6 +95,7 @@ const App: React.FC = () => {
                 <Route path="jobs/:id" element={<JobDetail />} />
                 <Route path="jobs/my_offers" element={<MyOffers />} />
                 <Route path="sports" element={<TournamentsList />} />
+                <Route path="sports/my_tournaments" element={<TournamentsList />} />
                 <Route path="sports/my_tournaments/active" element={<TournamentsList />} />
                 <Route path="sports/tournaments/:slug" element={<TournamentDetail />} />
                 <Route path="sports/tournaments/create" element={<CreateTournament />} />

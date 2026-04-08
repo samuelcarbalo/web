@@ -14,14 +14,17 @@ import { useTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 
+
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuthStore();
   const { data: tournament, isLoading } = useTournament(slug || '');
   const deleteMutation = useDeleteTournament();
-
-  const isManager = user?.role === 'manager' || user?.role === 'admin';
-  const isOwner = isManager && user?.id === tournament?.organization;
+  const isManager = user?.role === 'manager';
+  if (isManager){
+    console.log(user?.id)
+  }
+  const isOwner = isManager && user?.id === tournament?.posted_by;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {

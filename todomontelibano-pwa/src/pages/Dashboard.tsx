@@ -98,12 +98,14 @@ const Dashboard: React.FC = () => {
   ];
   
   // Stats de torneos (nuevo)
-  const { data: tournaments } = useTournaments({ status: 'upcoming', enabled: isManager });
-   
+  const { data: tournaments } = useTournaments({ status: 'active', enabled: false });
+  const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManager });
+  
+
   // Stats de deportes (nuevo)
   const sportsStats = {
     activeTournaments: tournaments?.results?.filter((t: any) => t.status === 'active').length || 0,
-    myTournaments: isManager ? (tournaments?.count || 0) : 0,
+    myTournaments: isManager ? (manager_tournaments?.count || 0) : 0,
     totalTeams: tournaments?.results?.reduce((acc: number, t: any) => acc + (t.teams_count || 0), 0) || 0,
   };
 
@@ -120,9 +122,9 @@ const Dashboard: React.FC = () => {
   // Acciones rápidas de deportes (nuevo)
   const sportsQuickActions = isManager ? [
     { label: 'Crear torneo', icon: Trophy, link: '/sports/tournaments/create', primary: true, color: 'bg-green-600 hover:bg-green-700' },
-    { label: 'Ver torneos', icon: Calendar, link: '/sports', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+    { label: 'Ver torneos', icon: Calendar, link: '/sports/my_tournaments', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   ] : [
-    { label: 'Ver torneos', icon: Trophy, link: '/sports', primary: true, color: 'bg-green-600 hover:bg-green-700' },
+    { label: 'Ver torneos', icon: Trophy, link: '/sports/my_tournaments', primary: true, color: 'bg-green-600 hover:bg-green-700' },
     { label: 'Mis equipos', icon: Users, link: '/sports/teams', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   ];
 
@@ -200,7 +202,7 @@ const Dashboard: React.FC = () => {
 
             {/* Stat: Mis torneos (solo managers) */}
             {isManager && (
-              <Link to="/sports" className="card hover:shadow-md transition-shadow">
+              <Link to="/sports/my_tournaments" className="card hover:shadow-md transition-shadow">
                 <div className="flex items-center">
                   <div className="p-3 rounded-lg bg-green-600">
                     <Calendar className="w-6 h-6 text-white" />

@@ -21,6 +21,7 @@ export interface Tournament {
   created_at: string;
   updated_at: string;
   is_registration_open: boolean;
+  posted_by: string;
 }
 
 export interface PaginatedResponse<T> {

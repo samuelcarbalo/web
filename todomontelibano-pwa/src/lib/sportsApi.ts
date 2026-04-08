@@ -16,6 +16,7 @@ export const getMyTournaments = async (params?: {
   status?: string;
   page?: number;
 }) => {
+  console.log('params1:', params);
   const response = await api.get<PaginatedResponse<Tournament>>('/sports/tournaments/my_tournaments/', { params });
   console.log('Response data:', JSON.stringify(response.data))
   return response.data; 
@@ -23,6 +24,7 @@ export const getMyTournaments = async (params?: {
 
 export const getTournament = async (slug: string) => {
   const response = await api.get<Tournament>(`/sports/tournaments/${slug}/`);
+  console.log('Response data:', JSON.stringify(response.data))
   return response.data;
 };
 

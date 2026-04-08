@@ -29,7 +29,6 @@ const TournamentsList: React.FC = () => {
   if (location.pathname === '/sports/') {
     isManager = false;
   }
-  console.log("isManager", isManager);
   const { data: tournamentsData, isLoading } = useTournaments({
     sport_type: selectedSport,
     status: selectedStatus ? selectedStatus : 'active',
@@ -46,9 +45,10 @@ const TournamentsList: React.FC = () => {
   ];
 
   const statuses = [
-    { value: 'active', label: 'Todos los estados' },
+    { value: 'active', label: 'En curso' },
+    { value: 'draft', label: 'Borradores' },
     { value: 'upcoming', label: 'Próximos' },
-    { value: 'ongoing', label: 'En curso' },
+    { value: 'cancelled', label: 'Cancelados' },
     { value: 'finished', label: 'Finalizados' },
   ];
 
