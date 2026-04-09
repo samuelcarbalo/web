@@ -131,7 +131,7 @@ export const useMyApplications = () => {
     queryKey: ['applications'],
     queryFn: async () => {
       const response = await api.get<PaginatedResponse<Application>>('/jobs/applications/');
-      console.log('Response data:', JSON.stringify(response.data))
+      // console.log('Response data:', JSON.stringify(response.data))
       return response.data;
     },
   });

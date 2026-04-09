@@ -79,11 +79,11 @@ export const useDeleteTournament = () => {
   });
 };
 
-export const useTeams = (tournamentId?: string) => {
+export const useTeams = (slug?: string) => {
   return useQuery({
-    queryKey: [TEAMS_KEY, tournamentId],
-    queryFn: () => getTeams(tournamentId),
-    enabled: !!tournamentId,
+    queryKey: [TEAMS_KEY, slug],
+    queryFn: () => getTeams(slug),
+    enabled: !!slug,
   });
 };
 

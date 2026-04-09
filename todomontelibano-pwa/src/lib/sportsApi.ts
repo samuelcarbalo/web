@@ -6,9 +6,8 @@ export const getTournaments = async (params?: {
   status?: string;
   page?: number;
 }) => {
-  console.log('params1:', params);
   const response = await api.get<PaginatedResponse<Tournament>>('/sports/tournaments/', { params });
-  console.log('Response data:', JSON.stringify(response.data))
+  // console.log('Response getTournaments:', JSON.stringify(response.data))
   return response.data;
 };
 export const getMyTournaments = async (params?: { 
@@ -16,15 +15,15 @@ export const getMyTournaments = async (params?: {
   status?: string;
   page?: number;
 }) => {
-  console.log('params1:', params);
+  // console.log('params1:', params);
   const response = await api.get<PaginatedResponse<Tournament>>('/sports/tournaments/my_tournaments/', { params });
-  console.log('Response data:', JSON.stringify(response.data))
+  // console.log('Response getMyTournaments:', JSON.stringify(response.data))
   return response.data; 
 };
 
 export const getTournament = async (slug: string) => {
   const response = await api.get<Tournament>(`/sports/tournaments/${slug}/`);
-  console.log('Response data:', JSON.stringify(response.data))
+  // console.log('Response data:', JSON.stringify(response.data))
   return response.data;
 };
 
@@ -44,9 +43,10 @@ export const deleteTournament = async (slug: string) => {
 
 // --- Funciones para equipos ---
 
-export const getTeams = async (tournamentId?: string) => {
-  const params = tournamentId ? { tournament: tournamentId } : {};
-  const response = await api.get<PaginatedResponse<Team>>('/sports/teams/', { params });
+export const getTeams = async (slug?: string) => {
+  const params = slug ? { tournament: slug } : {};
+  const response = await api.get<PaginatedResponse<Team>>(`/sports/tournaments/${slug}/teams/`, { params });
+  console.log('Response getTeams:', JSON.stringify(response.data))
   return response.data;
 };
 

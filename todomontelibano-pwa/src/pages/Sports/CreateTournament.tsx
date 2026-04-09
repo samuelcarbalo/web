@@ -44,7 +44,7 @@ const CreateTournament: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.name.trim()) newErrors.name = 'El nombre es requerido';
-    if (!formData.description.trim()) newErrors.description = 'La descripción es requerida';
+    // if (!formData.description.trim()) newErrors.description = 'La descripción es requerida';
     if (!formData.start_date) newErrors.start_date = 'La fecha de inicio es requerida';
     if (!formData.end_date) newErrors.end_date = 'La fecha de finalización es requerida';
     if (!formData.registration_deadline) newErrors.registration_deadline = 'La fecha límite de inscripción es requerida';
@@ -157,7 +157,7 @@ const CreateTournament: React.FC = () => {
                 </select>
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Descripción *
                 </label>
@@ -169,7 +169,7 @@ const CreateTournament: React.FC = () => {
                   placeholder="Describe el torneo, reglas, premios..."
                 />
                 {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
-              </div>
+              </div> */}
             </div>
           </div>
 
