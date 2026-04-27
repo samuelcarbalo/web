@@ -97,7 +97,7 @@ const TeamDetailPage: React.FC = () => {
             )}
             <div>
               <h1 className="text-3xl font-bold text-white">{team.name}</h1>
-              <p className="text-white/80 text-sm">{team.abbreviation} • {sportTypeLabels[tournament?.sport_type]}</p>
+              <p className="text-white/80 text-sm">{team.abbreviation} • {sportTypeLabels[tournament?.sport_type || 'football']}</p>
             </div>
           </div>
         </div>

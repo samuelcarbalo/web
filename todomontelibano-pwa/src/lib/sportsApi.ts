@@ -46,7 +46,7 @@ export const deleteTournament = async (slug: string) => {
 export const getTeams = async (slug?: string) => {
   const params = slug ? { tournament: slug } : {};
   const response = await api.get<PaginatedResponse<Team>>(`/sports/tournaments/${slug}/teams/`, { params });
-  console.log('Response getTeams:', JSON.stringify(response.data))
+  // console.log('Response getTeams:', JSON.stringify(response.data))
   return response.data;
 };
 

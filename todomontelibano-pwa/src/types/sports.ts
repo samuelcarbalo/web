@@ -78,6 +78,25 @@ export interface Team {
   coach_email?: string;
   coach_phone?: string;
   players_count: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  points: number;
+  runs: number;
+  runs_against: number;
+  strikes: number;
+  strikes_against: number;
+  walks: number;
+  walks_against: number;
+  home_runs: number;
+  home_runs_against: number;
+  strikes_out: number;
+  strikes_out_against: number;
+  goal_difference: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -117,6 +136,40 @@ export interface Player {
   goals: number;
   assists: number;
   average: number | null;
+  tournament: string;
+  tournament_name: string;
+  tournament_slug: string;
+  sport_type: SportType;
+  yellow_cards: number;
+  red_cards: number;
+  strikes: number;
+  strikes_against: number;
+  walks: number;
+  walks_against: number;
+  home_runs: number;
+  home_runs_against: number;
+  strikes_out: number;
+  strikes_out_against: number;
+  average_runs: number | null;
+  average_strikes: number | null;
+  average_walks: number | null;
+  average_home_runs: number | null;
+  average_strikes_out: number | null;
+  average_assists: number | null;
+  average_yellow_cards: number | null;
+  average_red_cards: number | null;
+  average_goals: number | null;
+  average_goals_against: number | null;
+  saves: number | null;
+  save_percentage: number | null;
+  innings_pitched: number | null;
+  earned_runs: number | null;
+  innings_pitched_against: number | null;
+  earned_runs_against: number | null;
+  batters_faced: number | null;
+  batting_average: number | null;
+  rbis: number | null;
+  on_base_percentage: number | null;
 }
 
 export interface CreatePlayerData {

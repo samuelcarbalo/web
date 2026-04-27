@@ -121,6 +121,7 @@ export const useUpdateTeam = () => {
     mutationFn: ({ slug, data }: { slug: string; data: Partial<CreateTeamData> }) => 
       updateTeam(slug, data),
     onSuccess: (_, variables) => {
+      console.log(variables)
       queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
     },
   });
