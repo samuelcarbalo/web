@@ -22,10 +22,12 @@ import TournamentsList from './pages/Sports/TournamentsList';
 import TournamentDetail from './pages/Sports/TournamentDetail';
 import CreateTournament from './pages/Sports/CreateTournament';
 import EditTournament from './pages/Sports/EditTournament';
+import TeamRosterPage from './pages/Sports/TeamRosterPage';
+import TeamDetailPage from './pages/Sports/TeamDetailPage';
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
-import TeamRosterPage from './pages/Sports/TeamRosterPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -100,6 +102,7 @@ const App: React.FC = () => {
                 <Route path="sports/tournaments/:slug" element={<TournamentDetail />} />
                 <Route path="sports/tournaments/create" element={<CreateTournament />} />
                 <Route path="sports/tournaments/:slug/edit" element={<EditTournament />} />
+                <Route path="/sports/tournaments/:tournamentSlug/teams/:teamSlug" element={<TeamDetailPage />} />
                 <Route path="/sports/tournaments/:tournamentSlug/teams/:teamSlug/roster" element={<TeamRosterPage />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />

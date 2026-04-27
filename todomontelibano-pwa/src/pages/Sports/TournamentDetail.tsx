@@ -201,16 +201,17 @@ const TournamentDetail: React.FC = () => {
                 {teams?.results && teams.results.length > 0 ? (
                   <div className="space-y-3">
                     {teams.results.map((team: any) => (
-                      <div 
-                        key={team.id} 
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      <Link
+                        key={team.id}
+                        to={`/sports/tournaments/${tournament.slug}/teams/${team.slug}`}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group block"
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center flex-1 min-w-0">
                           {team.logo ? (
                             <img 
                               src={team.logo} 
                               alt="" 
-                              className="w-10 h-10 rounded-full object-cover mr-3"
+                              className="w-10 h-10 rounded-full object-cover mr-3 flex-shrink-0"
                               crossOrigin="anonymous"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
@@ -218,30 +219,35 @@ const TournamentDetail: React.FC = () => {
                             />
                           ) : (
                             <div 
-                              className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-sm"
+                              className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
                               style={{ backgroundColor: team.primary_color || '#3B82F6' }}
                             >
                               {team.abbreviation || '?'}
                             </div>
                           )}
-                          <div>
-                            <p className="font-medium text-gray-900">{team.name}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 truncate">{team.name}</p>
                             <p className="text-xs text-gray-600">
                               {team.coach_name || 'Sin entrenador'}
                             </p>
                           </div>
                         </div>
 
+                        {/* Botón de eliminar - evita navegación */}
                         {isOwner && (
                           <button 
-                            onClick={() => handleDeleteTeam(team.slug)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteTeam(team.slug);
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 ml-2 relative z-10"
                             title="Eliminar equipo"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
