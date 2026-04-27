@@ -30,6 +30,10 @@ const PlayerProfilePage: React.FC = () => {
   
   // Consultar el torneo para saber el tipo de deporte
   const { data: tournament, isLoading: loadingTournament } = useTournament(player?.tournament_slug || '');
+
+  const isSoftball = tournament?.sport_type === 'softball';
+  const isFootball = tournament?.sport_type === 'football'
+
   const isLoading = loadingPlayer || loadingTournament;
 
   // Verificar si el usuario puede editar (coach del equipo o owner del torneo)
@@ -55,11 +59,11 @@ const PlayerProfilePage: React.FC = () => {
     );
   }
 
-  const isSoftball = tournament?.sport_type === 'softball';
-  const isFootball = tournament?.sport_type === 'football'
 
   // Estadísticas según el deporte
   const renderStats = () => {
+    if (!tournament) return null;
+  
     if (isSoftball) {
       return (
         <>
@@ -131,6 +135,18 @@ const PlayerProfilePage: React.FC = () => {
               value={player.strikes_out_against || 0}
               sublabel="En contra"
             />
+            
+            <StatCard
+              icon={<Shield className="w-5 h-5 text-indigo-500" />}
+              label="Saves"
+              value={player.saves || 0}
+            />
+
+            <StatCard
+              icon={<Shield className="w-5 h-5 text-indigo-500" />}
+              label="Saves"
+              value={player.saves || 0}
+            />
             <StatCard
               icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
               label="Avg. SO"
@@ -145,7 +161,7 @@ const PlayerProfilePage: React.FC = () => {
               highlight
             />
           </div>
-
+  
           {/* Resumen de bateo */}
           <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
@@ -170,80 +186,88 @@ const PlayerProfilePage: React.FC = () => {
         </>
       );
     }
-
-    // Estadísticas de Fútbol (default)
-    return (
-      <>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard
-            icon={<Target className="w-5 h-5 text-orange-500" />}
-            label="Goles"
-            value={player.goals || 0}
-            highlight={player.goals > 0}
-          />
-          <StatCard
-            icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
-            label="Asistencias"
-            value={player.assists || 0}
-          />
-          <StatCard
-            icon={<Activity className="w-5 h-5 text-green-500" />}
-            label="Partidos"
-            value={player.matches_played || 0}
-          />
-          <StatCard
-            icon={<Shield className="w-5 h-5 text-indigo-500" />}
-            label="Saves"
-            value={player.saves || 0}
-          />
-          <StatCard
-            icon={<AlertTriangle className="w-5 h-5 text-yellow-500" />}
-            label="Amarillas"
-            value={player.yellow_cards || 0}
-          />
-          <StatCard
-            icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
-            label="Rojas"
-            value={player.red_cards || 0}
-          />
-          <StatCard
-            icon={<Award className="w-5 h-5 text-purple-500" />}
-            label="Promedio"
-            value={player.average?.toFixed(2) || '0.00'}
-          />
-          <StatCard
-            icon={<Zap className="w-5 h-5 text-yellow-500" />}
-            label="Efectividad"
-            value={player.matches_played > 0 ? ((player.goals / player.matches_played) * 100).toFixed(1) + '%' : '0%'}
-          />
-        </div>
-
-        {/* Tarjetas acumuladas */}
-        {(player.yellow_cards > 0 || player.red_cards > 0) && (
-          <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-              <AlertTriangle className="w-5 h-5 mr-2 text-yellow-500" />
-              Disciplina
-            </h3>
-            <div className="flex gap-4">
-              {player.yellow_cards > 0 && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-lg">
-                  <div className="w-4 h-6 bg-yellow-400 rounded-sm" />
-                  <span className="font-bold text-yellow-700">{player.yellow_cards}</span>
-                  <span className="text-sm text-yellow-600">amarillas</span>
-                </div>
-              )}
-              {player.red_cards > 0 && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg">
-                  <div className="w-4 h-6 bg-red-500 rounded-sm" />
-                  <span className="font-bold text-red-700">{player.red_cards}</span>
-                  <span className="text-sm text-red-600">rojas</span>
-                </div>
-              )}
-            </div>
+  
+    if (isFootball) {
+      return (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <StatCard
+              icon={<Target className="w-5 h-5 text-orange-500" />}
+              label="Goles"
+              value={player.goals || 0}
+              highlight={player.goals > 0}
+            />
+            <StatCard
+              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              label="Asistencias"
+              value={player.assists || 0}
+            />
+            <StatCard
+              icon={<Activity className="w-5 h-5 text-green-500" />}
+              label="Partidos"
+              value={player.matches_played || 0}
+            />
+            <StatCard
+              icon={<AlertTriangle className="w-5 h-5 text-yellow-500" />}
+              label="Amarillas"
+              value={player.yellow_cards || 0}
+            />
+            <StatCard
+              icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
+              label="Rojas"
+              value={player.red_cards || 0}
+            />
+            <StatCard
+              icon={<Award className="w-5 h-5 text-purple-500" />}
+              label="Promedio"
+              value={player.average?.toFixed(2) || '0.00'}
+            />
+            <StatCard
+              icon={<Zap className="w-5 h-5 text-yellow-500" />}
+              label="Efectividad"
+              value={
+                player.matches_played > 0
+                  ? ((player.goals / player.matches_played) * 100).toFixed(1) + '%'
+                  : '0%'
+              }
+            />
           </div>
-        )}
-      </>
+  
+          {/* Tarjetas acumuladas */}
+          {(player.yellow_cards > 0 || player.red_cards > 0) && (
+            <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 text-yellow-500" />
+                Disciplina
+              </h3>
+              <div className="flex gap-4">
+                {player.yellow_cards > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-lg">
+                    <div className="w-4 h-6 bg-yellow-400 rounded-sm" />
+                    <span className="font-bold text-yellow-700">{player.yellow_cards}</span>
+                    <span className="text-sm text-yellow-600">amarillas</span>
+                  </div>
+                )}
+                {player.red_cards > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg">
+                    <div className="w-4 h-6 bg-red-500 rounded-sm" />
+                    <span className="font-bold text-red-700">{player.red_cards}</span>
+                    <span className="text-sm text-red-600">rojas</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      );
+    }
+  
+    // Fallback si sport_type no coincide
+    return (
+      <p className="text-gray-500 text-center py-4">
+        Tipo de deporte no reconocido:{' '}
+        <span className="font-mono text-sm">{tournament.sport_type}</span>
+      </p>
     );
   };
 
