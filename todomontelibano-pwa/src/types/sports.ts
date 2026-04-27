@@ -96,3 +96,41 @@ export interface CreateTeamData {
   coach_email?: string;
   coach_phone?: string;
 }
+
+export interface Player {
+  id: string;
+  full_name: string;
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+  jersey_number: number;
+  position: string;
+  position_display: string;
+  team: string;
+  team_name: string;
+  photo: string | null;
+  birth_date: string | null;
+  nationality: string | null;
+  is_captain: boolean;
+  is_active: boolean;
+  matches_played: number;
+  goals: number;
+  assists: number;
+  average: number | null;
+}
+
+export interface CreatePlayerData {
+  first_name: string;
+  last_name: string;
+  nickname?: string;
+  jersey_number: number;
+  position: string;
+  team: string | Player;
+  birth_date?: string;
+  nationality?: string;
+  photo?: string;
+  is_captain?: boolean;
+  is_active?: boolean;
+  tournament?: string;
+  posted_by_id?: string;
+}

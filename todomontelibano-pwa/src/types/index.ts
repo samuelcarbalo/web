@@ -173,8 +173,9 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  password2: string;
-  first_name: string;
+  password_confirm: string;
+  username: string;
+  first_name?: string;
   last_name: string;
   phone?: string;
   user_type: 'person' | 'company';

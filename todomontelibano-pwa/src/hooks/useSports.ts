@@ -10,12 +10,21 @@ import {
   getTeam,
   createTeam,
   updateTeam,
-  deleteTeam 
+  deleteTeam,
+  // Nuevos imports
+  getPlayers,
+  getPlayer,
+  createPlayer,
+  updatePlayer,
+  deletePlayer,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreatePlayerData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
+const PLAYERS_KEY = 'players';
+
+// ==================== TORNEOS ====================
 
 export const useTournaments = (params?: { 
   sport_type?: string; 
@@ -23,15 +32,11 @@ export const useTournaments = (params?: {
   page?: number;
   enabled?: boolean;
 }) => {
-  // 1. Determine which function to use based on the flag
   const fetchFn = params?.enabled ? getMyTournaments : getTournaments;
 
-  // 2. Call the hook once at the top level
   return useQuery({
-    // Include the 'enabled' flag in the key if it changes the data source
     queryKey: [TOURNAMENTS_KEY, params?.enabled, params], 
     queryFn: () => fetchFn(params),
-    // Ensure the query actually runs if enabled is true
     enabled: true, 
   });
 };
@@ -78,6 +83,8 @@ export const useDeleteTournament = () => {
     },
   });
 };
+
+// ==================== EQUIPOS ====================
 
 export const useTeams = (slug?: string) => {
   return useQuery({
@@ -129,3 +136,56 @@ export const useDeleteTeam = () => {
     },
   });
 };
+
+// ==================== JUGADORES ====================
+
+export const usePlayers = (teamId?: string) => {
+  return useQuery({
+    queryKey: [PLAYERS_KEY, { team: teamId }],
+    queryFn: () => getPlayers(teamId),
+    enabled: !!teamId,
+  });
+};
+
+export const usePlayer = (id: string) => {
+  return useQuery({
+    queryKey: [PLAYERS_KEY, id],
+    queryFn: () => getPlayer(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreatePlayer = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createPlayer,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY, { team: variables.team }] });
+    },
+  });
+};
+
+export const useUpdatePlayer = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreatePlayerData> }) => 
+      updatePlayer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+    },
+  });
+};
+
+export const useDeletePlayer = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deletePlayer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+    },
+  });
+};
+

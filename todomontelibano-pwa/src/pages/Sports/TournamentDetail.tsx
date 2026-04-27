@@ -61,6 +61,8 @@ const TournamentDetail: React.FC = () => {
     }
   };
 
+  const myTeam = teams?.results?.find((team: any) => team.coach_email === user?.email);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -278,9 +280,21 @@ const TournamentDetail: React.FC = () => {
                         Inscribir equipo
                       </button>
                     ) : (
-                      <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                        Inscribir mi equipo
-                      </button>
+                      // Verificar si el usuario es coach de algún equipo inscrito
+                      myTeam ? (
+                        <Link
+                          to={`/sports/tournaments/${tournament.slug}/teams/${myTeam.id}/roster`}
+                          className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                        >
+                          <Users className="w-4 h-4 mr-2" />
+                          Inscribir plantilla
+                        </Link>
+                      ) : myTeam === null ? (
+                        <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed">
+                          <Users className="w-4 h-4 mr-2" />
+                          Inscribir plantilla
+                        </button>
+                      ) : null
                     )}
                   </>
                 ) : (

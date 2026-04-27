@@ -8,12 +8,12 @@ const Register: React.FC = () => {
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<'person' | 'company'>('person');
   const [formData, setFormData] = useState({
-    first_name: '',
+    username: '',
     last_name: '',
     email: '',
     phone: '',
     password: '',
-    password2: '',
+    password_confirm: '',
     company_name: '',
   });
 
@@ -141,15 +141,15 @@ const Register: React.FC = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                       Nombre
                     </label>
                     <input
                       type="text"
-                      id="first_name"
+                      id="username"
                       required
-                      value={formData.first_name}
-                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                       className="input-field mt-1"
                       placeholder="Juan"
                     />
@@ -277,7 +277,7 @@ const Register: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="password2" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700">
                     Confirmar contraseña
                   </label>
                   <div className="mt-1 relative">
@@ -286,15 +286,15 @@ const Register: React.FC = () => {
                     </div>
                     <input
                       type={showPassword ? 'text' : 'password'}
-                      id="password2"
+                      id="password_confirm"
                       required
-                      value={formData.password2}
-                      onChange={(e) => setFormData({ ...formData, password2: e.target.value })}
+                      value={formData.password_confirm}
+                      onChange={(e) => setFormData({ ...formData, password_confirm: e.target.value })}
                       className="input-field pl-10"
                       placeholder="Repite tu contraseña"
                     />
                   </div>
-                  {formData.password !== formData.password2 && formData.password2 && (
+                  {formData.password !== formData.password_confirm && formData.password_confirm && (
                     <p className="mt-1 text-sm text-red-600">Las contraseñas no coinciden</p>
                   )}
                 </div>
@@ -329,7 +329,7 @@ const Register: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={register.isPending || formData.password !== formData.password2}
+                    disabled={register.isPending || formData.password !== formData.password_confirm}
                     className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {register.isPending ? (
