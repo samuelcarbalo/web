@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Layout
 import MainLayout from './components/Layout/MainLayout';
-
+import ScrollToTop from './components/UI/ScrollToTop';
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Auth/Login';
@@ -25,6 +25,9 @@ import EditTournament from './pages/Sports/EditTournament';
 import TeamRosterPage from './pages/Sports/TeamRosterPage';
 import TeamDetailPage from './pages/Sports/TeamDetailPage';
 import PlayerProfilePage from './pages/Sports/PlayerProfilePage';
+import TournamentSchedulePage from './pages/Sports/TournamentSchedulePage';
+import MatchLivePage from './pages/Sports/MatchLivePage';
+
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
@@ -88,6 +91,7 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <ScrollToTop />
         <AuthInitializer>
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -106,6 +110,9 @@ const App: React.FC = () => {
                 <Route path="/sports/tournaments/:tournamentSlug/teams/:teamSlug" element={<TeamDetailPage />} />
                 <Route path="/sports/tournaments/:tournamentSlug/teams/:teamSlug/roster" element={<TeamRosterPage />} />
                 <Route path="/sports/players/:playerId" element={<PlayerProfilePage />} />
+                <Route path="/sports/tournaments/:slug/schedule" element={<TournamentSchedulePage />} />
+                <Route path="/sports/matches/:matchId/live" element={<MatchLivePage />} />
+
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
                 <Route path="real-estate" element={<div className="p-20 text-center text-2xl">Bienes Raíces - Próximamente 🏠</div>} />

@@ -187,3 +187,53 @@ export interface CreatePlayerData {
   tournament?: string;
   posted_by_id?: string;
 }
+
+// Types
+export interface Match {
+  id: string;
+  tournament: string;
+  tournament_name: string;
+  home_team: string;
+  home_team_name: string;
+  home_team_logo: string;
+  away_team: string;
+  away_team_name: string;
+  away_team_logo: string;
+  home_score: number | null;
+  away_score: number | null;
+  home_runs: number | null;
+  away_runs: number | null;
+  match_date: string;
+  venue: string;
+  stadium: string;
+  status: 'scheduled' | 'live' | 'finished' | 'postponed' | 'cancelled';
+  status_display: string;
+  round_number: number;
+  match_week: number;
+  notes: string;
+  events: MatchEvent[];
+}
+
+export interface MatchEvent {
+  id: string;
+  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'injury' | 'other';
+  event_type_display: string;
+  minute: number;
+  player: string;
+  player_name: string;
+  team: string;
+  team_name: string;
+  description: string;
+}
+
+export interface CreateMatchData {
+  tournament: string;
+  home_team: string;
+  away_team: string;
+  match_date: string;
+  venue?: string;
+  stadium?: string;
+  round_number?: number;
+  match_week?: number;
+  notes?: string;
+}

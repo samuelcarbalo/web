@@ -8,6 +8,7 @@ interface CreateTeamModalProps {
   onClose: () => void;
   tournamentId: string;
   tournamentName: string;
+  onSuccess?: () => void;  // ← agrega esto
 }
 
 // ImgBB API Key - Obtén una gratis en https://api.imgbb.com/
@@ -18,7 +19,8 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   isOpen, 
   onClose, 
   tournamentId,
-  tournamentName 
+  tournamentName,
+  onSuccess, 
 }) => {
   const { user } = useAuthStore();
   const createMutation = useCreateTeam();
@@ -155,6 +157,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
       organization: user?.organization || '',
     }, {
       onSuccess: () => {
+        if (onSuccess) onSuccess();
         onClose();
         // Reset form
         setFormData({

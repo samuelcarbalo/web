@@ -11,18 +11,28 @@ import {
   createTeam,
   updateTeam,
   deleteTeam,
-  // Nuevos imports
+  getMatches,
+  getMatch,
+  createMatch,
+  updateMatch,
+  deleteMatch,
+  startMatch,
+  finishMatch,
+  updateScore,
+  addMatchEvent,
   getPlayers,
   getPlayer,
   createPlayer,
   updatePlayer,
   deletePlayer,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreatePlayerData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreatePlayerData, CreateMatchData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
 const PLAYERS_KEY = 'players';
+const MATCHES_KEY = 'matches';
+
 
 // ==================== TORNEOS ====================
 
@@ -186,6 +196,101 @@ export const useDeletePlayer = () => {
     mutationFn: deletePlayer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+    },
+  });
+};
+
+export const useMatches = (params?: {
+  tournament?: string;
+  team?: string;
+  status?: string;
+  live?: boolean;
+  from?: string;
+  to?: string;
+  page?: number;
+}) => {
+  return useQuery({
+    queryKey: [MATCHES_KEY, params],
+    queryFn: () => getMatches(params),
+    enabled: !!(params?.tournament || params?.team),
+  });
+};
+
+export const useMatch = (id: string) => {
+  return useQuery({
+    queryKey: [MATCHES_KEY, id],
+    queryFn: () => getMatch(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreateMatch = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createMatch,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, { tournament: variables.tournament }] });
+    },
+  });
+};
+
+export const useUpdateMatch = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateMatchData> }) => 
+      updateMatch(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};
+
+export const useDeleteMatch = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteMatch,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+    },
+  });
+};
+
+export const useStartMatch = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: startMatch,
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, id] });
+    },
+  });
+};
+
+
+export const useUpdateScore = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateScore(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};
+
+export const useFinishMatch = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => finishMatch(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
     },
   });
 };

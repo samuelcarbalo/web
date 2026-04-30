@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -94,4 +94,75 @@ export const updatePlayer = async (id: string, data: Partial<CreatePlayerData>) 
 
 export const deletePlayer = async (id: string) => {
   await api.delete(`/sports/players/${id}/`);
+};
+
+// --- Funciones para partidos ---
+
+export const getMatches = async (params?: {
+  tournament?: string;
+  team?: string;
+  status?: string;
+  live?: boolean;
+  from?: string;
+  to?: string;
+  page?: number;
+}) => {
+  const response = await api.get<PaginatedResponse<Match>>('/sports/matches/', { params });
+  return response.data;
+};
+
+export const getMatch = async (id: string) => {
+  const response = await api.get<Match>(`/sports/matches/${id}/`);
+  return response.data;
+};
+
+export const createMatch = async (data: CreateMatchData) => {
+  const response = await api.post<Match>('/sports/matches/', data);
+  return response.data;
+};
+
+export const updateMatch = async (id: string, data: Partial<CreateMatchData>) => {
+  const response = await api.patch<Match>(`/sports/matches/${id}/`, data);
+  return response.data;
+};
+
+export const deleteMatch = async (id: string) => {
+  await api.delete(`/sports/matches/${id}/`);
+};
+
+// Acciones especiales
+export const startMatch = async (id: string) => {
+  const response = await api.post(`/sports/matches/${id}/start_match/`);
+  return response.data;
+};
+
+export const finishMatch = async (id: string, data: {
+  home_score?: number;
+  away_score?: number;
+  home_runs?: number;
+  away_runs?: number;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/finish_match/`, data);
+  return response.data;
+};
+
+export const updateScore = async (id: string, data: {
+  home_score?: number;
+  away_score?: number;
+  home_runs?: number;
+  away_runs?: number;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/update_score/`, data);
+  return response.data;
+};
+
+export const addMatchEvent = async (id: string, data: {
+  event_type: string;
+  minute: number;
+  player?: string;
+  team?: string;
+  description?: string;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/add_event/`, data);
+  return response.data;
 };

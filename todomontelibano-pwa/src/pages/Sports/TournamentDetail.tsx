@@ -20,10 +20,17 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import CreateTeamModal from './CreateTeamModal';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const handleTeamCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['teams', slug] });
+  };
 
   const { data: tournament, isLoading } = useTournament(slug || '');
   const deleteMutation = useDeleteTournament();
@@ -315,6 +322,13 @@ const TournamentDetail: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="font-bold text-gray-900 mb-4">Gestión</h3>
                   <div className="space-y-2">
+                  <Link
+                      to={`/sports/tournaments/${tournament.slug}/schedule`}
+                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Ver calendario
+                    </Link>
                     <Link 
                       to={`/sports/tournaments/${tournament.slug}/edit`}
                       className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
@@ -351,6 +365,7 @@ const TournamentDetail: React.FC = () => {
         onClose={() => setIsCreateTeamModalOpen(false)}
         tournamentId={tournament?.id || ''}
         tournamentName={tournament?.name || ''}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['teams', slug] })}
       />
     </>
   );
