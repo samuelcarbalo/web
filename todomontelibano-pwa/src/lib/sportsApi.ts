@@ -166,3 +166,56 @@ export const addMatchEvent = async (id: string, data: {
   const response = await api.post(`/sports/matches/${id}/add_event/`, data);
   return response.data;
 };
+
+// Alineaciones
+export const setLineup = async (id: string, data: {
+  team: string;
+  players: string[];
+}) => {
+  const response = await api.post(`/sports/matches/${id}/set_lineup/`, data);
+  return response.data;
+};
+
+export const substitutePlayer = async (id: string, data: {
+  team: string | number;
+  player_out: string | number;
+  player_in: string | number;
+  minute: number;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/substitute_player/`, data);
+  return response.data;
+};
+
+// Agregar al final del archivo, junto con las otras funciones
+
+// ============ ALINEACIONES ============
+
+export const getMatchLineup = async (id: string) => {
+  const response = await api.get(`/sports/matches/${id}/lineup/`);
+  return response.data;
+};
+
+export const setMatchLineup = async (id: string, data: {
+  team: string;
+  players: string[];
+}) => {
+  const response = await api.post(`/sports/matches/${id}/set_lineup/`, data);
+  return response.data;
+};
+
+export const substituteMatchPlayer = async (id: string, data: {
+  team: string | number;
+  player_out: string | number;
+  player_in: string | number;
+  minute: number;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/substitute_player/`, data);
+  return response.data;
+};
+
+// ============ JUGADORES POR EQUIPO ============
+
+export const getTeamPlayers = async (slug: string) => {
+  const response = await api.get<Player[]>(`/sports/teams/${slug}/players/`);
+  return response.data;
+};

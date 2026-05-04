@@ -25,6 +25,9 @@ import {
   createPlayer,
   updatePlayer,
   deletePlayer,
+  getMatchLineup,
+  setMatchLineup,
+  substituteMatchPlayer,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreatePlayerData, CreateMatchData } from '../types/sports';
 
@@ -291,6 +294,50 @@ export const useFinishMatch = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => finishMatch(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+    },
+  });
+};
+
+export const useAddMatchEvent = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => addMatchEvent(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};// ============ ALINEACIONES ============
+
+
+export const useMatchLineup = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-lineup', matchId],
+    queryFn: () => getMatchLineup(matchId),
+    enabled: !!matchId,
+  });
+};
+
+export const useSetLineup = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => setMatchLineup(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match-lineup', variables.id] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};
+
+export const useSubstitutePlayer = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => substituteMatchPlayer(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match-lineup', variables.id] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
     },
   });
 };

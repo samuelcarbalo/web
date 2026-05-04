@@ -27,6 +27,7 @@ import TeamDetailPage from './pages/Sports/TeamDetailPage';
 import PlayerProfilePage from './pages/Sports/PlayerProfilePage';
 import TournamentSchedulePage from './pages/Sports/TournamentSchedulePage';
 import MatchLivePage from './pages/Sports/MatchLivePage';
+import MatchDetailPage from './pages/Sports/MatchDetailPage';
 
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
@@ -112,7 +113,7 @@ const App: React.FC = () => {
                 <Route path="/sports/players/:playerId" element={<PlayerProfilePage />} />
                 <Route path="/sports/tournaments/:slug/schedule" element={<TournamentSchedulePage />} />
                 <Route path="/sports/matches/:matchId/live" element={<MatchLivePage />} />
-
+                <Route path="/sports/matches/:id" element={<MatchDetailPage />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
                 <Route path="real-estate" element={<div className="p-20 text-center text-2xl">Bienes Raíces - Próximamente 🏠</div>} />

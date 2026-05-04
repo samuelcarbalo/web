@@ -211,6 +211,7 @@ export interface Match {
   round_number: number;
   match_week: number;
   notes: string;
+  posted_by: string;
   events: MatchEvent[];
 }
 
