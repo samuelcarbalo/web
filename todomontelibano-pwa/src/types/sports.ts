@@ -193,12 +193,11 @@ export interface Match {
   id: string;
   tournament: string;
   tournament_name: string;
+  tournament_slug: string;
   home_team: string;
-  home_team_name: string;
-  home_team_logo: string;
+  home_team_detail?: Team;
+  away_team_detail?: Team;
   away_team: string;
-  away_team_name: string;
-  away_team_logo: string;
   home_score: number | null;
   away_score: number | null;
   home_runs: number | null;
@@ -210,6 +209,7 @@ export interface Match {
   status_display: string;
   round_number: number;
   match_week: number;
+  sport_type?: string;
   notes: string;
   posted_by: string;
   events: MatchEvent[];

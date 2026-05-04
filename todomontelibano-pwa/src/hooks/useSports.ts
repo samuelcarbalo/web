@@ -180,6 +180,14 @@ export const useCreatePlayer = () => {
   });
 };
 
+export const useTeamPlayers = (slug?: string) => {
+  return useQuery({
+    queryKey: [PLAYERS_KEY, 'team-players', slug],
+    queryFn: () => getPlayers(slug || ''),
+    enabled: !!slug,
+  });
+};
+
 export const useUpdatePlayer = () => {
   const queryClient = useQueryClient();
   

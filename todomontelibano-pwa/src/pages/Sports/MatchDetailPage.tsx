@@ -23,6 +23,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import {
   useMatch,
+  useTournament,
   useUpdateMatch,
   useDeleteMatch,
   useStartMatch,
@@ -30,7 +31,8 @@ import {
   useUpdateScore,
   useAddMatchEvent,
 } from '../../hooks/useSports';
-import type { Match, MatchEvent } from '../../types/sports';
+import type { MatchEvent } from '../../types/sports';
+import MatchLineupSection from './MatchLineupSection';
 
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   goal: <Trophy className="w-4 h-4 text-yellow-500" />,
@@ -72,6 +74,9 @@ const MatchDetailPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: match, isLoading } = useMatch(id || '');
+  const { data: tournament } = useTournament(match?.tournament_slug || '');
+  const sportType = tournament?.sport_type || 'football';
+  
   const updateMutation = useUpdateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();
@@ -242,7 +247,7 @@ const MatchDetailPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                to={`/sports/tournaments/${match.tournament}`}
+                to={`/sports/tournaments/${match.tournament_slug}`}
                 className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 mr-1" />
@@ -297,18 +302,18 @@ const MatchDetailPage: React.FC = () => {
               {/* Equipo local */}
               <div className="flex-1 text-center">
                 <div className="flex flex-col items-center">
-                  {match.home_team_logo ? (
+                  {match.home_team_detail?.logo ? (
                     <img
-                      src={match.home_team_logo}
-                      alt={match.home_team_name}
+                      src={match.home_team_detail?.logo}
+                      alt={match.home_team_detail?.name}
                       className="w-20 h-20 rounded-full object-cover mb-3"
                     />
                   ) : (
                     <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3">
-                      {match.home_team_name?.[0]}
+                      {match.home_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-lg font-bold text-gray-900">{match.home_team_name}</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{match.home_team_detail?.name}</h2>
                 </div>
               </div>
 
@@ -371,18 +376,18 @@ const MatchDetailPage: React.FC = () => {
               {/* Equipo visitante */}
               <div className="flex-1 text-center">
                 <div className="flex flex-col items-center">
-                  {match.away_team_logo ? (
+                  {match.away_team_detail?.logo ? (
                     <img
-                      src={match.away_team_logo}
-                      alt={match.away_team_name}
+                      src={match.away_team_detail?.logo}
+                      alt={match.away_team_detail?.name}
                       className="w-20 h-20 rounded-full object-cover mb-3"
                     />
                   ) : (
                     <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3">
-                      {match.away_team_name?.[0]}
+                      {match.away_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-lg font-bold text-gray-900">{match.away_team_name}</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{match.away_team_detail?.name}</h2>
                 </div>
               </div>
             </div>
@@ -435,18 +440,18 @@ const MatchDetailPage: React.FC = () => {
                 onClick={() => openEventModal(match.home_team)}
                 className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
               >
-                + Evento {match.home_team_name}
+                + Evento {match.home_team_detail?.name}
               </button>
               <button
                 onClick={() => openEventModal(match.away_team)}
                 className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
               >
-                + Evento {match.away_team_name}
+                + Evento {match.away_team_detail?.name}
               </button>
             </div>
           </div>
         )}
-
+        {sportType && <MatchLineupSection match={{ ...match, sport_type: sportType }} />}
         {/* Timeline de eventos */}
         {match.events && match.events.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
@@ -587,11 +592,11 @@ const MatchDetailPage: React.FC = () => {
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
             <h2 className="text-lg font-bold text-gray-900 mb-1">Finalizar partido</h2>
             <p className="text-sm text-gray-500 mb-5">
-              {match.home_team_name} vs {match.away_team_name}
+              {match.home_team_detail?.name} vs {match.away_team_detail?.name}
             </p>
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{match.home_team_name}</p>
+                <p className="text-xs text-gray-500 mb-1 truncate">{match.home_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
@@ -602,7 +607,7 @@ const MatchDetailPage: React.FC = () => {
               </div>
               <span className="text-2xl font-bold text-gray-400">-</span>
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{match.away_team_name}</p>
+                <p className="text-xs text-gray-500 mb-1 truncate">{match.away_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
