@@ -29,7 +29,7 @@ import {
   setMatchLineup,
   substituteMatchPlayer,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreatePlayerData, CreateMatchData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
@@ -192,7 +192,7 @@ export const useUpdatePlayer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreatePlayerData> }) => 
+    mutationFn: ({ id, data }: { id: string; data: any }) => 
       updatePlayer(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });

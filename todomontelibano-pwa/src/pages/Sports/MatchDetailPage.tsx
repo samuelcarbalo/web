@@ -33,7 +33,6 @@ import {
 } from '../../hooks/useSports';
 import type { MatchEvent } from '../../types/sports';
 import MatchLineupSection from './MatchLineupSection';
-
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   goal: <Trophy className="w-4 h-4 text-yellow-500" />,
   yellow_card: <Shield className="w-4 h-4 text-yellow-500" />,
@@ -451,7 +450,11 @@ const MatchDetailPage: React.FC = () => {
             </div>
           </div>
         )}
-        {sportType && <MatchLineupSection match={{ ...match, sport_type: sportType }} />}
+        {sportType && 
+          <MatchLineupSection 
+            match={{ ...match, sport_type: sportType }} 
+          />
+        }
         {/* Timeline de eventos */}
         {match.events && match.events.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">

@@ -78,7 +78,7 @@ const MatchLivePage: React.FC = () => {
   const handleSaveScore = () => {
     updateScoreMutation.mutate(
       {
-        matchId: match.id,
+        id: match.id,
         data: {
           home_score: scoreForm.home_score,
           away_score: scoreForm.away_score,
@@ -97,7 +97,7 @@ const MatchLivePage: React.FC = () => {
   const handleFinishMatch = () => {
     if (confirm('¿Finalizar este partido? El marcador quedará definitivo.')) {
       finishMutation.mutate({
-        matchId: match.id,
+        id: match.id,
         data: {
           home_score: match.home_score ?? 0,
           away_score: match.away_score ?? 0,
@@ -196,18 +196,18 @@ const MatchLivePage: React.FC = () => {
 
             {/* Local */}
             <div className="text-center flex-1">
-              {match.home_team_logo ? (
+              {match.home_team_detail?.logo ? (
                 <img
-                  src={match.home_team_logo}
+                  src={match.home_team_detail.logo}
                   alt=""
                   className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-white/20"
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
-                  {match.home_team_name?.[0]}
+                  {match.home_team_detail?.name?.[0]}
                 </div>
               )}
-              <h2 className="text-xl font-bold">{match.home_team_name}</h2>
+              <h2 className="text-xl font-bold">{match.home_team_detail?.name}</h2>
               <p className="text-gray-400 text-sm">Local</p>
             </div>
 
@@ -314,18 +314,18 @@ const MatchLivePage: React.FC = () => {
 
             {/* Visitante */}
             <div className="text-center flex-1">
-              {match.away_team_logo ? (
+              {match.away_team_detail?.logo ? (
                 <img
-                  src={match.away_team_logo}
+                  src={match.away_team_detail.logo}
                   alt=""
                   className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-white/20"
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
-                  {match.away_team_name?.[0]}
+                  {match.away_team_detail?.name?.[0]}
                 </div>
               )}
-              <h2 className="text-xl font-bold">{match.away_team_name}</h2>
+              <h2 className="text-xl font-bold">{match.away_team_detail?.name}</h2>
               <p className="text-gray-400 text-sm">Visitante</p>
             </div>
           </div>
@@ -449,12 +449,12 @@ const MatchLivePage: React.FC = () => {
               <div className="grid grid-cols-2 gap-6">
                 <div className="text-center py-8">
                   <Shield className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">{match.home_team_name}</p>
+                  <p className="text-gray-500">{match.home_team_detail?.name}</p>
                   <p className="text-sm text-gray-400 mt-1">Alineación por confirmar</p>
                 </div>
                 <div className="text-center py-8">
                   <Shield className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">{match.away_team_name}</p>
+                  <p className="text-gray-500">{match.away_team_detail?.name}</p>
                   <p className="text-sm text-gray-400 mt-1">Alineación por confirmar</p>
                 </div>
               </div>

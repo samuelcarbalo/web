@@ -25,11 +25,11 @@ export interface Tournament {
 }
 
 export interface PaginatedResponse<T> {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: T[];
-  }
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
   
 export interface CreateTournamentData {
   name: string;
@@ -195,9 +195,13 @@ export interface Match {
   tournament_name: string;
   tournament_slug: string;
   home_team: string;
+  home_team_logo?: string;
+  home_team_name?: string;
   home_team_detail?: Team;
   away_team_detail?: Team;
   away_team: string;
+  away_team_name?: string;
+  away_team_logo?: string;
   home_score: number | null;
   away_score: number | null;
   home_runs: number | null;

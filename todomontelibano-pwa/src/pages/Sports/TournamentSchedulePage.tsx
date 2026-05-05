@@ -52,7 +52,7 @@ const TournamentSchedulePage: React.FC = () => {
   const { data: matchesData, isLoading: loadingMatches } = useMatches({
     tournament: slug || '',
   });
-
+  console.log("matchesData", matchesData)
   const createMutation = useCreateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();
@@ -127,7 +127,6 @@ const TournamentSchedulePage: React.FC = () => {
       });
     }
   };
-
   const handleEdit = (match: Match) => {
     setEditingMatch(match);
     setFormData({
@@ -376,7 +375,10 @@ const TournamentSchedulePage: React.FC = () => {
                           {/* Equipo local */}
                           <div className="flex items-center gap-3 flex-1">
                             {match.home_team_logo ? (
-                              <img src={match.home_team_logo} alt="" className="w-10 h-10 rounded-full object-cover" />
+                              <img 
+                                src={match.home_team_logo}
+                                alt={match.home_team_name}
+                                className="w-10 h-10 rounded-full object-cover" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">
                                 {match.home_team_name?.[0]}
@@ -423,7 +425,8 @@ const TournamentSchedulePage: React.FC = () => {
                               )}
                             </div>
                             {match.away_team_logo ? (
-                              <img src={match.away_team_logo} alt="" className="w-10 h-10 rounded-full object-cover" />
+                              <img src={match.away_team_logo} alt={match.away_team_name}
+                              className="w-10 h-10 rounded-full object-cover" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">
                                 {match.away_team_name?.[0]}
@@ -516,12 +519,12 @@ const TournamentSchedulePage: React.FC = () => {
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
             <h2 className="text-lg font-bold text-gray-900 mb-1">Finalizar partido</h2>
             <p className="text-sm text-gray-500 mb-5">
-              {finishingMatch.home_team_name} vs {finishingMatch.away_team_name}
+              {finishingMatch.home_team_detail?.name} vs {finishingMatch.away_team_detail?.name}
             </p>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{finishingMatch.home_team_name}</p>
+                <p className="text-xs text-gray-500 mb-1 truncate">{finishingMatch.home_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
@@ -532,7 +535,7 @@ const TournamentSchedulePage: React.FC = () => {
               </div>
               <span className="text-2xl font-bold text-gray-400">-</span>
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{finishingMatch.away_team_name}</p>
+                <p className="text-xs text-gray-500 mb-1 truncate">{finishingMatch.away_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
