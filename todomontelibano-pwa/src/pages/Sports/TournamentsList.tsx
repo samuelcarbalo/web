@@ -21,9 +21,9 @@ const TournamentsList: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const { user } = useAuthStore();
   let isManager = user?.role === 'manager';
-  if (isManager){
-    console.log(user?.id)
-  }
+  // if (isManager){
+  //   console.log(user?.id)
+  // }
   const location = useLocation();
   
   if (location.pathname === '/sports/') {

@@ -170,7 +170,12 @@ export const addMatchEvent = async (id: string, data: {
 // Alineaciones
 export const setLineup = async (id: string, data: {
   team: string;
-  players: string[];
+  players: Array<{
+    player: string;
+    is_starter: boolean;
+    position: string;
+    jersey_number: number;
+  }>;
 }) => {
   const response = await api.post(`/sports/matches/${id}/set_lineup/`, data);
   return response.data;
@@ -197,7 +202,12 @@ export const getMatchLineup = async (id: string) => {
 
 export const setMatchLineup = async (id: string, data: {
   team: string;
-  players: string[];
+  players: Array<{
+    player: string;
+    is_starter: boolean;
+    position: string;
+    jersey_number: number;
+  }>;
 }) => {
   const response = await api.post(`/sports/matches/${id}/set_lineup/`, data);
   return response.data;
@@ -219,3 +229,4 @@ export const getTeamPlayers = async (slug: string) => {
   const response = await api.get<Player[]>(`/sports/teams/${slug}/players/`);
   return response.data;
 };
+

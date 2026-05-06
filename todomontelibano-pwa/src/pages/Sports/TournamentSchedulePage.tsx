@@ -52,7 +52,6 @@ const TournamentSchedulePage: React.FC = () => {
   const { data: matchesData, isLoading: loadingMatches } = useMatches({
     tournament: slug || '',
   });
-  console.log("matchesData", matchesData)
   const createMutation = useCreateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();

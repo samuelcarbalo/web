@@ -27,7 +27,6 @@ const Dashboard: React.FC = () => {
   let isCompany = false;
   const isManager = user?.role === 'manager';
   if (isManager){
-    console.log(user?.id)
     isCompany = true;
   }
   const adminResult = useAdminJobs(

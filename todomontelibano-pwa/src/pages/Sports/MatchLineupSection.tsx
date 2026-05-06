@@ -57,6 +57,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
 
   const { data: homePlayersData, isLoading: homePlayersLoading } = usePlayers(homeTeamId);
   const { data: awayPlayersData, isLoading: awayPlayersLoading } = usePlayers(awayTeamId);
+  
   const setLineupMutation = useSetLineup();
   const substituteMutation = useSubstitutePlayer();
 
@@ -85,10 +86,23 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
     ? (homePlayersData?.results || [])
     : (awayPlayersData?.results || []);
 
-  const activeLineup: LineupPlayer[] = lineupData?.[activeTeam] || [];
-  const starters = activeLineup.filter((p: LineupPlayer) => p.is_starter);
-  const bench = activeLineup.filter((p: LineupPlayer) => !p.is_starter && !p.minute_out);
-  const substitutedOut = activeLineup.filter((p: LineupPlayer) => p.minute_out);
+    // Obtener el objeto del equipo según el activo (home_team o away_team)
+    const teamData = activeTeam === 'home' ? lineupData?.home_team : lineupData?.away_team;
+    
+    // Combinar titulares y suplentes para tener todos los jugadores del lineup
+    const activeLineup: LineupPlayer[] = [
+      ...(teamData?.starters || []),
+      ...(teamData?.substitutes || [])
+    ];
+    
+    // Los titulares ya vienen en 'starters', los suplentes en 'substitutes'
+    const starters = teamData?.starters || [];
+    const bench = teamData?.substitutes || [];
+    
+    // Los sustituidos (minute_out) pueden estar en cualquiera de los dos arrays, 
+    // pero según la estructura, 'substitution_minute' no null indica sustituido.
+    // Si el backend lo maneja así, podemos filtrar de activeLineup.
+    const substitutedOut = activeLineup.filter((p: LineupPlayer) => p.minute_out != null);
 
   // Jugadores disponibles para alineación (no están ya en lineup)
   const lineupPlayerIds = new Set(activeLineup.map((p: LineupPlayer) => p.player));
@@ -100,11 +114,14 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
   });
 
   // Sincronizar seleccionados con lineup existente
+  // Depuración
   useEffect(() => {
     if (lineupData) {
+      const homeStarters = lineupData.home_team?.starters?.map((p: LineupPlayer) => p.player) || [];
+      const awayStarters = lineupData.away_team?.starters?.map((p: LineupPlayer) => p.player) || [];
       setSelectedStarters({
-        home: (lineupData.home || []).filter((p: LineupPlayer) => p.is_starter).map((p: LineupPlayer) => p.player),
-        away: (lineupData.away || []).filter((p: LineupPlayer) => p.is_starter).map((p: LineupPlayer) => p.player),
+        home: homeStarters,
+        away: awayStarters,
       });
     }
   }, [lineupData]);
@@ -135,13 +152,23 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
       setSaveError(`Debes alinear al menos ${minStarters} jugadores titulares para ${match.sport_type === 'football' ? 'fútbol' : 'este deporte'}.`);
       return;
     }
+    // 🔧 CORREGIDO: Crear array de objetos con los datos requeridos
+    const playersData = teamStarters.map(playerId => {
+      const player = activePlayers.find(p => p.id === playerId);
+      return {
+        player: playerId,
+        is_starter: true,
+        position: player?.position || '',
+        jersey_number: player?.jersey_number || 0
+      };
+    });
 
     setLineupMutation.mutate(
       {
         id: match.id,
         data: {
           team: currentTeamId,
-          players: teamStarters,
+          players: playersData,
         },
       },
       {

@@ -10,8 +10,6 @@ import {
   Square,
   Edit3,
   Trash2,
-  Plus,
-  Minus,
   Loader2,
   Flag,
   AlertTriangle,
@@ -30,6 +28,7 @@ import {
   useFinishMatch,
   useUpdateScore,
   useAddMatchEvent,
+  usePlayers,
 } from '../../hooks/useSports';
 import type { MatchEvent } from '../../types/sports';
 import MatchLineupSection from './MatchLineupSection';
@@ -74,19 +73,23 @@ const MatchDetailPage: React.FC = () => {
 
   const { data: match, isLoading } = useMatch(id || '');
   const { data: tournament } = useTournament(match?.tournament_slug || '');
+  const { data: homePlayersData } = usePlayers(match?.home_team || '');
+  const { data: awayPlayersData } = usePlayers(match?.away_team || '');
   const sportType = tournament?.sport_type || 'football';
   
   const updateMutation = useUpdateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();
   const finishMutation = useFinishMatch();
-  const updateScoreMutation = useUpdateScore();
   const addEventMutation = useAddMatchEvent();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
+  const [selectedPlayerName, setSelectedPlayerName] = useState('');
 
   const [editData, setEditData] = useState({
     match_date: '',
@@ -150,6 +153,9 @@ const MatchDetailPage: React.FC = () => {
       team: teamId,
       description: '',
     });
+    setPlayerSearch('');
+    setSelectedPlayerName('');
+    setShowPlayerDropdown(false);
     setShowEventModal(true);
   };
 
@@ -177,14 +183,6 @@ const MatchDetailPage: React.FC = () => {
     );
   };
 
-  const handleUpdateScore = (field: 'home_score' | 'away_score', increment: number) => {
-    if (!match || !isLive) return;
-    const newValue = Math.max(0, (match[field] ?? 0) + increment);
-    updateScoreMutation.mutate({
-      id: match.id,
-      data: { [field]: newValue },
-    });
-  };
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -320,23 +318,6 @@ const MatchDetailPage: React.FC = () => {
               <div className="text-center px-8">
                 {isLive || isFinished ? (
                   <div className="flex items-center gap-4">
-                    {/* Controles de score para partido en vivo (solo owner) */}
-                    {isLive && isOwner && (
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => handleUpdateScore('home_score', 1)}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleUpdateScore('home_score', -1)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
                     <div className="text-5xl font-bold text-gray-900 tabular-nums">
                       {match.home_score ?? 0}
                     </div>
@@ -344,22 +325,6 @@ const MatchDetailPage: React.FC = () => {
                     <div className="text-5xl font-bold text-gray-900 tabular-nums">
                       {match.away_score ?? 0}
                     </div>
-                    {isLive && isOwner && (
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => handleUpdateScore('away_score', 1)}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleUpdateScore('away_score', -1)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="text-3xl font-bold text-gray-400">VS</div>
@@ -641,74 +606,149 @@ const MatchDetailPage: React.FC = () => {
       )}
 
       {/* Modal: Agregar evento */}
-      {showEventModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Agregar evento</h2>
-            <form onSubmit={handleAddEvent} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de evento</label>
-                <select
-                  value={eventData.event_type}
-                  onChange={(e) => setEventData(prev => ({ ...prev, event_type: e.target.value as MatchEvent['event_type'] }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                >
-                  {Object.entries(EVENT_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minuto</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={120}
-                  value={eventData.minute}
-                  onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jugador</label>
-                <input
-                  type="text"
-                  value={eventData.player}
-                  onChange={(e) => setEventData(prev => ({ ...prev, player: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                  placeholder="ID del jugador"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea
-                  value={eventData.description}
-                  onChange={(e) => setEventData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                  rows={2}
-                  placeholder="Detalles adicionales..."
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="submit"
-                  disabled={addEventMutation.isPending}
-                  className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
-                >
-                  {addEventMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Agregar evento'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEventModal(false)}
-                  className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+      {showEventModal && (() => {
+        const isHomeTeam = eventData.team === match.home_team;
+        const players = (isHomeTeam ? homePlayersData : awayPlayersData)?.results ?? [];
+
+        const filteredPlayers = playerSearch.trim().length > 0
+          ? players.filter((p: any) =>
+              p.full_name?.toLowerCase().includes(playerSearch.toLowerCase()) ||
+              String(p.jersey_number).includes(playerSearch)
+            )
+          : players;
+
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Agregar evento</h2>
+              <form onSubmit={handleAddEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de evento</label>
+                  <select
+                    value={eventData.event_type}
+                    onChange={(e) => setEventData(prev => ({ ...prev, event_type: e.target.value as MatchEvent['event_type'] }))}
+                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  >
+                    {Object.entries(EVENT_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Minuto</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={eventData.minute}
+                    onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
+                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  />
+                </div>
+
+                {/* Jugador con autocomplete */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Jugador</label>
+                  <input
+                    type="text"
+                    value={playerSearch}
+                    onChange={(e) => {
+                      setPlayerSearch(e.target.value);
+                      setSelectedPlayerName('');
+                      setEventData(prev => ({ ...prev, player: '' }));
+                      setShowPlayerDropdown(true);
+                    }}
+                    onFocus={() => setShowPlayerDropdown(true)}
+                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    placeholder="Buscar por nombre o número..."
+                    autoComplete="off"
+                  />
+
+                  {/* Indicador de jugador seleccionado */}
+                  {selectedPlayerName && (
+                    <div className="mt-1 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-lg">
+                      <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                      {selectedPlayerName}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPlayerName('');
+                          setPlayerSearch('');
+                          setEventData(prev => ({ ...prev, player: '' }));
+                        }}
+                        className="ml-auto text-green-600 hover:text-green-800 font-bold"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Dropdown */}
+                  {showPlayerDropdown && !selectedPlayerName && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredPlayers.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          No se encontraron jugadores
+                        </div>
+                      ) : (
+                        filteredPlayers.map((player: any) => (
+                          <button
+                            key={player.id}
+                            type="button"
+                            onClick={() => {
+                              setEventData(prev => ({ ...prev, player: player.id }));
+                              setSelectedPlayerName(`#${player.jersey_number} ${player.full_name}`);
+                              setPlayerSearch(`#${player.jersey_number} ${player.full_name}`);
+                              setShowPlayerDropdown(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left transition-colors"
+                          >
+                            <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                              {player.jersey_number}
+                            </span>
+                            <span className="text-sm text-gray-800">{player.full_name}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                  <textarea
+                    value={eventData.description}
+                    onChange={(e) => setEventData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    rows={2}
+                    placeholder="Detalles adicionales..."
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="submit"
+                    disabled={addEventMutation.isPending}
+                    className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                  >
+                    {addEventMutation.isPending
+                      ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                      : 'Agregar evento'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEventModal(false)}
+                    className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Modal: Confirmar eliminación */}
       {showDeleteConfirm && (
