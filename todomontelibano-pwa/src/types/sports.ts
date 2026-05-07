@@ -208,6 +208,8 @@ export interface Match {
   away_runs: number | null;
   match_date: string;
   venue: string;
+  started_at: string | null;
+  finished_at: string | null;
   stadium: string;
   status: 'scheduled' | 'live' | 'finished' | 'postponed' | 'cancelled';
   status_display: string;
@@ -217,6 +219,8 @@ export interface Match {
   notes: string;
   posted_by: string;
   events: MatchEvent[];
+  start_time?: string;
+  end_time?: string;
 }
 
 export interface MatchEvent {
@@ -242,3 +246,5 @@ export interface CreateMatchData {
   match_week?: number;
   notes?: string;
 }
+
+

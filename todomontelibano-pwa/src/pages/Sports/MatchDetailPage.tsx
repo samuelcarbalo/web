@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -17,6 +17,7 @@ import {
   Activity,
   Shield,
   Timer,
+  Pause,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -26,12 +27,12 @@ import {
   useDeleteMatch,
   useStartMatch,
   useFinishMatch,
-  useUpdateScore,
   useAddMatchEvent,
   usePlayers,
 } from '../../hooks/useSports';
 import type { MatchEvent } from '../../types/sports';
 import MatchLineupSection from './MatchLineupSection';
+
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   goal: <Trophy className="w-4 h-4 text-yellow-500" />,
   yellow_card: <Shield className="w-4 h-4 text-yellow-500" />,
@@ -66,6 +67,12 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelado',
 };
 
+// Constantes del cronómetro
+const MATCH_DURATION_MINUTES = 90;
+const HALF_TIME_MINUTES = 45;
+const EXTRA_TIME_MINUTES = 120;
+
+
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
@@ -91,6 +98,43 @@ const MatchDetailPage: React.FC = () => {
   const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
   const [selectedPlayerName, setSelectedPlayerName] = useState('');
 
+  // Estados del cronómetro
+  const [matchTimer, setMatchTimer] = useState(0); // minutos transcurridos
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [playerCards, setPlayerCards] = useState<Record<string, { yellow: number; red: boolean }>>({});
+  // Sincronizar con eventos existentes del match
+  useEffect(() => {
+    if (!match?.events) return;
+    
+    const cards: Record<string, { yellow: number; red: boolean }> = {};
+    
+    match.events.forEach((event: MatchEvent) => {
+      if (event.event_type === 'yellow_card') {
+        cards[event.player] = {
+          yellow: (cards[event.player]?.yellow || 0) + 1,
+          red: cards[event.player]?.red || false,
+        };
+        // Si es la segunda amarilla, se convierte en roja
+        if (cards[event.player].yellow >= 2) {
+          cards[event.player].red = true;
+        }
+      }
+      if (event.event_type === 'red_card') {
+        cards[event.player] = { yellow: 0, red: true };
+      }
+    });
+      
+    setPlayerCards(cards);
+  }, [match?.events]);
+  const isPlayerSentOff = useCallback((playerId: string): boolean => {
+    return playerCards[playerId]?.red === true;
+  }, [playerCards]);
+  
+  const getPlayerYellowCards = useCallback((playerId: string): number => {
+    return playerCards[playerId]?.yellow || 0;
+  }, [playerCards]);
+  const [showTimerControls, setShowTimerControls] = useState(false);
+
   const [editData, setEditData] = useState({
     match_date: '',
     venue: '',
@@ -114,11 +158,134 @@ const MatchDetailPage: React.FC = () => {
     team: '',
     description: '',
   });
-
+  
   const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
   const isLive = match?.status === 'live';
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Inicializar cronómetro cuando el partido está en vivo
+  useEffect(() => {
+    // Si no está en vivo, limpiar todo
+    if (!isLive) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsTimerRunning(false);
+      return;
+    }
+  
+    // Si está en vivo pero NO tiene started_at, no hacer nada (esperar refetch)
+    if (!match?.started_at) {
+      return;
+    }
+  
+    // Calcular minutos transcurridos desde started_at
+    const startedDate = new Date(match.started_at);
+    const now = new Date();
+    const elapsedMs = now.getTime() - startedDate.getTime();
+    const elapsedMinutes = Math.floor(elapsedMs / 60000);
+    const clampedMinutes = Math.max(0, Math.min(EXTRA_TIME_MINUTES, elapsedMinutes));
+  
+    // Actualizar el timer (incluso si ya tenía un valor)
+    setMatchTimer(clampedMinutes);
+  
+    // Limpiar intervalo previo si existe
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  
+    // Iniciar nuevo intervalo
+    const interval = setInterval(() => {
+      setMatchTimer(prev => {
+        const next = prev + 1;
+        if (next >= EXTRA_TIME_MINUTES) {
+          clearInterval(interval);
+          setIsTimerRunning(false);
+          return EXTRA_TIME_MINUTES;
+        }
+        return next;
+      });
+    }, 60000);
+  
+    timerRef.current = interval;
+    setIsTimerRunning(true);
+  
+    // Cleanup al desmontar o cuando cambie started_at/isLive
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isLive, match?.started_at]); // ← Dependencias correctas
+
+  
+  // Funciones del cronómetro
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    const interval = setInterval(() => {
+      setMatchTimer(prev => {
+        const next = prev + 1;
+        if (next >= EXTRA_TIME_MINUTES) {
+          clearInterval(interval);
+          setIsTimerRunning(false);
+          return EXTRA_TIME_MINUTES;
+        }
+        return next;
+      });
+    }, 60000);
+    
+    timerRef.current = interval;
+    setIsTimerRunning(true);
+  };
+  
+  const pauseTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsTimerRunning(false);
+  };
+  
+  const resumeTimer = () => {
+    startTimer();
+  };
+
+  
+  const resetTimer = () => {
+    pauseTimer();
+    setMatchTimer(0);
+  };
+
+  const adjustTimer = (minutes: number) => {
+    setMatchTimer(prev => Math.max(0, Math.min(EXTRA_TIME_MINUTES, prev + minutes)));
+  };
+
+  const setTimerToMinute = (minute: number) => {
+    setMatchTimer(Math.max(0, Math.min(EXTRA_TIME_MINUTES, minute)));
+  };
+
+  // Formatear tiempo del cronómetro
+  const formatTimer = (minutes: number) => {
+    if (minutes <= MATCH_DURATION_MINUTES) {
+      return `${minutes}'`;
+    } else {
+      return `90+${minutes - MATCH_DURATION_MINUTES}'`;
+    }
+  };
+
+  // Obtener período del partido
+  const getMatchPeriod = (minutes: number) => {
+    if (minutes === 0) return 'Inicio';
+    if (minutes < HALF_TIME_MINUTES) return '1er Tiempo';
+    if (minutes === HALF_TIME_MINUTES) return 'Descanso';
+    if (minutes < MATCH_DURATION_MINUTES) return '2do Tiempo';
+    return 'Tiempo Extra';
+  };
 
   // Inicializar datos de edición cuando se abre el modal
   const openEditModal = () => {
@@ -146,9 +313,11 @@ const MatchDetailPage: React.FC = () => {
   };
 
   const openEventModal = (teamId: string) => {
+    // Usar el minuto actual del cronómetro como valor por defecto
+    const currentMinute = isLive ? matchTimer : 0;
     setEventData({
       event_type: 'goal',
-      minute: 0,
+      minute: currentMinute,
       player: '',
       team: teamId,
       description: '',
@@ -171,18 +340,31 @@ const MatchDetailPage: React.FC = () => {
   const handleStartMatch = () => {
     if (!match) return;
     if (confirm('¿Iniciar este partido?')) {
-      startMutation.mutate(match.id);
+      startMutation.mutate(match.id, {
+        onSuccess: (data) => {
+          // data.started_at viene del backend (timezone.now())
+          if (data?.started_at) {
+            const startedDate = new Date(data.started_at);
+            const now = new Date();
+            const elapsedMs = now.getTime() - startedDate.getTime();
+            const elapsedMinutes = Math.floor(elapsedMs / 60000);
+            
+            setMatchTimer(Math.max(0, Math.min(EXTRA_TIME_MINUTES, elapsedMinutes)));
+            startTimer();
+          }
+        }
+      });
     }
   };
 
   const handleFinishMatch = () => {
     if (!match) return;
+    pauseTimer(); // Detener cronómetro al finalizar
     finishMutation.mutate(
       { id: match.id, data: scoreData },
       { onSuccess: () => setShowFinishModal(false) }
     );
   };
-
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -329,10 +511,104 @@ const MatchDetailPage: React.FC = () => {
                 ) : (
                   <div className="text-3xl font-bold text-gray-400">VS</div>
                 )}
+                
+                {/* Cronómetro del partido */}
                 {isLive && (
-                  <div className="mt-2 flex items-center justify-center gap-1 text-red-600 font-medium animate-pulse">
-                    <Timer className="w-4 h-4" />
-                    <span>En vivo</span>
+                  <div className="mt-3">
+                    <div className="flex items-center justify-center gap-2 text-red-600 font-bold animate-pulse">
+                      <Timer className="w-5 h-5" />
+                      <span className="text-2xl tabular-nums">{formatTimer(matchTimer)}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{getMatchPeriod(matchTimer)}</p>
+                    
+                    {/* Controles del cronómetro (solo para el manager) */}
+                    {isOwner && (
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setShowTimerControls(!showTimerControls)}
+                          className="text-xs text-gray-400 hover:text-gray-600 underline"
+                        >
+                          {showTimerControls ? 'Ocultar controles' : 'Ajustar tiempo'}
+                        </button>
+                        
+                        {showTimerControls && (
+                          <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <button
+                                onClick={() => adjustTimer(-1)}
+                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
+                                title="-1 min"
+                              >
+                                -1
+                              </button>
+                              <button
+                                onClick={() => adjustTimer(-5)}
+                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
+                                title="-5 min"
+                              >
+                                -5
+                              </button>
+                              
+                              {isTimerRunning ? (
+                                <button
+                                  onClick={pauseTimer}
+                                  className="w-10 h-10 rounded-full bg-yellow-500 hover:bg-yellow-600 flex items-center justify-center text-white"
+                                  title="Pausar"
+                                >
+                                  <Pause className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={resumeTimer}
+                                  className="w-10 h-10 rounded-full bg-green-600 hover:bg-green-700 flex items-center justify-center text-white"
+                                  title="Reanudar"
+                                >
+                                  <Play className="w-4 h-4" />
+                                </button>
+                              )}
+                              
+                              <button
+                                onClick={() => adjustTimer(5)}
+                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
+                                title="+5 min"
+                              >
+                                +5
+                              </button>
+                              <button
+                                onClick={() => adjustTimer(1)}
+                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
+                                title="+1 min"
+                              >
+                                +1
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 justify-center">
+                              <input
+                                type="number"
+                                min={0}
+                                max={120}
+                                placeholder="Min"
+                                className="w-16 text-center text-sm border border-gray-300 rounded px-2 py-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    setTimerToMinute(parseInt((e.target as HTMLInputElement).value) || 0);
+                                    (e.target as HTMLInputElement).value = '';
+                                  }
+                                }}
+                              />
+                              <span className="text-xs text-gray-500">Enter para fijar</span>
+                              <button
+                                onClick={resetTimer}
+                                className="text-xs text-red-500 hover:text-red-700 underline ml-2"
+                              >
+                                Reiniciar
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -377,7 +653,7 @@ const MatchDetailPage: React.FC = () => {
               )}
               <span className="flex items-center gap-2">
                 <Flag className="w-4 h-4" />
-                Jornada {match.match_week} • Ronda {match.round_number}
+                Jornada {match.match_week} • Ronda {match.match_week}
               </span>
             </div>
             {match.notes && (
@@ -390,7 +666,12 @@ const MatchDetailPage: React.FC = () => {
         {isLive && isOwner && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Acciones del partido</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-gray-900">Acciones del partido</h3>
+                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  Minuto actual: <span className="font-bold text-green-600">{matchTimer}'</span>
+                </span>
+              </div>
               <button
                 onClick={openFinishModal}
                 className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
@@ -415,46 +696,90 @@ const MatchDetailPage: React.FC = () => {
             </div>
           </div>
         )}
+        
         {sportType && 
           <MatchLineupSection 
             match={{ ...match, sport_type: sportType }} 
+            playerCards={playerCards}
+            isPlayerSentOff={isPlayerSentOff}
+            getPlayerYellowCards={getPlayerYellowCards}
+            isLive={isLive}
+            matchTimer={matchTimer}
           />
         }
+        
         {/* Timeline de eventos */}
         {match.events && match.events.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Eventos del partido</h3>
             <div className="space-y-4">
-              {match.events.map((event: MatchEvent) => (
-                <div
-                  key={event.id}
-                  className={`flex items-start gap-4 ${
-                    event.team === match.home_team ? 'flex-row' : 'flex-row-reverse text-right'
-                  }`}
-                >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    {EVENT_ICONS[event.event_type] || EVENT_ICONS.other}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                        {event.minute}'
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {EVENT_LABELS[event.event_type] || event.event_type}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700">
-                      <span className="font-semibold">{event.player_name}</span>
-                      {' - '}
-                      <span className="text-gray-500">{event.team_name}</span>
-                    </p>
-                    {event.description && (
-                      <p className="text-xs text-gray-500 mt-1">{event.description}</p>
-                    )}
-                  </div>
+            {/* Timeline de eventos */}
+            {match.events && match.events.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Eventos del partido</h3>
+                <div className="space-y-4">
+                  {match.events.map((event: MatchEvent) => {
+                    // Detectar si es la segunda amarilla del mismo jugador
+                    const playerYellowEvents = match.events.filter(
+                      (e: MatchEvent) => e.player === event.player && e.event_type === 'yellow_card'
+                    );
+                    const isSecondYellow = event.event_type === 'yellow_card' && 
+                      playerYellowEvents.length >= 2 && 
+                      playerYellowEvents[playerYellowEvents.length - 1].id === event.id;
+                    
+                    // Detectar si el jugador tiene roja directa
+                    const hasDirectRed = event.event_type === 'red_card';
+                    
+                    // Texto del evento
+                    const eventLabel = isSecondYellow 
+                      ? 'Doble Amarilla → Roja' 
+                      : (EVENT_LABELS[event.event_type] || event.event_type);
+                    
+                    // Icono del evento
+                    const eventIcon = isSecondYellow 
+                      ? <Shield className="w-4 h-4 text-red-600" />
+                      : (EVENT_ICONS[event.event_type] || EVENT_ICONS.other);
+
+                    return (
+                      <div
+                        key={event.id}
+                        className={`flex items-start gap-4 ${
+                          event.team === match.home_team ? 'flex-row' : 'flex-row-reverse text-right'
+                        }`}
+                      >
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                          {eventIcon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                              {event.minute}'
+                            </span>
+                            <span className={`text-sm font-medium ${
+                              isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900'
+                            }`}>
+                              {eventLabel}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            <span className={`font-semibold ${
+                              isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : ''
+                            }`}>
+                              {event.player_name}
+                            </span>
+                            {' - '}
+                            <span className="text-gray-500">{event.team_name}</span>
+                          </p>
+                          {event.description && (
+                            <p className="text-xs text-gray-500 mt-1">{event.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+            )}
             </div>
           </div>
         )}
@@ -636,15 +961,33 @@ const MatchDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Minuto</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={120}
-                    value={eventData.minute}
-                    onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Minuto
+                    {isLive && (
+                      <span className="ml-2 text-xs text-green-600 font-normal">
+                        (Auto: {matchTimer}')
+                      </span>
+                    )}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      max={120}
+                      value={eventData.minute}
+                      onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
+                      className="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    />
+                    {isLive && (
+                      <button
+                        type="button"
+                        onClick={() => setEventData(prev => ({ ...prev, minute: matchTimer }))}
+                        className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium whitespace-nowrap"
+                      >
+                        Usar actual
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Jugador con autocomplete */}
@@ -692,24 +1035,26 @@ const MatchDetailPage: React.FC = () => {
                           No se encontraron jugadores
                         </div>
                       ) : (
-                        filteredPlayers.map((player: any) => (
-                          <button
-                            key={player.id}
-                            type="button"
-                            onClick={() => {
-                              setEventData(prev => ({ ...prev, player: player.id }));
-                              setSelectedPlayerName(`#${player.jersey_number} ${player.full_name}`);
-                              setPlayerSearch(`#${player.jersey_number} ${player.full_name}`);
-                              setShowPlayerDropdown(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left transition-colors"
-                          >
-                            <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-                              {player.jersey_number}
-                            </span>
-                            <span className="text-sm text-gray-800">{player.full_name}</span>
-                          </button>
-                        ))
+                        filteredPlayers
+                          .filter((player: any) => !isPlayerSentOff(player.id))  // ← AQUÍ VA EL FILTRO
+                          .map((player: any) => (
+                            <button
+                              key={player.id}
+                              type="button"
+                              onClick={() => {
+                                setEventData(prev => ({ ...prev, player: player.id }));
+                                setSelectedPlayerName(`#${player.jersey_number} ${player.full_name}`);
+                                setPlayerSearch(`#${player.jersey_number} ${player.full_name}`);
+                                setShowPlayerDropdown(false);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left transition-colors"
+                            >
+                              <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                                {player.jersey_number}
+                              </span>
+                              <span className="text-sm text-gray-800">{player.full_name}</span>
+                            </button>
+                          ))
                       )}
                     </div>
                   )}

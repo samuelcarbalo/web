@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
-
+const PUBLIC_ENDPOINTS = [
+  '/sports/matches/',      // GET match detail
+  '/sports/tournaments/',  // GET tournaments
+  '/jobs/',                // GET jobs list/detail
+  // Agrega más según necesites
+];
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -22,6 +27,10 @@ api.interceptors.request.use((config) => {
   
   return config;
 });
+const isPublicEndpoint = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
 
 // Response interceptor para refresh token
 api.interceptors.response.use(
@@ -47,7 +56,9 @@ api.interceptors.response.use(
         // Logout user
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        if (!isPublicEndpoint(originalRequest.url)) {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }

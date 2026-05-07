@@ -7,6 +7,7 @@ import {
   Loader2,
   AlertCircle,
   Check,
+  Shield,
   X,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -29,6 +30,12 @@ interface MatchLineupSectionProps {
     away_team_detail?: { name: string; slug: string };
     posted_by?: string;
   };
+  playerCards?: Record<string, { yellow: number; red: boolean }>;
+  isPlayerSentOff?: (playerId: string) => boolean;
+  getPlayerYellowCards?: (playerId: string) => number;
+  isLive?: boolean;
+  matchTimer?: number;
+  
 }
 
 interface LineupPlayer {
@@ -42,7 +49,7 @@ interface LineupPlayer {
   minute_out?: number;
 }
 
-const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
+const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match, playerCards}) => {
   const { user } = useAuthStore();
   const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
 
@@ -107,10 +114,11 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
   // Jugadores disponibles para alineación (no están ya en lineup)
   const lineupPlayerIds = new Set(activeLineup.map((p: LineupPlayer) => p.player));
   const availablePlayers = activePlayers.filter((p: Player) => !lineupPlayerIds.has(p.id));
-  // Jugadores disponibles para sustitución (en banca y no sustituidos)
+  // Jugadores disponibles para sustitución (no son titulares actualmente)
   const availableForSubIn = activePlayers.filter((p: Player) => {
     const inLineup = activeLineup.find((lp: LineupPlayer) => lp.player === p.id);
-    return !inLineup || (!inLineup.is_starter && !inLineup.minute_out);
+    // Disponible si: no está en lineup, o está en lineup pero NO es titular actual
+    return !inLineup || !inLineup.is_starter;
   });
 
   // Sincronizar seleccionados con lineup existente
@@ -182,6 +190,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
       }
     );
   };
+  const isPlayerSentOff = (playerId: string): boolean => {
+    return playerCards?.[playerId]?.red === true;
+  };
+  
+  const getPlayerYellowCards = (playerId: string): number => {
+    return playerCards?.[playerId]?.yellow || 0;
+  };
 
   const handleSubstitute = () => {
     if (!isOwner || !isLive) return;
@@ -192,6 +207,17 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
     if (!playerOut || !playerIn) return;
     if (playerOut === playerIn) {
       setSaveError('No puedes sustituir un jugador por sí mismo');
+      return;
+    }
+    // ❌ VALIDAR: No permitir si el que sale ya tiene roja (no debería pasar, pero por seguridad)
+    if (isPlayerSentOff(playerOut)) {
+      setSaveError('Este jugador ya está expulsado');
+      return;
+    }
+    
+    // ❌ VALIDAR: No permitir si el que entra tiene roja
+    if (isPlayerSentOff(playerIn)) {
+      setSaveError('No puedes ingresar un jugador expulsado');
       return;
     }
 
@@ -292,11 +318,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
             {starters.map((player: LineupPlayer) => {
               const playerInfo = getPlayerById(player.player);
               const isSelectedForSubOut = selectedSubstituteOut[activeTeam] === player.player;
-
+              const yellowCount = playerCards?.[player.player]?.yellow || 0;
+              const hasRedCard = playerCards?.[player.player]?.red || false;
               return (
                 <div
                   key={player.id}
                   onClick={() => {
+                    if (hasRedCard) return;
                     if (isLive && isOwner) {
                       setSelectedSubstituteOut(prev => ({
                         ...prev,
@@ -308,26 +336,42 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
                   className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                     isSelectedForSubOut
                       ? 'border-red-300 bg-red-50'
+                      : hasRedCard
+                      ? 'border-red-200 bg-red-50 opacity-60'
                       : 'border-gray-200 hover:border-gray-300'
-                  } ${isLive && isOwner ? 'cursor-pointer' : 'cursor-default'}`}
+                  } ${isLive && isOwner && !hasRedCard ? 'cursor-pointer' : 'cursor-default'}`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center   justify-center text-green-700 font-bold text-sm relative">
                     {player.jersey_number || playerInfo?.jersey_number || '—'}
+                    {/* Indicador de tarjetas */}
+                    <div className="absolute -bottom-1 -right-1 flex gap-0.5">
+                      {yellowCount >= 1 && (
+                        <div className={`w-3 h-4 rounded-sm ${yellowCount >= 2 ? 'bg-red-600' : 'bg-yellow-400'} border border-white`} />
+                      )}
+                      {hasRedCard && (
+                        <div className="w-3 h-4 rounded-sm bg-red-600 border border-white" />
+                      )}
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">
+                    <p className={`font-medium ${hasRedCard ? 'text-red-700 line-through' : 'text-gray-900'}`}>
                       {player.player_name || playerInfo?.first_name || 'Jugador'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {player.position || playerInfo?.position || 'Jugador'}
+                      {hasRedCard && <span className="ml-1 text-red-600 font-bold">(EXPULSADO)</span>}
                     </p>
                   </div>
-                  {isLive && isOwner && (
+                  {/* Checkbox de sustitución (solo si no tiene roja) */}
+                  {isLive && isOwner && !hasRedCard && (
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       isSelectedForSubOut ? 'border-red-500 bg-red-500' : 'border-gray-300'
                     }`}>
                       {isSelectedForSubOut && <X className="w-3 h-3 text-white" />}
                     </div>
+                  )}
+                  {hasRedCard && (
+                    <Shield className="w-5 h-5 text-red-600" />
                   )}
                 </div>
               );
@@ -383,11 +427,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
                 className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
               >
                 <option value="">Seleccionar jugador</option>
-                {availableForSubIn.map((player: Player) => (
-                  <option key={player.id} value={player.id}>
-                    #{player.jersey_number || '—'} {player.first_name} {player.position ? `(${player.position})` : ''}
-                  </option>
-                ))}
+                {availableForSubIn
+                  .filter((player: Player) => !isPlayerSentOff(player.id)) // ← FILTRAR EXPULSADOS
+                  .map((player: Player) => (
+                    <option key={player.id} value={player.id}>
+                      #{player.jersey_number || '—'} {player.first_name} {player.position ? `(${player.position})` : ''}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -614,6 +660,8 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match }) => {
                 const inLineup = activeLineup.find((lp: LineupPlayer) => lp.player === player.id);
                 const isStarter = inLineup?.is_starter;
                 const wasSubstituted = inLineup?.minute_out;
+                const hasRedCard = playerCards?.[player.id]?.red || false;  // ← FALTA
+                const yellowCount = playerCards?.[player.id]?.yellow || 0;
 
                 return (
                   <div
