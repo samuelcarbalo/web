@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -230,3 +230,30 @@ export const getTeamPlayers = async (slug: string) => {
   return response.data;
 };
 
+export const getMatchPeriods = async (id: string) => {
+  const response = await api.get<MatchPeriod[]>(`/sports/matches/${id}/periods/`);
+  return response.data;
+};
+
+export const startPeriod = async (id: string, data: {
+  period_number: number;
+  name: string;
+}) => {
+  const response = await api.post<MatchPeriod>(`/sports/matches/${id}/start_period/`, data);
+  return response.data;
+};
+
+export const pausePeriod = async (id: string) => {
+  const response = await api.post<MatchPeriod>(`/sports/matches/${id}/pause_period/`);
+  return response.data;
+};
+
+export const resumePeriod = async (id: string) => {
+  const response = await api.post<MatchPeriod>(`/sports/matches/${id}/resume_period/`);
+  return response.data;
+};
+
+export const endPeriod = async (id: string) => {
+  const response = await api.post<MatchPeriod>(`/sports/matches/${id}/end_period/`);
+  return response.data;
+};

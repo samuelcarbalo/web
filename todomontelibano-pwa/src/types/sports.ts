@@ -248,3 +248,33 @@ export interface CreateMatchData {
 }
 
 
+export interface MatchPeriod {
+  id: string;
+  match: string;
+  period_number: number;
+  name: string;
+  started_at: string | null;
+  paused_at: string | null;
+  resumed_at: string | null;
+  ended_at: string | null;
+  elapsed_seconds: number;
+  elapsed_minutes: number;
+  is_active: boolean;
+  is_completed: boolean;
+}
+
+// Agregar al final del archivo
+export interface MatchPeriod {
+  id: string;
+  match: string;
+  period_number: number;
+  name: string;
+  started_at: string | null;
+  paused_at: string | null;
+  resumed_at: string | null;
+  ended_at: string | null;
+  elapsed_seconds: number;
+  elapsed_minutes: number;
+  is_active: boolean;
+  is_completed: boolean;
+}

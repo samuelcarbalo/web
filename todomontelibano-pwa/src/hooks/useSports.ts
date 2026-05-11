@@ -28,6 +28,11 @@ import {
   getMatchLineup,
   setMatchLineup,
   substituteMatchPlayer,
+  getMatchPeriods,
+  startPeriod,
+  pausePeriod,
+  resumePeriod,
+  endPeriod,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
 
@@ -351,3 +356,54 @@ export const useSubstitutePlayer = () => {
 };
 
 
+export const useMatchPeriods = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-periods', matchId],
+    queryFn: () => getMatchPeriods(matchId),
+    enabled: !!matchId,
+    refetchInterval: 5000, // Refrescar cada 5 segundos para sincronización
+  });
+};
+
+export const useStartPeriod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ matchId, data }: { matchId: string; data: { period_number: number; name: string } }) =>
+      startPeriod(matchId, data),
+    onSuccess: (_, { matchId }) => {
+      queryClient.invalidateQueries({ queryKey: ['match-periods', matchId] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, matchId] });
+    },
+  });
+};
+
+export const usePausePeriod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => pausePeriod(matchId),
+    onSuccess: (_, matchId) => {
+      queryClient.invalidateQueries({ queryKey: ['match-periods', matchId] });
+    },
+  });
+};
+
+export const useResumePeriod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => resumePeriod(matchId),
+    onSuccess: (_, matchId) => {
+      queryClient.invalidateQueries({ queryKey: ['match-periods', matchId] });
+    },
+  });
+};
+
+export const useEndPeriod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => endPeriod(matchId),
+    onSuccess: (_, matchId) => {
+      queryClient.invalidateQueries({ queryKey: ['match-periods', matchId] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, matchId] });
+    },
+  });
+};

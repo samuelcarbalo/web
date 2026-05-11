@@ -194,10 +194,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({ match, playerCa
     return playerCards?.[playerId]?.red === true;
   };
   
-  const getPlayerYellowCards = (playerId: string): number => {
-    return playerCards?.[playerId]?.yellow || 0;
-  };
-
+  
   const handleSubstitute = () => {
     if (!isOwner || !isLive) return;
 

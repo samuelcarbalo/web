@@ -29,6 +29,11 @@ import {
   useFinishMatch,
   useAddMatchEvent,
   usePlayers,
+  useMatchPeriods,
+  useStartPeriod,
+  usePausePeriod,
+  useResumePeriod,
+  useEndPeriod,
 } from '../../hooks/useSports';
 import type { MatchEvent } from '../../types/sports';
 import MatchLineupSection from './MatchLineupSection';
@@ -72,7 +77,6 @@ const MATCH_DURATION_MINUTES = 90;
 const HALF_TIME_MINUTES = 45;
 const EXTRA_TIME_MINUTES = 120;
 
-
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
@@ -82,6 +86,7 @@ const MatchDetailPage: React.FC = () => {
   const { data: tournament } = useTournament(match?.tournament_slug || '');
   const { data: homePlayersData } = usePlayers(match?.home_team || '');
   const { data: awayPlayersData } = usePlayers(match?.away_team || '');
+  const { data: periods } = useMatchPeriods(id || '');
   const sportType = tournament?.sport_type || 'football';
   
   const updateMutation = useUpdateMatch();
@@ -89,6 +94,10 @@ const MatchDetailPage: React.FC = () => {
   const startMutation = useStartMatch();
   const finishMutation = useFinishMatch();
   const addEventMutation = useAddMatchEvent();
+  const startPeriodMutation = useStartPeriod();
+  const pausePeriodMutation = usePausePeriod();
+  const resumePeriodMutation = useResumePeriod();
+  const endPeriodMutation = useEndPeriod();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
@@ -99,9 +108,10 @@ const MatchDetailPage: React.FC = () => {
   const [selectedPlayerName, setSelectedPlayerName] = useState('');
 
   // Estados del cronómetro
-  const [matchTimer, setMatchTimer] = useState(0); // minutos transcurridos
+  const [matchTimer, setMatchTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [playerCards, setPlayerCards] = useState<Record<string, { yellow: number; red: boolean }>>({});
+  
   // Sincronizar con eventos existentes del match
   useEffect(() => {
     if (!match?.events) return;
@@ -114,7 +124,6 @@ const MatchDetailPage: React.FC = () => {
           yellow: (cards[event.player]?.yellow || 0) + 1,
           red: cards[event.player]?.red || false,
         };
-        // Si es la segunda amarilla, se convierte en roja
         if (cards[event.player].yellow >= 2) {
           cards[event.player].red = true;
         }
@@ -126,6 +135,7 @@ const MatchDetailPage: React.FC = () => {
       
     setPlayerCards(cards);
   }, [match?.events]);
+
   const isPlayerSentOff = useCallback((playerId: string): boolean => {
     return playerCards[playerId]?.red === true;
   }, [playerCards]);
@@ -133,6 +143,7 @@ const MatchDetailPage: React.FC = () => {
   const getPlayerYellowCards = useCallback((playerId: string): number => {
     return playerCards[playerId]?.yellow || 0;
   }, [playerCards]);
+
   const [showTimerControls, setShowTimerControls] = useState(false);
 
   const [editData, setEditData] = useState({
@@ -163,11 +174,12 @@ const MatchDetailPage: React.FC = () => {
   const isLive = match?.status === 'live';
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
+  
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Inicializar cronómetro cuando el partido está en vivo
+
+  // Sincronizar timer con períodos del backend
   useEffect(() => {
-    // Si no está en vivo, limpiar todo
-    if (!isLive) {
+    if (!isLive || !periods) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -175,29 +187,36 @@ const MatchDetailPage: React.FC = () => {
       setIsTimerRunning(false);
       return;
     }
-  
-    // Si está en vivo pero NO tiene started_at, no hacer nada (esperar refetch)
-    if (!match?.started_at) {
+
+    const activePeriod = periods.find((p: any) => p.is_active);
+    
+    if (!activePeriod) {
+      // No hay período activo, mostrar último completado o 0
+      const lastCompleted = periods.filter((p: any) => p.is_completed).pop();
+      if (lastCompleted) {
+        setMatchTimer(lastCompleted.elapsed_minutes);
+      }
+      setIsTimerRunning(false);
       return;
     }
-  
-    // Calcular minutos transcurridos desde started_at
-    const startedDate = new Date(match.started_at);
-    const now = new Date();
-    const elapsedMs = now.getTime() - startedDate.getTime();
-    const elapsedMinutes = Math.floor(elapsedMs / 60000);
-    const clampedMinutes = Math.max(0, Math.min(EXTRA_TIME_MINUTES, elapsedMinutes));
-  
-    // Actualizar el timer (incluso si ya tenía un valor)
-    setMatchTimer(clampedMinutes);
-  
-    // Limpiar intervalo previo si existe
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+
+    // Período activo encontrado
+    const elapsedMinutes = activePeriod.elapsed_minutes || 0;
+    setMatchTimer(elapsedMinutes);
+
+    // Si está pausado, no iniciar intervalo
+    if (activePeriod.paused_at) {
+      setIsTimerRunning(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
     }
-  
-    // Iniciar nuevo intervalo
+
+    // Iniciar intervalo local
+    if (timerRef.current) clearInterval(timerRef.current);
+    
     const interval = setInterval(() => {
       setMatchTimer(prev => {
         const next = prev + 1;
@@ -209,21 +228,18 @@ const MatchDetailPage: React.FC = () => {
         return next;
       });
     }, 60000);
-  
+
     timerRef.current = interval;
     setIsTimerRunning(true);
-  
-    // Cleanup al desmontar o cuando cambie started_at/isLive
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [isLive, match?.started_at]); // ← Dependencias correctas
+  }, [isLive, periods]);
 
-  
-  // Funciones del cronómetro
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -255,7 +271,6 @@ const MatchDetailPage: React.FC = () => {
     startTimer();
   };
 
-  
   const resetTimer = () => {
     pauseTimer();
     setMatchTimer(0);
@@ -269,7 +284,6 @@ const MatchDetailPage: React.FC = () => {
     setMatchTimer(Math.max(0, Math.min(EXTRA_TIME_MINUTES, minute)));
   };
 
-  // Formatear tiempo del cronómetro
   const formatTimer = (minutes: number) => {
     if (minutes <= MATCH_DURATION_MINUTES) {
       return `${minutes}'`;
@@ -278,7 +292,6 @@ const MatchDetailPage: React.FC = () => {
     }
   };
 
-  // Obtener período del partido
   const getMatchPeriod = (minutes: number) => {
     if (minutes === 0) return 'Inicio';
     if (minutes < HALF_TIME_MINUTES) return '1er Tiempo';
@@ -287,7 +300,11 @@ const MatchDetailPage: React.FC = () => {
     return 'Tiempo Extra';
   };
 
-  // Inicializar datos de edición cuando se abre el modal
+  // Helpers para períodos
+  const activePeriod = periods?.find((p: any) => p.is_active);
+  const lastCompletedPeriod = periods?.filter((p: any) => p.is_completed).pop();
+  const isPaused = activePeriod?.paused_at !== null;
+
   const openEditModal = () => {
     if (!match) return;
     setEditData({
@@ -313,7 +330,6 @@ const MatchDetailPage: React.FC = () => {
   };
 
   const openEventModal = (teamId: string) => {
-    // Usar el minuto actual del cronómetro como valor por defecto
     const currentMinute = isLive ? matchTimer : 0;
     setEventData({
       event_type: 'goal',
@@ -342,13 +358,11 @@ const MatchDetailPage: React.FC = () => {
     if (confirm('¿Iniciar este partido?')) {
       startMutation.mutate(match.id, {
         onSuccess: (data) => {
-          // data.started_at viene del backend (timezone.now())
           if (data?.started_at) {
             const startedDate = new Date(data.started_at);
             const now = new Date();
             const elapsedMs = now.getTime() - startedDate.getTime();
             const elapsedMinutes = Math.floor(elapsedMs / 60000);
-            
             setMatchTimer(Math.max(0, Math.min(EXTRA_TIME_MINUTES, elapsedMinutes)));
             startTimer();
           }
@@ -357,9 +371,41 @@ const MatchDetailPage: React.FC = () => {
     }
   };
 
+  // Handlers de períodos
+  const handleStartFirstHalf = () => {
+    if (!match) return;
+    startPeriodMutation.mutate({
+      matchId: match.id,
+      data: { period_number: 1, name: '1er Tiempo' }
+    });
+  };
+
+  const handleStartSecondHalf = () => {
+    if (!match) return;
+    startPeriodMutation.mutate({
+      matchId: match.id,
+      data: { period_number: 2, name: '2do Tiempo' }
+    });
+  };
+
+  const handlePause = () => {
+    if (!match) return;
+    pausePeriodMutation.mutate(match.id);
+  };
+
+  const handleResume = () => {
+    if (!match) return;
+    resumePeriodMutation.mutate(match.id);
+  };
+
+  const handleEndHalf = () => {
+    if (!match) return;
+    endPeriodMutation.mutate(match.id);
+  };
+
   const handleFinishMatch = () => {
     if (!match) return;
-    pauseTimer(); // Detener cronómetro al finalizar
+    pauseTimer();
     finishMutation.mutate(
       { id: match.id, data: scoreData },
       { onSuccess: () => setShowFinishModal(false) }
@@ -519,96 +565,10 @@ const MatchDetailPage: React.FC = () => {
                       <Timer className="w-5 h-5" />
                       <span className="text-2xl tabular-nums">{formatTimer(matchTimer)}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{getMatchPeriod(matchTimer)}</p>
-                    
-                    {/* Controles del cronómetro (solo para el manager) */}
-                    {isOwner && (
-                      <div className="mt-2">
-                        <button
-                          onClick={() => setShowTimerControls(!showTimerControls)}
-                          className="text-xs text-gray-400 hover:text-gray-600 underline"
-                        >
-                          {showTimerControls ? 'Ocultar controles' : 'Ajustar tiempo'}
-                        </button>
-                        
-                        {showTimerControls && (
-                          <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <button
-                                onClick={() => adjustTimer(-1)}
-                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
-                                title="-1 min"
-                              >
-                                -1
-                              </button>
-                              <button
-                                onClick={() => adjustTimer(-5)}
-                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
-                                title="-5 min"
-                              >
-                                -5
-                              </button>
-                              
-                              {isTimerRunning ? (
-                                <button
-                                  onClick={pauseTimer}
-                                  className="w-10 h-10 rounded-full bg-yellow-500 hover:bg-yellow-600 flex items-center justify-center text-white"
-                                  title="Pausar"
-                                >
-                                  <Pause className="w-4 h-4" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={resumeTimer}
-                                  className="w-10 h-10 rounded-full bg-green-600 hover:bg-green-700 flex items-center justify-center text-white"
-                                  title="Reanudar"
-                                >
-                                  <Play className="w-4 h-4" />
-                                </button>
-                              )}
-                              
-                              <button
-                                onClick={() => adjustTimer(5)}
-                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
-                                title="+5 min"
-                              >
-                                +5
-                              </button>
-                              <button
-                                onClick={() => adjustTimer(1)}
-                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm"
-                                title="+1 min"
-                              >
-                                +1
-                              </button>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 justify-center">
-                              <input
-                                type="number"
-                                min={0}
-                                max={120}
-                                placeholder="Min"
-                                className="w-16 text-center text-sm border border-gray-300 rounded px-2 py-1"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    setTimerToMinute(parseInt((e.target as HTMLInputElement).value) || 0);
-                                    (e.target as HTMLInputElement).value = '';
-                                  }
-                                }}
-                              />
-                              <span className="text-xs text-gray-500">Enter para fijar</span>
-                              <button
-                                onClick={resetTimer}
-                                className="text-xs text-red-500 hover:text-red-700 underline ml-2"
-                              >
-                                Reiniciar
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activePeriod ? activePeriod.name : (lastCompletedPeriod ? `${lastCompletedPeriod.name} finalizado` : getMatchPeriod(matchTimer))}
+                      {isPaused && <span className="ml-1 text-yellow-600 font-bold">(PAUSADO)</span>}
+                    </p>
                   </div>
                 )}
               </div>
@@ -662,8 +622,121 @@ const MatchDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Acciones para partido en vivo */}
+        {/* CONTROLES DE PERÍODOS (solo para owner y partido en vivo) */}
         {isLive && isOwner && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-gray-900">
+                  {activePeriod ? activePeriod.name : 'Control del Partido'}
+                </h3>
+                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  Minuto: <span className="font-bold text-green-600">{matchTimer}'</span>
+                  {isPaused && <span className="ml-1 text-yellow-600 font-bold">(PAUSADO)</span>}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 flex-wrap">
+              {/* Iniciar 1T */}
+              {!activePeriod && !lastCompletedPeriod && (
+                <button
+                  onClick={handleStartFirstHalf}
+                  disabled={startPeriodMutation.isPending}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 1er Tiempo'}
+                </button>
+              )}
+              
+              {/* Pausar */}
+              {activePeriod && !isPaused && (
+                <button
+                  onClick={handlePause}
+                  disabled={pausePeriodMutation.isPending}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Pause className="w-4 h-4" />
+                  {pausePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Pausar'}
+                </button>
+              )}
+              
+              {/* Reanudar */}
+              {activePeriod && isPaused && (
+                <button
+                  onClick={handleResume}
+                  disabled={resumePeriodMutation.isPending}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  {resumePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reanudar'}
+                </button>
+              )}
+              
+              {/* Finalizar período */}
+              {activePeriod && (
+                <button
+                  onClick={handleEndHalf}
+                  disabled={endPeriodMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Square className="w-4 h-4" />
+                  {endPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : `Finalizar ${activePeriod.name}`}
+                </button>
+              )}
+              
+              {/* Iniciar 2T */}
+              {lastCompletedPeriod?.period_number === 1 && !activePeriod && (
+                <button
+                  onClick={handleStartSecondHalf}
+                  disabled={startPeriodMutation.isPending}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 2do Tiempo'}
+                </button>
+              )}
+              
+              {/* Finalizar partido */}
+              {lastCompletedPeriod?.period_number === 2 && !activePeriod && (
+                <button
+                  onClick={openFinishModal}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium flex items-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  Finalizar Partido
+                </button>
+              )}
+            </div>
+
+            {/* Timeline de períodos */}
+            {periods && periods.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex gap-2 overflow-x-auto">
+                  {periods.map((period: any) => (
+                    <div
+                      key={period.id}
+                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium ${
+                        period.is_active
+                          ? 'bg-green-100 text-green-700'
+                          : period.is_completed
+                          ? 'bg-gray-100 text-gray-600'
+                          : 'bg-blue-50 text-blue-600'
+                      }`}
+                    >
+                      {period.name}: {period.elapsed_minutes}'
+                      {period.paused_at && <span className="ml-1">⏸</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Acciones para partido en vivo (eventos) */}
+        {isLive && isOwner && activePeriod && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -672,13 +745,6 @@ const MatchDetailPage: React.FC = () => {
                   Minuto actual: <span className="font-bold text-green-600">{matchTimer}'</span>
                 </span>
               </div>
-              <button
-                onClick={openFinishModal}
-                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-              >
-                <Square className="w-4 h-4 mr-2" />
-                Finalizar partido
-              </button>
             </div>
             <div className="flex gap-3 mt-4">
               <button
@@ -713,73 +779,58 @@ const MatchDetailPage: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Eventos del partido</h3>
             <div className="space-y-4">
-            {/* Timeline de eventos */}
-            {match.events && match.events.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Eventos del partido</h3>
-                <div className="space-y-4">
-                  {match.events.map((event: MatchEvent) => {
-                    // Detectar si es la segunda amarilla del mismo jugador
-                    const playerYellowEvents = match.events.filter(
-                      (e: MatchEvent) => e.player === event.player && e.event_type === 'yellow_card'
-                    );
-                    const isSecondYellow = event.event_type === 'yellow_card' && 
-                      playerYellowEvents.length >= 2 && 
-                      playerYellowEvents[playerYellowEvents.length - 1].id === event.id;
-                    
-                    // Detectar si el jugador tiene roja directa
-                    const hasDirectRed = event.event_type === 'red_card';
-                    
-                    // Texto del evento
-                    const eventLabel = isSecondYellow 
-                      ? 'Doble Amarilla → Roja' 
-                      : (EVENT_LABELS[event.event_type] || event.event_type);
-                    
-                    // Icono del evento
-                    const eventIcon = isSecondYellow 
-                      ? <Shield className="w-4 h-4 text-red-600" />
-                      : (EVENT_ICONS[event.event_type] || EVENT_ICONS.other);
+              {match.events.map((event: MatchEvent) => {
+                const playerYellowEvents = match.events.filter(
+                  (e: MatchEvent) => e.player === event.player && e.event_type === 'yellow_card'
+                );
+                const isSecondYellow = event.event_type === 'yellow_card' && 
+                  playerYellowEvents.length >= 2 && 
+                  playerYellowEvents[playerYellowEvents.length - 1].id === event.id;
+                const hasDirectRed = event.event_type === 'red_card';
+                const eventLabel = isSecondYellow 
+                  ? 'Doble Amarilla → Roja' 
+                  : (EVENT_LABELS[event.event_type] || event.event_type);
+                const eventIcon = isSecondYellow 
+                  ? <Shield className="w-4 h-4 text-red-600" />
+                  : (EVENT_ICONS[event.event_type] || EVENT_ICONS.other);
 
-                    return (
-                      <div
-                        key={event.id}
-                        className={`flex items-start gap-4 ${
-                          event.team === match.home_team ? 'flex-row' : 'flex-row-reverse text-right'
-                        }`}
-                      >
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                          {eventIcon}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                              {event.minute}'
-                            </span>
-                            <span className={`text-sm font-medium ${
-                              isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900'
-                            }`}>
-                              {eventLabel}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-700">
-                            <span className={`font-semibold ${
-                              isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : ''
-                            }`}>
-                              {event.player_name}
-                            </span>
-                            {' - '}
-                            <span className="text-gray-500">{event.team_name}</span>
-                          </p>
-                          {event.description && (
-                            <p className="text-xs text-gray-500 mt-1">{event.description}</p>
-                          )}
-                        </div>
+                return (
+                  <div
+                    key={event.id}
+                    className={`flex items-start gap-4 ${
+                      event.team === match.home_team ? 'flex-row' : 'flex-row-reverse text-right'
+                    }`}
+                  >
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                      {eventIcon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                          {event.minute}'
+                        </span>
+                        <span className={`text-sm font-medium ${
+                          isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900'
+                        }`}>
+                          {eventLabel}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                      <p className="text-sm text-gray-700">
+                        <span className={`font-semibold ${
+                          isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : ''
+                        }`}>
+                          {event.player_name}
+                        </span>
+                        {' - '}
+                        <span className="text-gray-500">{event.team_name}</span>
+                      </p>
+                      {event.description && (
+                        <p className="text-xs text-gray-500 mt-1">{event.description}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
