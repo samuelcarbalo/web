@@ -232,6 +232,18 @@ export const useMatches = (params?: {
   });
 };
 
+export const useUpcomingMatches = (params?: {
+  status?: string;
+  from?: string;
+  to?: string;
+}) => {
+  return useQuery({
+    queryKey: [MATCHES_KEY, 'upcoming', params],
+    queryFn: () => getMatches(params),
+    enabled: true,  // siempre activo
+  });
+};
+
 export const useMatch = (id: string) => {
   return useQuery({
     queryKey: [MATCHES_KEY, id],

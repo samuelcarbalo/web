@@ -26,7 +26,8 @@ import TeamRosterPage from './pages/Sports/TeamRosterPage';
 import TeamDetailPage from './pages/Sports/TeamDetailPage';
 import PlayerProfilePage from './pages/Sports/PlayerProfilePage';
 import TournamentSchedulePage from './pages/Sports/TournamentSchedulePage';
-import MatchLivePage from './pages/Sports/MatchLivePage';
+import SportsPublicPage from './pages/Sports/SportsPublicPage';
+import TournamentPublicPage from './pages/Sports/TournamentPublicPage';
 import MatchDetailPage from './pages/Sports/MatchDetailPage';
 
 // Hooks & Store
@@ -112,7 +113,6 @@ const App: React.FC = () => {
                 <Route path="/sports/tournaments/:tournamentSlug/teams/:teamSlug/roster" element={<TeamRosterPage />} />
                 <Route path="/sports/players/:playerId" element={<PlayerProfilePage />} />
                 <Route path="/sports/tournaments/:slug/schedule" element={<TournamentSchedulePage />} />
-                <Route path="/sports/matches/:matchId/live" element={<MatchLivePage />} />
                 <Route path="/sports/matches/:id" element={<MatchDetailPage />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
