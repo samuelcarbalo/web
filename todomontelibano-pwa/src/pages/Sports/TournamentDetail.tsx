@@ -7,7 +7,9 @@ import {
   Share2,
   Edit,
   Trash2,
-  Plus
+  Plus,
+  Trophy,
+  BarChart3,
 } from 'lucide-react';
 
 import { 
@@ -318,6 +320,32 @@ const TournamentDetail: React.FC = () => {
               </div>
 
               {/* Gestión */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="font-bold text-gray-900 mb-4">Estadísticas</h3>
+                <div className="space-y-2">
+                  <Link
+                    to={`/sports/tournaments/${tournament.slug}/standings`}
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                    Tabla de posiciones
+                  </Link>
+                  <Link
+                    to={`/sports/tournaments/${tournament.slug}/player-stats`}
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2 text-green-600" />
+                    Estadísticas de jugadores
+                  </Link>
+                  <Link
+                    to={`/sports/tournaments/${tournament.slug}/schedule`}
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Ver calendario
+                  </Link>
+                </div>
+              </div>
               {isOwner && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="font-bold text-gray-900 mb-4">Gestión</h3>

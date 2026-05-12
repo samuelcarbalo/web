@@ -33,6 +33,9 @@ import {
   pausePeriod,
   resumePeriod,
   endPeriod,
+  getTournamentStandings,
+  getPlayerStats,
+  getTournamentPlayerStats,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
 
@@ -368,15 +371,14 @@ export const useSubstitutePlayer = () => {
 };
 
 
-export const useMatchPeriods = (matchId: string) => {
+export const useMatchPeriods = (matchId: string, isLive: boolean = false) => {
   return useQuery({
     queryKey: ['match-periods', matchId],
     queryFn: () => getMatchPeriods(matchId),
     enabled: !!matchId,
-    refetchInterval: 5000, // Refrescar cada 5 segundos para sincronización
+    refetchInterval: isLive ? 5000 : false,  // ✅ Solo polling si está vivo
   });
 };
-
 export const useStartPeriod = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -417,5 +419,36 @@ export const useEndPeriod = () => {
       queryClient.invalidateQueries({ queryKey: ['match-periods', matchId] });
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, matchId] });
     },
+  });
+};
+
+
+// ============ ESTADÍSTICAS DE JUGADOR ============
+
+export const usePlayerStats = (playerId: string) => {
+  return useQuery({
+    queryKey: [PLAYERS_KEY, 'stats', playerId],
+    queryFn: () => getPlayerStats(playerId),
+    enabled: !!playerId,
+  });
+};
+
+// ============ TABLA DE POSICIONES ============
+
+export const useTournamentStandings = (slug: string) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'standings', slug],
+    queryFn: () => getTournamentStandings(slug),
+    enabled: !!slug,
+  });
+};
+
+// ============ ESTADÍSTICAS DE JUGADORES POR TORNEO ============
+
+export const useTournamentPlayerStats = (slug: string) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'player-stats', slug],
+    queryFn: () => getTournamentPlayerStats(slug),
+    enabled: !!slug,
   });
 };

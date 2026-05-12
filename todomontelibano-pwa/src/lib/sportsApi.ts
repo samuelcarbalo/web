@@ -257,3 +257,24 @@ export const endPeriod = async (id: string) => {
   const response = await api.post<MatchPeriod>(`/sports/matches/${id}/end_period/`);
   return response.data;
 };
+
+// ============ ESTADÍSTICAS DE JUGADOR ============
+
+export const getPlayerStats = async (id: string) => {
+  const response = await api.get(`/sports/players/${id}/stats/`);
+  return response.data;
+};
+
+// ============ TABLA DE POSICIONES ============
+
+export const getTournamentStandings = async (slug: string) => {
+  const response = await api.get(`/sports/tournaments/${slug}/standings/`);
+  return response.data;
+};
+
+// ============ ESTADÍSTICAS DE JUGADORES POR TORNEO ============
+
+export const getTournamentPlayerStats = async (slug: string) => {
+  const response = await api.get(`/sports/tournaments/${slug}/player_stats/`);
+  return response.data;
+};

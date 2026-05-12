@@ -86,7 +86,8 @@ const MatchDetailPage: React.FC = () => {
   const { data: tournament } = useTournament(match?.tournament_slug || '');
   const { data: homePlayersData } = usePlayers(match?.home_team || '');
   const { data: awayPlayersData } = usePlayers(match?.away_team || '');
-  const { data: periods } = useMatchPeriods(id || '');
+  const isLive = match?.status === 'live';
+  const { data: periods } = useMatchPeriods(id || '', isLive);
   const sportType = tournament?.sport_type || 'football';
   
   const updateMutation = useUpdateMatch();
@@ -171,7 +172,6 @@ const MatchDetailPage: React.FC = () => {
   });
   
   const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
-  const isLive = match?.status === 'live';
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
   

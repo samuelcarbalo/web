@@ -26,10 +26,10 @@ import TeamRosterPage from './pages/Sports/TeamRosterPage';
 import TeamDetailPage from './pages/Sports/TeamDetailPage';
 import PlayerProfilePage from './pages/Sports/PlayerProfilePage';
 import TournamentSchedulePage from './pages/Sports/TournamentSchedulePage';
-import SportsPublicPage from './pages/Sports/SportsPublicPage';
-import TournamentPublicPage from './pages/Sports/TournamentPublicPage';
 import MatchDetailPage from './pages/Sports/MatchDetailPage';
-
+import TournamentStandingsPage from './pages/Sports/TournamentStandingsPage';
+import PlayerStatsPage from './pages/Sports/PlayerStatsPage';
+import TournamentPlayerStatsPage from './pages/Sports/TournamentPlayerStatsPage';
 // Hooks & Store
 // import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
@@ -114,6 +114,9 @@ const App: React.FC = () => {
                 <Route path="/sports/players/:playerId" element={<PlayerProfilePage />} />
                 <Route path="/sports/tournaments/:slug/schedule" element={<TournamentSchedulePage />} />
                 <Route path="/sports/matches/:id" element={<MatchDetailPage />} />
+                <Route path="/sports/tournaments/:slug/standings" element={<TournamentStandingsPage />} />
+                <Route path="/sports/players/:id/stats" element={<PlayerStatsPage />} />
+                <Route path="/sports/tournaments/:slug/player-stats" element={<TournamentPlayerStatsPage />} />
                 {/* Servicios futuros */}
                 <Route path="events" element={<div className="p-20 text-center text-2xl">Eventos - Próximamente 🎉</div>} />
                 <Route path="real-estate" element={<div className="p-20 text-center text-2xl">Bienes Raíces - Próximamente 🏠</div>} />
