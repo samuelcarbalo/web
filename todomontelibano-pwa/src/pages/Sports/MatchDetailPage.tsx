@@ -18,6 +18,14 @@ import {
   Shield,
   Timer,
   Pause,
+  ChevronRight,
+  Zap,
+  Users,
+  Target,
+  Swords,
+  History,
+  Ban,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -40,42 +48,119 @@ import MatchLineupSection from './MatchLineupSection';
 
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   goal: <Trophy className="w-4 h-4 text-yellow-500" />,
+  own_goal: <Target className="w-4 h-4 text-red-400" />,
   yellow_card: <Shield className="w-4 h-4 text-yellow-500" />,
   red_card: <Shield className="w-4 h-4 text-red-600" />,
-  substitution: <UserPlus className="w-4 h-4 text-blue-500" />,
-  injury: <AlertTriangle className="w-4 h-4 text-orange-500" />,
+  substitution_in: <UserPlus className="w-4 h-4 text-green-500" />,
+  substitution_out: <ArrowUpRight className="w-4 h-4 text-blue-500" />,
+  penalty_goal: <Target className="w-4 h-4 text-green-500" />,
+  penalty_missed: <Ban className="w-4 h-4 text-red-400" />,
+  assist: <Zap className="w-4 h-4 text-yellow-400" />,
+  expelled: <Ban className="w-4 h-4 text-red-600" />,
   other: <Activity className="w-4 h-4 text-gray-500" />,
 };
 
 const EVENT_LABELS: Record<string, string> = {
   goal: 'Gol',
+  own_goal: 'Autogol',
   yellow_card: 'Tarjeta Amarilla',
   red_card: 'Tarjeta Roja',
-  substitution: 'Sustitución',
-  injury: 'Lesión',
+  substitution_in: 'Entra',
+  substitution_out: 'Sale',
+  penalty_goal: 'Gol de Penal',
+  penalty_missed: 'Penal Fallado',
+  assist: 'Asistencia',
+  expelled: 'Expulsado',
   other: 'Otro',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
-  live: 'bg-red-100 text-red-700 animate-pulse',
-  finished: 'bg-gray-100 text-gray-600',
-  postponed: 'bg-yellow-100 text-yellow-700',
-  cancelled: 'bg-red-50 text-red-500 line-through',
+const EVENT_COLORS: Record<string, string> = {
+  goal: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  own_goal: 'bg-red-50 border-red-200 text-red-800',
+  yellow_card: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  red_card: 'bg-red-50 border-red-200 text-red-800',
+  substitution_in: 'bg-green-50 border-green-200 text-green-800',
+  substitution_out: 'bg-blue-50 border-blue-200 text-blue-800',
+  penalty_goal: 'bg-green-50 border-green-200 text-green-800',
+  penalty_missed: 'bg-red-50 border-red-200 text-red-800',
+  assist: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  expelled: 'bg-red-50 border-red-200 text-red-800',
+  other: 'bg-gray-50 border-gray-200 text-gray-800',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  scheduled: 'Programado',
-  live: 'En vivo',
-  finished: 'Finalizado',
-  postponed: 'Aplazado',
-  cancelled: 'Cancelado',
+const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
+  scheduled: { 
+    bg: 'bg-blue-50', 
+    text: 'text-blue-700', 
+    label: 'Programado',
+    icon: <Calendar className="w-3.5 h-3.5" />
+  },
+  live: { 
+    bg: 'bg-red-50', 
+    text: 'text-red-700', 
+    label: 'En vivo',
+    icon: <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+  },
+  finished: { 
+    bg: 'bg-gray-100', 
+    text: 'text-gray-600', 
+    label: 'Finalizado',
+    icon: <Trophy className="w-3.5 h-3.5" />
+  },
+  postponed: { 
+    bg: 'bg-yellow-50', 
+    text: 'text-yellow-700', 
+    label: 'Aplazado',
+    icon: <Clock className="w-3.5 h-3.5" />
+  },
+  cancelled: { 
+    bg: 'bg-red-50', 
+    text: 'text-red-500 line-through', 
+    label: 'Cancelado',
+    icon: <Ban className="w-3.5 h-3.5" />
+  },
 };
 
 // Constantes del cronómetro
 const MATCH_DURATION_MINUTES = 90;
 const HALF_TIME_MINUTES = 45;
 const EXTRA_TIME_MINUTES = 120;
+
+// ─── Skeleton Components ──────────────────────────────────────────────────────
+const MatchHeaderSkeleton: React.FC = () => (
+  <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden animate-pulse">
+    <div className="h-12 bg-gray-100" />
+    <div className="p-8">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1 flex flex-col items-center gap-3">
+          <div className="w-20 h-20 bg-gray-200 rounded-full" />
+          <div className="h-5 bg-gray-200 rounded w-32" />
+        </div>
+        <div className="h-12 bg-gray-200 rounded w-24" />
+        <div className="flex-1 flex flex-col items-center gap-3">
+          <div className="w-20 h-20 bg-gray-200 rounded-full" />
+          <div className="h-5 bg-gray-200 rounded w-32" />
+        </div>
+      </div>
+    </div>
+    <div className="h-16 bg-gray-100" />
+  </div>
+);
+
+const TimelineSkeleton: React.FC = () => (
+  <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 animate-pulse space-y-4">
+    <div className="h-6 bg-gray-200 rounded w-48" />
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="flex items-start gap-4">
+        <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-32" />
+          <div className="h-3 bg-gray-200 rounded w-48" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -89,7 +174,7 @@ const MatchDetailPage: React.FC = () => {
   const isLive = match?.status === 'live';
   const { data: periods } = useMatchPeriods(id || '', isLive);
   const sportType = tournament?.sport_type || 'football';
-  
+
   const updateMutation = useUpdateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();
@@ -112,13 +197,13 @@ const MatchDetailPage: React.FC = () => {
   const [matchTimer, setMatchTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [playerCards, setPlayerCards] = useState<Record<string, { yellow: number; red: boolean }>>({});
-  
+
   // Sincronizar con eventos existentes del match
   useEffect(() => {
     if (!match?.events) return;
-    
+
     const cards: Record<string, { yellow: number; red: boolean }> = {};
-    
+
     match.events.forEach((event: MatchEvent) => {
       if (event.event_type === 'yellow_card') {
         cards[event.player] = {
@@ -133,14 +218,14 @@ const MatchDetailPage: React.FC = () => {
         cards[event.player] = { yellow: 0, red: true };
       }
     });
-      
+
     setPlayerCards(cards);
   }, [match?.events]);
 
   const isPlayerSentOff = useCallback((playerId: string): boolean => {
     return playerCards[playerId]?.red === true;
   }, [playerCards]);
-  
+
   const getPlayerYellowCards = useCallback((playerId: string): number => {
     return playerCards[playerId]?.yellow || 0;
   }, [playerCards]);
@@ -170,11 +255,11 @@ const MatchDetailPage: React.FC = () => {
     team: '',
     description: '',
   });
-  
+
   const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
-  
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Sincronizar timer con períodos del backend
@@ -189,9 +274,8 @@ const MatchDetailPage: React.FC = () => {
     }
 
     const activePeriod = periods.find((p: any) => p.is_active);
-    
+
     if (!activePeriod) {
-      // No hay período activo, mostrar último completado o 0
       const lastCompleted = periods.filter((p: any) => p.is_completed).pop();
       if (lastCompleted) {
         setMatchTimer(lastCompleted.elapsed_minutes);
@@ -200,11 +284,9 @@ const MatchDetailPage: React.FC = () => {
       return;
     }
 
-    // Período activo encontrado
     const elapsedMinutes = activePeriod.elapsed_minutes || 0;
     setMatchTimer(elapsedMinutes);
 
-    // Si está pausado, no iniciar intervalo
     if (activePeriod.paused_at) {
       setIsTimerRunning(false);
       if (timerRef.current) {
@@ -214,9 +296,8 @@ const MatchDetailPage: React.FC = () => {
       return;
     }
 
-    // Iniciar intervalo local
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     const interval = setInterval(() => {
       setMatchTimer(prev => {
         const next = prev + 1;
@@ -242,7 +323,7 @@ const MatchDetailPage: React.FC = () => {
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     const interval = setInterval(() => {
       setMatchTimer(prev => {
         const next = prev + 1;
@@ -254,11 +335,11 @@ const MatchDetailPage: React.FC = () => {
         return next;
       });
     }, 60000);
-    
+
     timerRef.current = interval;
     setIsTimerRunning(true);
   };
-  
+
   const pauseTimer = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -266,7 +347,7 @@ const MatchDetailPage: React.FC = () => {
     }
     setIsTimerRunning(false);
   };
-  
+
   const resumeTimer = () => {
     startTimer();
   };
@@ -438,23 +519,37 @@ const MatchDetailPage: React.FC = () => {
         year: 'numeric',
       }),
       time: date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      short: date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }),
     };
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+      <div className="min-h-screen bg-gray-50/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <MatchHeaderSkeleton />
+          <div className="mt-6">
+            <TimelineSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!match) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 text-lg">Partido no encontrado</p>
-          <Link to="/sports/tournaments" className="text-green-600 hover:underline mt-2 inline-block">
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Swords className="w-10 h-10 text-gray-300" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Partido no encontrado</h2>
+          <p className="text-gray-500 mb-6">El partido que buscas no existe o ha sido eliminado.</p>
+          <Link 
+            to="/sports/tournaments" 
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
             Volver a torneos
           </Link>
         </div>
@@ -463,46 +558,54 @@ const MatchDetailPage: React.FC = () => {
   }
 
   const dateInfo = formatDate(match.match_date);
+  const statusConfig = STATUS_CONFIG[match.status] || STATUS_CONFIG.scheduled;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Header sticky */}
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                to={`/sports/tournaments/${match.tournament_slug}`}
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5 mr-1" />
-                Volver al torneo
-              </Link>
-            </div>
+            <Link
+              to={`/sports/tournaments/${match.tournament_slug}`}
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+            >
+              <div className="p-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                <ChevronLeft className="w-4 h-4" />
+              </div>
+              <span className="hidden sm:inline">{match.tournament_name}</span>
+            </Link>
+
+            {/* Status pill en header */}
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${statusConfig.bg} ${statusConfig.text}`}>
+              {statusConfig.icon}
+              {statusConfig.label}
+            </span>
+
             {isOwner && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {isScheduled && (
                   <button
                     onClick={handleStartMatch}
-                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-semibold"
                   >
-                    <Play className="w-4 h-4 mr-2" />
-                    Iniciar partido
+                    <Play className="w-3.5 h-3.5" />
+                    Iniciar
                   </button>
                 )}
                 <button
                   onClick={openEditModal}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   title="Editar"
                 >
-                  <Edit3 className="w-5 h-5" />
+                  <Edit3 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Eliminar"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -510,199 +613,230 @@ const MatchDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tarjeta principal del partido */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-          {/* Info del torneo y estado */}
-          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
-            <span className="text-sm text-gray-600 font-medium">{match.tournament_name}</span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[match.status]}`}>
-              {STATUS_LABELS[match.status]}
-            </span>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        {/* Tarjeta principal del partido - REDISEÑADA */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          {/* Info del torneo */}
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white/80">
+              <Trophy className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium">{match.tournament_name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/60 text-xs">Jornada {match.match_week}</span>
+              <span className="text-white/30">·</span>
+              <span className="text-white/60 text-xs">Ronda {match.round_number}</span>
+            </div>
           </div>
 
-          {/* Marcador y equipos */}
-          <div className="p-8">
-            <div className="flex items-center justify-between gap-4">
+          {/* Marcador y equipos - Layout mejorado */}
+          <div className="p-6 md:p-10">
+            <div className="flex items-center justify-between gap-4 md:gap-8">
               {/* Equipo local */}
-              <div className="flex-1 text-center">
-                <div className="flex flex-col items-center">
+              <div className="flex-1 flex flex-col items-center text-center">
+                <Link 
+                  to={`/sports/tournaments/${match.tournament_slug}/teams/${match.home_team_detail?.slug}`}
+                  className="group flex flex-col items-center"
+                >
                   {match.home_team_detail?.logo ? (
                     <img
-                      src={match.home_team_detail?.logo}
-                      alt={match.home_team_detail?.name}
-                      className="w-20 h-20 rounded-full object-cover mb-3"
+                      src={match.home_team_detail.logo}
+                      alt={match.home_team_detail.name}
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-md mb-3 group-hover:scale-105 transition-transform duration-300 bg-white"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
                       {match.home_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-lg font-bold text-gray-900">{match.home_team_detail?.name}</h2>
-                </div>
+                  <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                    {match.home_team_detail?.name}
+                  </h2>
+                </Link>
               </div>
 
-              {/* Marcador central */}
-              <div className="text-center px-8">
+              {/* Marcador central - MÁS IMPACTANTE */}
+              <div className="flex-shrink-0 text-center px-4 md:px-8">
                 {isLive || isFinished ? (
-                  <div className="flex items-center gap-4">
-                    <div className="text-5xl font-bold text-gray-900 tabular-nums">
-                      {match.home_score ?? 0}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 md:gap-5">
+                      <span className={`text-5xl md:text-7xl font-black tabular-nums tracking-tight ${
+                        (match.home_score ?? 0) > (match.away_score ?? 0) ? 'text-gray-900' : 'text-gray-400'
+                      }`}>
+                        {match.home_score ?? 0}
+                      </span>
+                      <span className="text-3xl md:text-5xl font-light text-gray-300">—</span>
+                      <span className={`text-5xl md:text-7xl font-black tabular-nums tracking-tight ${
+                        (match.away_score ?? 0) > (match.home_score ?? 0) ? 'text-gray-900' : 'text-gray-400'
+                      }`}>
+                        {match.away_score ?? 0}
+                      </span>
                     </div>
-                    <span className="text-3xl font-bold text-gray-400">-</span>
-                    <div className="text-5xl font-bold text-gray-900 tabular-nums">
-                      {match.away_score ?? 0}
-                    </div>
+
+                    {/* Marcador de carreras para softbol */}
+                    {sportType === 'softball' && (match.home_runs != null || match.away_runs != null) && (
+                      <div className="flex items-center justify-center gap-4 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-1.5">
+                        <span>C: {match.home_runs ?? 0}</span>
+                        <span className="text-gray-300">|</span>
+                        <span>C: {match.away_runs ?? 0}</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="text-3xl font-bold text-gray-400">VS</div>
+                  <div className="space-y-1">
+                    <span className="text-4xl md:text-5xl font-black text-gray-200 tracking-wider">VS</span>
+                    <p className="text-xs text-gray-400 font-medium">{dateInfo.time}</p>
+                  </div>
                 )}
-                
+
                 {/* Cronómetro del partido */}
                 {isLive && (
                   <div className="mt-3">
-                    <div className="flex items-center justify-center gap-2 text-red-600 font-bold animate-pulse">
-                      <Timer className="w-5 h-5" />
+                    <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl font-bold">
+                      <Timer className="w-5 h-5 animate-pulse" />
                       <span className="text-2xl tabular-nums">{formatTimer(matchTimer)}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 mt-1.5 font-medium">
                       {activePeriod ? activePeriod.name : (lastCompletedPeriod ? `${lastCompletedPeriod.name} finalizado` : getMatchPeriod(matchTimer))}
-                      {isPaused && <span className="ml-1 text-yellow-600 font-bold">(PAUSADO)</span>}
+                      {isPaused && <span className="ml-1.5 text-amber-600 font-bold">(PAUSADO)</span>}
                     </p>
                   </div>
                 )}
               </div>
 
               {/* Equipo visitante */}
-              <div className="flex-1 text-center">
-                <div className="flex flex-col items-center">
+              <div className="flex-1 flex flex-col items-center text-center">
+                <Link 
+                  to={`/sports/tournaments/${match.tournament_slug}/teams/${match.away_team_detail?.slug}`}
+                  className="group flex flex-col items-center"
+                >
                   {match.away_team_detail?.logo ? (
                     <img
-                      src={match.away_team_detail?.logo}
-                      alt={match.away_team_detail?.name}
-                      className="w-20 h-20 rounded-full object-cover mb-3"
+                      src={match.away_team_detail.logo}
+                      alt={match.away_team_detail.name}
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-md mb-3 group-hover:scale-105 transition-transform duration-300 bg-white"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
                       {match.away_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-lg font-bold text-gray-900">{match.away_team_detail?.name}</h2>
-                </div>
+                  <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                    {match.away_team_detail?.name}
+                  </h2>
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Info adicional */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
-              <span className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {dateInfo.full}
-              </span>
-              <span className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                {dateInfo.time}
-              </span>
+          {/* Info adicional - Rediseñada como pills */}
+          <div className="bg-gray-50/80 border-t border-gray-100 px-6 py-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs md:text-sm text-gray-600">
+              <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <span className="font-medium">{dateInfo.full}</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                <span className="font-medium">{dateInfo.time}</span>
+              </div>
               {match.venue && (
-                <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {match.venue}
-                  {match.stadium && ` - ${match.stadium}`}
-                </span>
+                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="font-medium">{match.venue}{match.stadium && ` — ${match.stadium}`}</span>
+                </div>
               )}
-              <span className="flex items-center gap-2">
-                <Flag className="w-4 h-4" />
-                Jornada {match.match_week} • Ronda {match.match_week}
-              </span>
+              {match.notes && (
+                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/60">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="font-medium text-amber-700">{match.notes}</span>
+                </div>
+              )}
             </div>
-            {match.notes && (
-              <p className="text-center text-gray-500 text-sm mt-2">{match.notes}</p>
-            )}
           </div>
         </div>
 
-        {/* CONTROLES DE PERÍODOS (solo para owner y partido en vivo) */}
+        {/* CONTROLES DE PERÍODOS - Rediseñados */}
         {isLive && isOwner && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h3 className="font-bold text-gray-900">
-                  {activePeriod ? activePeriod.name : 'Control del Partido'}
-                </h3>
-                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  Minuto: <span className="font-bold text-green-600">{matchTimer}'</span>
-                  {isPaused && <span className="ml-1 text-yellow-600 font-bold">(PAUSADO)</span>}
-                </span>
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Activity className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm">
+                    {activePeriod ? activePeriod.name : 'Control del Partido'}
+                  </h3>
+                  <span className="text-xs text-gray-500">
+                    Minuto <span className="font-bold text-green-600">{matchTimer}'</span>
+                    {isPaused && <span className="ml-1.5 text-amber-600 font-bold">(PAUSADO)</span>}
+                  </span>
+                </div>
               </div>
             </div>
-            
-            <div className="flex gap-2 flex-wrap">
-              {/* Iniciar 1T */}
+
+            <div className="p-4 flex gap-2 flex-wrap">
               {!activePeriod && !lastCompletedPeriod && (
                 <button
                   onClick={handleStartFirstHalf}
                   disabled={startPeriodMutation.isPending}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
                 >
                   <Play className="w-4 h-4" />
                   {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 1er Tiempo'}
                 </button>
               )}
-              
-              {/* Pausar */}
+
               {activePeriod && !isPaused && (
                 <button
                   onClick={handlePause}
                   disabled={pausePeriodMutation.isPending}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-amber-200 transition-all hover:shadow-md"
                 >
                   <Pause className="w-4 h-4" />
                   {pausePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Pausar'}
                 </button>
               )}
-              
-              {/* Reanudar */}
+
               {activePeriod && isPaused && (
                 <button
                   onClick={handleResume}
                   disabled={resumePeriodMutation.isPending}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
                 >
                   <Play className="w-4 h-4" />
                   {resumePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reanudar'}
                 </button>
               )}
-              
-              {/* Finalizar período */}
+
               {activePeriod && (
                 <button
                   onClick={handleEndHalf}
                   disabled={endPeriodMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-blue-200 transition-all hover:shadow-md"
                 >
                   <Square className="w-4 h-4" />
                   {endPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : `Finalizar ${activePeriod.name}`}
                 </button>
               )}
-              
-              {/* Iniciar 2T */}
+
               {lastCompletedPeriod?.period_number === 1 && !activePeriod && (
                 <button
                   onClick={handleStartSecondHalf}
                   disabled={startPeriodMutation.isPending}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
                 >
                   <Play className="w-4 h-4" />
                   {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 2do Tiempo'}
                 </button>
               )}
-              
-              {/* Finalizar partido */}
+
               {lastCompletedPeriod?.period_number === 2 && !activePeriod && (
                 <button
                   onClick={openFinishModal}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-red-200 transition-all hover:shadow-md"
                 >
                   <Trophy className="w-4 h-4" />
                   Finalizar Partido
@@ -712,21 +846,22 @@ const MatchDetailPage: React.FC = () => {
 
             {/* Timeline de períodos */}
             {periods && periods.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex gap-2 overflow-x-auto">
+              <div className="px-4 pb-4">
+                <div className="flex gap-2 overflow-x-auto pb-1">
                   {periods.map((period: any) => (
                     <div
                       key={period.id}
-                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium ${
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border ${
                         period.is_active
-                          ? 'bg-green-100 text-green-700'
+                          ? 'bg-green-50 border-green-200 text-green-700'
                           : period.is_completed
-                          ? 'bg-gray-100 text-gray-600'
-                          : 'bg-blue-50 text-blue-600'
+                          ? 'bg-gray-50 border-gray-200 text-gray-600'
+                          : 'bg-blue-50 border-blue-200 text-blue-600'
                       }`}
                     >
+                      <Clock className="w-3 h-3" />
                       {period.name}: {period.elapsed_minutes}'
-                      {period.paused_at && <span className="ml-1">⏸</span>}
+                      {period.paused_at && <Pause className="w-3 h-3 ml-1" />}
                     </div>
                   ))}
                 </div>
@@ -735,35 +870,53 @@ const MatchDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Acciones para partido en vivo (eventos) */}
+        {/* Acciones para partido en vivo */}
         {isLive && isOwner && activePeriod && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h3 className="font-bold text-gray-900">Acciones del partido</h3>
-                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  Minuto actual: <span className="font-bold text-green-600">{matchTimer}'</span>
-                </span>
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Zap className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm">Registrar evento</h3>
+                  <span className="text-xs text-gray-500">Minuto actual: <span className="font-bold text-green-600">{matchTimer}'</span></span>
+                </div>
               </div>
             </div>
-            <div className="flex gap-3 mt-4">
+            <div className="p-4 grid grid-cols-2 gap-3">
               <button
                 onClick={() => openEventModal(match.home_team)}
-                className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-xl transition-all border border-gray-200 hover:border-blue-200 text-sm font-semibold"
               >
-                + Evento {match.home_team_detail?.name}
+                <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                  {match.home_team_detail?.logo ? (
+                    <img src={match.home_team_detail.logo} alt="" className="w-6 h-6 rounded object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{match.home_team_detail?.name?.slice(0, 2)}</span>
+                  )}
+                </div>
+                <span className="truncate">{match.home_team_detail?.name}</span>
               </button>
               <button
                 onClick={() => openEventModal(match.away_team)}
-                className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-xl transition-all border border-gray-200 hover:border-blue-200 text-sm font-semibold"
               >
-                + Evento {match.away_team_detail?.name}
+                <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                  {match.away_team_detail?.logo ? (
+                    <img src={match.away_team_detail.logo} alt="" className="w-6 h-6 rounded object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{match.away_team_detail?.name?.slice(0, 2)}</span>
+                  )}
+                </div>
+                <span className="truncate">{match.away_team_detail?.name}</span>
               </button>
             </div>
           </div>
         )}
-        
-        {sportType && 
+
+        {/* Alineaciones */}
+        {sportType && (
           <MatchLineupSection 
             match={{ ...match, sport_type: sportType }} 
             playerCards={playerCards}
@@ -772,13 +925,22 @@ const MatchDetailPage: React.FC = () => {
             isLive={isLive}
             matchTimer={matchTimer}
           />
-        }
-        
-        {/* Timeline de eventos */}
+        )}
+
+        {/* Timeline de eventos - REDISEÑADO */}
         {match.events && match.events.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Eventos del partido</h3>
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <History className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Cronología del partido</h3>
+              <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                {match.events.length} eventos
+              </span>
+            </div>
+
+            <div className="divide-y divide-gray-100">
               {match.events.map((event: MatchEvent) => {
                 const playerYellowEvents = match.events.filter(
                   (e: MatchEvent) => e.player === event.player && e.event_type === 'yellow_card'
@@ -793,39 +955,48 @@ const MatchDetailPage: React.FC = () => {
                 const eventIcon = isSecondYellow 
                   ? <Shield className="w-4 h-4 text-red-600" />
                   : (EVENT_ICONS[event.event_type] || EVENT_ICONS.other);
+                const isHomeEvent = event.team === match.home_team;
 
                 return (
                   <div
                     key={event.id}
-                    className={`flex items-start gap-4 ${
-                      event.team === match.home_team ? 'flex-row' : 'flex-row-reverse text-right'
+                    className={`flex items-start gap-4 p-4 md:px-6 hover:bg-gray-50/50 transition-colors ${
+                      isHomeEvent ? '' : 'flex-row-reverse'
                     }`}
                   >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    {/* Icono con color */}
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border ${
+                      EVENT_COLORS[event.event_type] || EVENT_COLORS.other
+                    }`}>
                       {eventIcon}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+
+                    <div className={`flex-1 min-w-0 ${isHomeEvent ? '' : 'text-right'}`}>
+                      <div className={`flex items-center gap-2 mb-1 ${isHomeEvent ? '' : 'flex-row-reverse'}`}>
+                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
                           {event.minute}'
                         </span>
-                        <span className={`text-sm font-medium ${
+                        <span className={`text-sm font-bold ${
                           isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900'
                         }`}>
                           {eventLabel}
                         </span>
                       </div>
+
                       <p className="text-sm text-gray-700">
                         <span className={`font-semibold ${
-                          isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : ''
+                          isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : 'text-gray-900'
                         }`}>
                           {event.player_name}
                         </span>
-                        {' - '}
-                        <span className="text-gray-500">{event.team_name}</span>
+                        <span className="text-gray-400 mx-1">·</span>
+                        <span className="text-gray-500 text-xs">{event.team_name}</span>
                       </p>
+
                       {event.description && (
-                        <p className="text-xs text-gray-500 mt-1">{event.description}</p>
+                        <p className="text-xs text-gray-400 mt-1.5 bg-gray-50 px-2 py-1 rounded-lg inline-block">
+                          {event.description}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -836,91 +1007,108 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {match.events?.length === 0 && (isLive || isFinished) && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-8">
-            <Activity className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No hay eventos registrados en este partido</p>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <History className="w-8 h-8 text-gray-300" />
+            </div>
+            <h4 className="text-gray-900 font-semibold mb-1">Sin eventos registrados</h4>
+            <p className="text-gray-500 text-sm">Los goles, tarjetas y sustituciones aparecerán aquí.</p>
           </div>
         )}
       </div>
 
+      {/* ─── MODALES REDISEÑADOS ───────────────────────────────────────────── */}
+
       {/* Modal: Editar partido */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Editar Partido</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-xl">
+                <Edit3 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Editar Partido</h2>
+                <p className="text-sm text-gray-500">Modifica los detalles del encuentro</p>
+              </div>
+            </div>
+
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Fecha y hora</label>
                 <input
                   type="datetime-local"
                   value={editData.match_date}
                   onChange={(e) => setEditData(prev => ({ ...prev, match_date: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lugar</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Lugar</label>
                   <input
                     type="text"
                     value={editData.venue}
                     onChange={(e) => setEditData(prev => ({ ...prev, venue: e.target.value }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    placeholder="Ej: Estadio Municipal"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Estadio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Estadio</label>
                   <input
                     type="text"
                     value={editData.stadium}
                     onChange={(e) => setEditData(prev => ({ ...prev, stadium: e.target.value }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    placeholder="Ej: Cancha Principal"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Jornada</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Jornada</label>
                   <input
                     type="number"
                     min={1}
                     value={editData.match_week}
                     onChange={(e) => setEditData(prev => ({ ...prev, match_week: parseInt(e.target.value) || 1 }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ronda</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Ronda</label>
                   <input
                     type="number"
                     min={1}
                     value={editData.round_number}
                     onChange={(e) => setEditData(prev => ({ ...prev, round_number: parseInt(e.target.value) || 1 }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notas</label>
                 <textarea
                   value={editData.notes}
                   onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   rows={2}
+                  placeholder="Información adicional..."
                 />
               </div>
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                  className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
                 >
                   {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar cambios'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
                 >
                   Cancelar
                 </button>
@@ -932,47 +1120,56 @@ const MatchDetailPage: React.FC = () => {
 
       {/* Modal: Finalizar partido */}
       {showFinishModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Finalizar partido</h2>
-            <p className="text-sm text-gray-500 mb-5">
-              {match.home_team_detail?.name} vs {match.away_team_detail?.name}
-            </p>
-            <div className="flex items-center gap-4 mb-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-100 rounded-xl">
+                <Trophy className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Finalizar partido</h2>
+                <p className="text-sm text-gray-500">
+                  {match.home_team_detail?.name} vs {match.away_team_detail?.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mb-6 bg-gray-50 rounded-xl p-4">
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{match.home_team_detail?.name}</p>
+                <p className="text-xs text-gray-500 mb-2 font-medium truncate">{match.home_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
                   value={scoreData.home_score}
                   onChange={(e) => setScoreData(prev => ({ ...prev, home_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 rounded-lg py-2 focus:border-green-500 focus:ring-green-500"
+                  className="w-full text-center text-4xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white"
                 />
               </div>
-              <span className="text-2xl font-bold text-gray-400">-</span>
+              <span className="text-2xl font-bold text-gray-300">—</span>
               <div className="flex-1 text-center">
-                <p className="text-xs text-gray-500 mb-1 truncate">{match.away_team_detail?.name}</p>
+                <p className="text-xs text-gray-500 mb-2 font-medium truncate">{match.away_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
                   value={scoreData.away_score}
                   onChange={(e) => setScoreData(prev => ({ ...prev, away_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 rounded-lg py-2 focus:border-green-500 focus:ring-green-500"
+                  className="w-full text-center text-4xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+
+            <div className="flex gap-3">
               <button
                 onClick={handleFinishMatch}
                 disabled={finishMutation.isPending}
-                className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 {finishMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                Confirmar
+                Confirmar resultado
               </button>
               <button
                 onClick={() => setShowFinishModal(false)}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
               >
                 Cancelar
               </button>
@@ -994,16 +1191,25 @@ const MatchDetailPage: React.FC = () => {
           : players;
 
         return (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Agregar evento</h2>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-100 rounded-xl">
+                  <Zap className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Registrar evento</h2>
+                  <p className="text-sm text-gray-500">{isHomeTeam ? match.home_team_detail?.name : match.away_team_detail?.name}</p>
+                </div>
+              </div>
+
               <form onSubmit={handleAddEvent} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de evento</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tipo de evento</label>
                   <select
                     value={eventData.event_type}
                     onChange={(e) => setEventData(prev => ({ ...prev, event_type: e.target.value as MatchEvent['event_type'] }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   >
                     {Object.entries(EVENT_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
@@ -1012,11 +1218,11 @@ const MatchDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Minuto
                     {isLive && (
-                      <span className="ml-2 text-xs text-green-600 font-normal">
-                        (Auto: {matchTimer}')
+                      <span className="ml-2 text-xs text-green-600 font-normal bg-green-50 px-2 py-0.5 rounded-full">
+                        Auto: {matchTimer}'
                       </span>
                     )}
                   </label>
@@ -1027,13 +1233,13 @@ const MatchDetailPage: React.FC = () => {
                       max={120}
                       value={eventData.minute}
                       onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                      className="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                      className="flex-1 rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     />
                     {isLive && (
                       <button
                         type="button"
                         onClick={() => setEventData(prev => ({ ...prev, minute: matchTimer }))}
-                        className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium whitespace-nowrap"
+                        className="px-4 py-2.5 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 text-sm font-semibold whitespace-nowrap transition-colors"
                       >
                         Usar actual
                       </button>
@@ -1043,7 +1249,7 @@ const MatchDetailPage: React.FC = () => {
 
                 {/* Jugador con autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Jugador</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Jugador</label>
                   <input
                     type="text"
                     value={playerSearch}
@@ -1054,16 +1260,15 @@ const MatchDetailPage: React.FC = () => {
                       setShowPlayerDropdown(true);
                     }}
                     onFocus={() => setShowPlayerDropdown(true)}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     placeholder="Buscar por nombre o número..."
                     autoComplete="off"
                   />
 
-                  {/* Indicador de jugador seleccionado */}
                   {selectedPlayerName && (
-                    <div className="mt-1 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-lg">
-                      <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-                      {selectedPlayerName}
+                    <div className="mt-2 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-xl border border-green-200">
+                      <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                      <span className="font-medium">{selectedPlayerName}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1071,23 +1276,22 @@ const MatchDetailPage: React.FC = () => {
                           setPlayerSearch('');
                           setEventData(prev => ({ ...prev, player: '' }));
                         }}
-                        className="ml-auto text-green-600 hover:text-green-800 font-bold"
+                        className="ml-auto text-green-600 hover:text-green-800 font-bold w-6 h-6 flex items-center justify-center rounded-lg hover:bg-green-100 transition-colors"
                       >
                         ×
                       </button>
                     </div>
                   )}
 
-                  {/* Dropdown */}
                   {showPlayerDropdown && !selectedPlayerName && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-52 overflow-y-auto">
                       {filteredPlayers.length === 0 ? (
-                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                        <div className="px-4 py-4 text-sm text-gray-500 text-center">
                           No se encontraron jugadores
                         </div>
                       ) : (
                         filteredPlayers
-                          .filter((player: any) => !isPlayerSentOff(player.id))  // ← AQUÍ VA EL FILTRO
+                          .filter((player: any) => !isPlayerSentOff(player.id))
                           .map((player: any) => (
                             <button
                               key={player.id}
@@ -1098,12 +1302,13 @@ const MatchDetailPage: React.FC = () => {
                                 setPlayerSearch(`#${player.jersey_number} ${player.full_name}`);
                                 setShowPlayerDropdown(false);
                               }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left transition-colors"
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 text-left transition-colors"
                             >
-                              <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                              <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
                                 {player.jersey_number}
                               </span>
-                              <span className="text-sm text-gray-800">{player.full_name}</span>
+                              <span className="text-sm font-medium text-gray-800">{player.full_name}</span>
+                              <span className="ml-auto text-xs text-gray-400">{player.position_display}</span>
                             </button>
                           ))
                       )}
@@ -1112,21 +1317,21 @@ const MatchDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
                   <textarea
                     value={eventData.description}
                     onChange={(e) => setEventData(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     rows={2}
                     placeholder="Detalles adicionales..."
                   />
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-2">
                   <button
                     type="submit"
                     disabled={addEventMutation.isPending}
-                    className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                    className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
                   >
                     {addEventMutation.isPending
                       ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
@@ -1135,7 +1340,7 @@ const MatchDetailPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowEventModal(false)}
-                    className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                    className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
                   >
                     Cancelar
                   </button>
@@ -1148,23 +1353,36 @@ const MatchDetailPage: React.FC = () => {
 
       {/* Modal: Confirmar eliminación */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">¿Eliminar partido?</h2>
-            <p className="text-sm text-gray-500 mb-6">
-              Esta acción no se puede deshacer. El partido será eliminado permanentemente.
-            </p>
-            <div className="flex gap-2">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 rounded-xl">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">¿Eliminar partido?</h2>
+                <p className="text-sm text-gray-500">Esta acción no se puede deshacer.</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-100 rounded-xl p-3 mb-6">
+              <p className="text-sm text-red-700 font-medium">
+                {match.home_team_detail?.name} vs {match.away_team_detail?.name}
+              </p>
+              <p className="text-xs text-red-500 mt-0.5">{dateInfo.full} · {dateInfo.time}</p>
+            </div>
+
+            <div className="flex gap-3">
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium"
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 font-semibold transition-colors"
               >
                 {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Eliminar'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
               >
                 Cancelar
               </button>
