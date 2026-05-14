@@ -126,6 +126,8 @@ export interface Player {
   position: string;
   position_display: string;
   team: string;
+  id_number: string;
+  email: string;
   team_name: string;
   photo: string | null;
   birth_date: string | null;
@@ -184,6 +186,8 @@ export interface CreatePlayerData {
   photo?: string;
   is_captain?: boolean;
   is_active?: boolean;
+  id_number?: string;
+  email?: string;
   tournament?: string;
   posted_by_id?: string;
 }

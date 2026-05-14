@@ -13,6 +13,8 @@ import {
   Loader2,
   Camera,
   Users,
+  CreditCard,    
+  Mail, 
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useTournament, usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer, useTeams } from '../../hooks/useSports';
@@ -68,6 +70,8 @@ const TeamRosterPage: React.FC = () => {
     position: '',
     team: teamId || '',
     birth_date: '',
+    id_number: '',
+    email: '',
     tournament: tournament?.id,
     // nationality: '',
     photo: '',
@@ -99,7 +103,9 @@ const TeamRosterPage: React.FC = () => {
       newErrors.jersey_number = 'Número inválido (0-99)';
     }
     if (!formData.team) newErrors.team = 'Error: no se encontró el equipo';
-
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Correo electrónico inválido';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -154,14 +160,18 @@ const TeamRosterPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
+    const dataToSend: CreatePlayerData = {
+      ...formData,
+      id_number: formData.id_number?.trim() || undefined,
+      email: formData.email?.trim() || undefined,
+    };
     if (editingPlayer) {
       updateMutation.mutate(
-        { id: editingPlayer, data: formData },
+        { id: editingPlayer, data: dataToSend },
         { onSuccess: () => resetForm() }
       );
     } else {
-      createMutation.mutate(formData, {
+      createMutation.mutate(dataToSend, {
         onSuccess: () => resetForm(),
       });
     }
@@ -181,6 +191,8 @@ const TeamRosterPage: React.FC = () => {
       photo: '',
       is_captain: false,
       is_active: true,
+      id_number: '',
+      email: '',
     });
     setPreviewPhoto(null);
     setErrors({});
@@ -202,6 +214,8 @@ const TeamRosterPage: React.FC = () => {
       photo: player.photo || '',
       is_captain: player.is_captain,
       is_active: player.is_active,
+      id_number: player.id_number || '',
+      email: player.email || '',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -314,7 +328,42 @@ const TeamRosterPage: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Apodo</label>
                     <input type="text" value={formData.nickname} onChange={(e) => handleChange('nickname', e.target.value)}
-                      className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" placeholder="El Rápido" />
+                      className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" placeholder="El Comandante" />
+                  </div>
+                  {/* NUEVO: Cédula y Correo electrónico */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <CreditCard className="w-4 h-4 mr-1 text-gray-400" />
+                        Cédula
+                      </label>
+                      <input 
+                        type="text" 
+                        value={formData.id_number} 
+                        onChange={(e) => handleChange('id_number', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" 
+                        placeholder="12345678" 
+                      />
+                      <p className="mt-1 text-xs text-gray-400">Opcional</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Mail className="w-4 h-4 mr-1 text-gray-400" />
+                        Correo
+                      </label>
+                      <input 
+                        type="email" 
+                        value={formData.email} 
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        className={`w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 ${errors.email ? 'border-red-500' : ''}`}
+                        placeholder="jugador@email.com" 
+                      />
+                      {errors.email ? (
+                        <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-400">Opcional</p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Número y Posición */}
