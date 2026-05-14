@@ -278,3 +278,13 @@ export const getTournamentPlayerStats = async (slug: string) => {
   const response = await api.get(`/sports/tournaments/${slug}/player_stats/`);
   return response.data;
 };
+
+export const getBannersByPosition = async (position: string) => {
+  const response = await api.get(`/sports/banners/by_position/`, { params: { position } });
+  return response.data;
+};
+
+export const trackBannerClick = async (id: string) => {
+  const response = await api.post(`/sports/banners/${id}/track_click/`);
+  return response.data;
+};

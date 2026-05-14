@@ -16,7 +16,7 @@ export interface Tournament {
   max_players_per_team: number;
   logo?: string;
   banner?: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: 'active' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   teams_count: number;
   created_at: string;
   updated_at: string;
@@ -281,4 +281,34 @@ export interface MatchPeriod {
   elapsed_minutes: number;
   is_active: boolean;
   is_completed: boolean;
+}
+
+export interface AdvertisementBanner {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  link_url: string;
+  position: string;
+  position_display: string;
+  is_active: boolean;
+  display_order: number;
+  start_date: string | null;
+  end_date: string | null;
+  is_visible: boolean;
+  clicks: number;
+  impressions: number;
+  created_at: string;
+}
+
+export interface CreateBannerData {
+  title: string;
+  description?: string;
+  image: string;
+  link_url?: string;
+  position: string;
+  is_active?: boolean;
+  display_order?: number;
+  start_date?: string | null;
+  end_date?: string | null;
 }

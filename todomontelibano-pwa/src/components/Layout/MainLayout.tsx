@@ -284,9 +284,9 @@ const MainLayout: React.FC = () => {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Servicios</h3>
               <ul className="space-y-2 text-sm text-gray-600">
+                <li><Link to="/sports" className="hover:text-primary-600">Deportes</Link></li>
                 <li><Link to="/jobs" className="hover:text-primary-600">Empleos</Link></li>
                 <li><span className="text-gray-400">Eventos (Pronto)</span></li>
-                <li><span className="text-gray-400">Deportes (Pronto)</span></li>
                 <li><span className="text-gray-400">Bienes Raíces (Pronto)</span></li>
               </ul>
             </div>

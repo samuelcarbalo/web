@@ -36,6 +36,8 @@ import {
   getTournamentStandings,
   getPlayerStats,
   getTournamentPlayerStats,
+  getBannersByPosition,
+  trackBannerClick,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
 
@@ -452,3 +454,16 @@ export const useTournamentPlayerStats = (slug: string) => {
     enabled: !!slug,
   });
 };
+
+export const useBannersByPosition = (position: string) => {
+  return useQuery({
+    queryKey: ['banners', 'by-position', position],
+    queryFn: () => getBannersByPosition(position),
+    enabled: !!position,
+  });
+};
+
+export const useTrackBannerClick = () => {
+  return useMutation({ mutationFn: trackBannerClick });
+};
+
