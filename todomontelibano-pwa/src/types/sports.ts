@@ -294,6 +294,7 @@ export interface AdvertisementBanner {
   is_active: boolean;
   display_order: number;
   start_date: string | null;
+  tournament?: string | null; 
   end_date: string | null;
   is_visible: boolean;
   clicks: number;
@@ -307,8 +308,28 @@ export interface CreateBannerData {
   image: string;
   link_url?: string;
   position: string;
+  tournament?: string | null; 
   is_active?: boolean;
   display_order?: number;
   start_date?: string | null;
   end_date?: string | null;
+}
+
+// Tipado mejorado
+export interface TeamStanding {
+  position: number;
+  previous_position?: number;
+  team: Team;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  points: number;
+  // Softbol
+  runs?: number;
+  runs_against?: number;
+  average?: number;
 }

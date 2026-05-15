@@ -16,6 +16,7 @@ import {
   Target,
   TrendingUp,
   AlertCircle,
+  ImagePlus,
 } from 'lucide-react';
 
 import { 
@@ -29,6 +30,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import CreateTeamModal from './CreateTeamModal';
+import CreateBannerModal from '../../components/CreateBannerModal';
 import BannerAd from '../../components/BannerAd';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -49,9 +51,10 @@ const TournamentDetail: React.FC = () => {
   const deleteTeamMutation = useDeleteTeam();
 
   // Banners publicitarios para esta posición
-  const { data: banners } = useBannersByPosition('tournament_detail');
+  const { data: banners } = useBannersByPosition('tournament_detail', tournament?.id);
 
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+  const [isCreateBannerModalOpen, setIsCreateBannerModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const isManager = user?.role === 'manager';
@@ -272,21 +275,34 @@ const TournamentDetail: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
 
               {/* Banner Publicitario - ARRIBA DE "Sobre el torneo" */}
-              {banners && banners.length > 0 && (
-                <div className="space-y-3">
-                  {banners.map((banner: any) => (
-                    <BannerAd
-                      key={banner.id}
-                      id={banner.id}
-                      image={banner.image}
-                      title={banner.title}
-                      link_url={banner.link_url}
-                      description={banner.description}
-                      variant="horizontal"
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="space-y-3">
+                {banners && banners.length > 0 && (
+                  <div className="space-y-3">
+                    {banners.map((banner: any) => (
+                      <BannerAd
+                        key={banner.id}
+                        id={banner.id}
+                        image={banner.image}
+                        title={banner.title}
+                        link_url={banner.link_url}
+                        description={banner.description}
+                        variant="horizontal"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Botón para agregar banner - SOLO OWNER */}
+                {isOwner && (
+                  <button
+                    onClick={() => setIsCreateBannerModalOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:text-green-600 hover:border-green-400 hover:bg-green-50/50 transition-all group"
+                  >
+                    <ImagePlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-medium">Agregar banner publicitario</span>
+                  </button>
+                )}
+              </div>
 
               {/* Sobre el torneo */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
@@ -649,13 +665,22 @@ const TournamentDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal: Crear equipo */}
       <CreateTeamModal
         isOpen={isCreateTeamModalOpen}
         onClose={() => setIsCreateTeamModalOpen(false)}
         tournamentId={tournament?.id || ''}
         tournamentName={tournament?.name || ''}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['teams', slug] })}
+      />
+
+      {/* Modal: Crear banner publicitario */}
+      <CreateBannerModal
+        isOpen={isCreateBannerModalOpen}
+        onClose={() => setIsCreateBannerModalOpen(false)}
+        position="tournament_detail"
+        tournamentId={tournament?.id}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['banners', 'by-position', 'tournament_detail'] })}
       />
     </>
   );

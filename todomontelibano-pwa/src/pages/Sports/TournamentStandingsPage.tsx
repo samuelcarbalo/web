@@ -3,29 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTournament, useTournamentStandings } from '../../hooks/useSports';
 import { Trophy, Loader2, TrendingUp, TrendingDown, Minus, Shield, ChevronRight } from 'lucide-react';
 
-// Tipado mejorado
-interface TeamStanding {
-  position: number;
-  previous_position?: number;
-  team: {
-    id: string;
-    name: string;
-    logo?: string;
-    short_name?: string;
-  };
-  played: number;
-  won: number;
-  drawn: number;
-  lost: number;
-  goals_for: number;
-  goals_against: number;
-  goal_difference: number;
-  points: number;
-  // Softbol
-  runs?: number;
-  runs_against?: number;
-  average?: number;
-}
+import type { TeamStanding } from '../../types/sports';
 
 const PositionChange: React.FC<{ current: number; previous?: number }> = ({ current, previous }) => {
   if (!previous || previous === current) {
@@ -200,7 +178,7 @@ const TournamentStandingsPage: React.FC = () => {
         {standings.map((team: TeamStanding, index: number) => (
           <Link
             key={team.team.id}
-            to={`/teams/${team.team.id}`}
+            to={`/sports/tournaments/${tournament?.slug}/teams/${team.team.slug}`}
             className="grid grid-cols-[auto_3rem_1fr_repeat(8,minmax(2.5rem,1fr))_auto] gap-3 px-4 py-3 border-b border-gray-100 items-center hover:bg-gray-50/80 transition-colors group cursor-pointer"
           >
             <ZoneIndicator position={team.position} totalTeams={standings.length} />
@@ -219,7 +197,7 @@ const TournamentStandingsPage: React.FC = () => {
                 />
               ) : (
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 shadow-sm">
-                  {team.team.short_name || team.team.name.slice(0, 2).toUpperCase()}
+                  {team.team.abbreviation || team.team.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
@@ -278,7 +256,7 @@ const TournamentStandingsPage: React.FC = () => {
         {standings.map((team: TeamStanding, index: number) => (
           <Link
             key={team.team.id}
-            to={`/teams/${team.team.id}`}
+            to={`/sports/tournaments/${tournament?.slug}/teams/${team.team.slug}`}
             className="block bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between mb-3">

@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -279,12 +279,21 @@ export const getTournamentPlayerStats = async (slug: string) => {
   return response.data;
 };
 
-export const getBannersByPosition = async (position: string) => {
-  const response = await api.get(`/sports/banners/by_position/`, { params: { position } });
+export const getBannersByPosition = async (position: string, tournamentId?: string) => {
+  const params: any = { position };
+  if (tournamentId) {
+    params.tournament = tournamentId;
+  }
+  const response = await api.get('/sports/banners/by_position/', { params });
   return response.data;
 };
-
 export const trackBannerClick = async (id: string) => {
   const response = await api.post(`/sports/banners/${id}/track_click/`);
   return response.data;
 };
+
+export const createBanner = async (data: CreateBannerData) => {
+  const response = await api.post('/sports/banners/', data);
+  return response.data;
+};
+

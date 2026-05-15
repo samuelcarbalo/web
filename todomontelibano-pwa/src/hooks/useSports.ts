@@ -38,6 +38,7 @@ import {
   getTournamentPlayerStats,
   getBannersByPosition,
   trackBannerClick,
+  createBanner,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
 
@@ -455,10 +456,10 @@ export const useTournamentPlayerStats = (slug: string) => {
   });
 };
 
-export const useBannersByPosition = (position: string) => {
+export const useBannersByPosition = (position: string, tournamentId?: string) => {
   return useQuery({
-    queryKey: ['banners', 'by-position', position],
-    queryFn: () => getBannersByPosition(position),
+    queryKey: ['banners', 'by-position', position, tournamentId],
+    queryFn: () => getBannersByPosition(position, tournamentId),
     enabled: !!position,
   });
 };
@@ -467,3 +468,15 @@ export const useTrackBannerClick = () => {
   return useMutation({ mutationFn: trackBannerClick });
 };
 
+// ============ BANNERS PUBLICITARIOS ============
+
+export const useCreateBanner = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createBanner,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['banners'] });
+    },
+  });
+};
