@@ -346,6 +346,7 @@ export const useMatchLineup = (matchId: string) => {
     queryKey: ['match-lineup', matchId],
     queryFn: () => getMatchLineup(matchId),
     enabled: !!matchId,
+    
   });
 };
 
