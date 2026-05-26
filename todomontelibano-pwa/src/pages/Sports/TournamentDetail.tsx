@@ -353,7 +353,7 @@ const TournamentDetail: React.FC = () => {
                     <div>
                       <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Equipos inscritos</p>
                       <p className="font-semibold text-gray-900">
-                        {tournament.teams_count} <span className="text-gray-400 font-normal">de {tournament.max_teams} cupos</span>
+                        {teams?.count} <span className="text-gray-400 font-normal">de {tournament.teams_count} cupos</span>
                       </p>
                       {/* Barra de progreso */}
                       <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
