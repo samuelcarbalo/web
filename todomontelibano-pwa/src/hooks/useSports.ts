@@ -80,6 +80,7 @@ export const useCreateTournament = () => {
     mutationFn: createTournament,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 };

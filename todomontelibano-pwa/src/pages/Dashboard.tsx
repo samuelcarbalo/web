@@ -97,14 +97,15 @@ const Dashboard: React.FC = () => {
   ];
   
   // Stats de torneos (nuevo)
+  const isManagerOrAdmin = user?.role === 'manager' || user?.role === 'admin';
   const { data: tournaments } = useTournaments({ status: 'active', enabled: false });
-  const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManager });
+  const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManagerOrAdmin });
   
 
   // Stats de deportes (nuevo)
   const sportsStats = {
     activeTournaments: tournaments?.results?.filter((t: any) => t.status === 'active').length || 0,
-    myTournaments: isManager ? (manager_tournaments?.count || 0) : 0,
+    myTournaments: isManagerOrAdmin ? (manager_tournaments?.count || 0) : 0,
     totalTeams: tournaments?.results?.reduce((acc: number, t: any) => acc + (t.teams_count || 0), 0) || 0,
   };
 
@@ -119,11 +120,11 @@ const Dashboard: React.FC = () => {
   ];
 
   // Acciones rápidas de deportes (nuevo)
-  const sportsQuickActions = isManager ? [
+  const sportsQuickActions = isManagerOrAdmin ? [
     { label: 'Crear torneo', icon: Trophy, link: '/sports/tournaments/create', primary: true, color: 'bg-green-600 hover:bg-green-700' },
     { label: 'Ver torneos', icon: Calendar, link: '/sports/my_tournaments', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   ] : [
-    { label: 'Ver torneos', icon: Trophy, link: '/sports/my_tournaments', primary: true, color: 'bg-green-600 hover:bg-green-700' },
+    { label: 'Ver torneos', icon: Trophy, link: '/sports', primary: true, color: 'bg-green-600 hover:bg-green-700' },
     { label: 'Mis equipos', icon: Users, link: '/sports/teams', primary: false, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
   ];
 
@@ -199,8 +200,8 @@ const Dashboard: React.FC = () => {
               </div>
             </Link>
 
-            {/* Stat: Mis torneos (solo managers) */}
-            {isManager && (
+            {/* Stat: Mis torneos (solo managers/admins) */}
+            {isManagerOrAdmin && (
               <Link to="/sports/my_tournaments" className="card hover:shadow-md transition-shadow">
                 <div className="flex items-center">
                   <div className="p-3 rounded-lg bg-green-600">
@@ -379,9 +380,16 @@ const Dashboard: React.FC = () => {
                 <div>
                   <p className="font-bold text-gray-900">{user?.first_name} {user?.last_name}</p>
                   <p className="text-sm text-gray-600">{user?.email}</p>
-                  <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
-                    {user?.user_type === 'company' ? 'Empresa' : 'Persona'}
-                  </span>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    <span className="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
+                      {user?.user_type === 'company' ? 'Empresa' : 'Persona'}
+                    </span>
+                    {user?.role === 'manager' && (
+                      <span className="inline-block px-2 py-0.5 text-xs bg-amber-100 text-amber-800 border border-amber-200 font-semibold rounded-full">
+                        🪙 {user.credits !== undefined ? user.credits : 0} Créditos
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <Link 

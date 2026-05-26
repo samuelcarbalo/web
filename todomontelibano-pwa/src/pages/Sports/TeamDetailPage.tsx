@@ -14,12 +14,12 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useTournament, useTeam, usePlayers } from '../../hooks/useSports';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import { sportTypeLabels } from '../../types/sports';
 
 const TeamDetailPage: React.FC = () => {
   const { tournamentSlug, teamSlug } = useParams<{ tournamentSlug: string; teamSlug: string }>();
-  const { user } = useAuthStore();
+  const { user, isOwner: checkIsOwner } = usePermissions();
 
   const { data: tournament, isLoading: loadingTournament } = useTournament(tournamentSlug || '');
   const { data: team, isLoading: loadingTeam } = useTeam(teamSlug || '');
@@ -30,7 +30,7 @@ const TeamDetailPage: React.FC = () => {
 
   // Verificar si el usuario es el coach o dueño del equipo
   const isTeamCoach = user?.email === team?.coach_email;
-  const isOwner = user?.role === 'manager' && user?.id === tournament?.posted_by;
+  const isOwner = checkIsOwner(tournament);
 
   if (isLoading) {
     return (

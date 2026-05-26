@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Briefcase, 
-  Calendar, 
-  Home, 
-  User, 
-  Menu, 
-  X, 
+import React, { useState } from "react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Briefcase,
+  Calendar,
+  Home,
+  User,
+  Menu,
+  X,
   LogOut,
   Building2,
   Trophy,
   House,
-  Bell
-} from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
-import { useLogout } from '../../hooks/useAuth';
+  Bell,
+} from "lucide-react";
+import { useAuthStore } from "../../store/authStore";
+import { useLogout } from "../../hooks/useAuth";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -26,42 +26,47 @@ const MainLayout: React.FC = () => {
   const logout = useLogout();
 
   const services = [
-    { 
-      name: 'Empleos', 
-      icon: Briefcase, 
-      path: '/jobs', 
+    {
+      name: "Deportes",
+      icon: Trophy,
+      path: "/sports",
       active: true,
-      description: 'Encuentra tu próximo trabajo'
+      description: "Fútbol, Softbol y más",
+      comingSoon: false,
     },
-    { 
-      name: 'Eventos', 
-      icon: Calendar, 
-      path: '/events', 
-      active: false,
-      description: 'Próximamente',
-      comingSoon: true
-    },
-    { 
-      name: 'Deportes', 
-      icon: Trophy, 
-      path: '/sports', 
+    {
+      name: "Empleos",
+      icon: Briefcase,
+      path: "/jobs",
       active: true,
-      description: 'Fútbol, Softbol y más',
-      comingSoon: false
+      description: "Encuentra tu próximo trabajo",
     },
-    { 
-      name: 'Bienes Raíces', 
-      icon: House, 
-      path: '/real-estate', 
+    {
+      name: "Eventos",
+      icon: Calendar,
+      path: "/events",
       active: false,
-      description: 'Propiedades en venta y alquiler',
-      comingSoon: true
+      description: "Próximamente",
+      comingSoon: true,
+    },
+    {
+      name: "Bienes Raíces",
+      icon: House,
+      path: "/real-estate",
+      active: false,
+      description: "Propiedades en venta y alquiler",
+      comingSoon: true,
     },
   ];
 
   const navItems = [
-    { name: 'Inicio', path: '/', icon: Home },
-    { name: 'Servicios', path: '#services', icon: Building2, hasDropdown: true },
+    { name: "Inicio", path: "/", icon: Home },
+    {
+      name: "Servicios",
+      path: "#services",
+      icon: Building2,
+      hasDropdown: true,
+    },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -78,20 +83,22 @@ const MainLayout: React.FC = () => {
                 <span className="text-white font-bold text-xl">T</span>
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900">TodoMontelibano</h1>
-                <p className="text-xs text-gray-500">Tu plataforma todo en uno</p>
+                <h1 className="text-xl font-bold text-gray-900">CordobaTech</h1>
+                <p className="text-xs text-gray-500">
+                  Tu plataforma todo en uno
+                </p>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link 
-                to="/" 
-                className={`text-sm font-medium ${isActive('/') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}
+              <Link
+                to="/"
+                className={`text-sm font-medium ${isActive("/") ? "text-primary-600" : "text-gray-700 hover:text-primary-600"}`}
               >
                 Inicio
               </Link>
-              
+
               {/* Services Dropdown */}
               <div className="relative">
                 <button
@@ -99,24 +106,36 @@ const MainLayout: React.FC = () => {
                   className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
                 >
                   Servicios
-                  <svg className={`ml-1 w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className={`ml-1 w-4 h-4 transition-transform ${isServicesOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
-                
+
                 {isServicesOpen && (
                   <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     {services.map((service) => (
                       <Link
                         key={service.name}
-                        to={service.active ? service.path : '#'}
+                        to={service.active ? service.path : "#"}
                         onClick={(e) => {
                           if (!service.active) e.preventDefault();
                           setIsServicesOpen(false);
                         }}
-                        className={`flex items-start px-4 py-3 hover:bg-gray-50 ${!service.active ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`flex items-start px-4 py-3 hover:bg-gray-50 ${!service.active ? "opacity-60 cursor-not-allowed" : ""}`}
                       >
-                        <div className={`p-2 rounded-lg ${service.active ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
+                        <div
+                          className={`p-2 rounded-lg ${service.active ? "bg-primary-100 text-primary-600" : "bg-gray-100 text-gray-400"}`}
+                        >
                           <service.icon className="w-5 h-5" />
                         </div>
                         <div className="ml-3">
@@ -128,7 +147,9 @@ const MainLayout: React.FC = () => {
                               </span>
                             )}
                           </p>
-                          <p className="text-xs text-gray-500">{service.description}</p>
+                          <p className="text-xs text-gray-500">
+                            {service.description}
+                          </p>
                         </div>
                       </Link>
                     ))}
@@ -138,6 +159,15 @@ const MainLayout: React.FC = () => {
 
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
+                  {user?.role === "manager" && (
+                    <div
+                      className="flex items-center text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full gap-1 mr-1 select-none shadow-sm"
+                      title="Créditos disponibles"
+                    >
+                      🪙 {user.credits !== undefined ? user.credits : 0}{" "}
+                      Créditos
+                    </div>
+                  )}
                   <button className="p-2 text-gray-400 hover:text-gray-600">
                     <Bell className="w-5 h-5" />
                   </button>
@@ -146,27 +176,37 @@ const MainLayout: React.FC = () => {
                       <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                         <User className="w-4 h-4 text-primary-600" />
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{user?.first_name}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {user?.first_name}
+                      </span>
                     </button>
-                    
+
                     {/* Contenedor invisible que detecta el hover */}
                     <div className="absolute right-0 top-full w-48 pt-2 hidden group-hover:block">
-                      
                       {/* El menú visual (ahora sin mt-2 porque el padding del padre da el espacio) */}
-                      <div className="bg-white rounded-xl shadow-lg border border-gray-200 py-2">
-                        <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      <div className="bg-gradient-to-b from-blue-200 to-white rounded-xl shadow-lg border border-gray-200 py-2">
+                        <Link
+                          to="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
                           Mi Perfil
                         </Link>
-                        <Link to="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <Link
+                          to="/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
                           Dashboard
                         </Link>
-                        {user?.role === 'manager' && (
-                          <Link to="/jobs/offers/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        {user?.role === "manager" && (
+                          <Link
+                            to="/jobs/offers/"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
                             Gestionar Empleos
                           </Link>
                         )}
                         <hr className="my-2" />
-                        <button 
+                        <button
                           onClick={logout}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
                         >
@@ -179,7 +219,10 @@ const MainLayout: React.FC = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-primary-600">
+                  <Link
+                    to="/login"
+                    className="text-sm font-medium text-gray-700 hover:text-primary-600"
+                  >
                     Iniciar Sesión
                   </Link>
                   <Link to="/register" className="btn-primary text-sm">
@@ -190,11 +233,15 @@ const MainLayout: React.FC = () => {
             </nav>
 
             {/* Mobile menu button */}
-            <button 
+            <button
               className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -203,21 +250,27 @@ const MainLayout: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="px-4 py-3 space-y-3">
-              <Link to="/" className="block py-2 text-base font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}>
+              <Link
+                to="/"
+                className="block py-2 text-base font-medium text-gray-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Inicio
               </Link>
-              
+
               <div className="border-t border-gray-200 pt-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Servicios</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  Servicios
+                </p>
                 {services.map((service) => (
                   <Link
                     key={service.name}
-                    to={service.active ? service.path : '#'}
+                    to={service.active ? service.path : "#"}
                     onClick={(e) => {
                       if (!service.active) e.preventDefault();
                       setIsMenuOpen(false);
                     }}
-                    className={`flex items-center py-2 ${service.active ? 'text-gray-700' : 'text-gray-400'}`}
+                    className={`flex items-center py-2 ${service.active ? "text-gray-700" : "text-gray-400"}`}
                   >
                     <service.icon className="w-5 h-5 mr-3" />
                     {service.name}
@@ -232,14 +285,29 @@ const MainLayout: React.FC = () => {
 
               {isAuthenticated ? (
                 <div className="border-t border-gray-200 pt-3 space-y-2">
-                  <Link to="/profile" className="block py-2 text-base font-medium text-gray-700">
+                  {user?.role === "manager" && (
+                    <div className="px-3 py-2 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-1.5 mb-2 mx-1 select-none">
+                      🪙 {user.credits !== undefined ? user.credits : 0}{" "}
+                      Créditos disponibles
+                    </div>
+                  )}
+                  <Link
+                    to="/profile"
+                    className="block py-2 text-base font-medium text-gray-700"
+                  >
                     Mi Perfil
                   </Link>
-                  <Link to="/dashboard" className="block py-2 text-base font-medium text-gray-700">
+                  <Link
+                    to="/dashboard"
+                    className="block py-2 text-base font-medium text-gray-700"
+                  >
                     Dashboard
                   </Link>
-                  <button 
-                    onClick={() => { logout(); setIsMenuOpen(false); }}
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
                     className="w-full text-left py-2 text-base font-medium text-red-600"
                   >
                     Cerrar Sesión
@@ -247,10 +315,16 @@ const MainLayout: React.FC = () => {
                 </div>
               ) : (
                 <div className="border-t border-gray-200 pt-3 space-y-2">
-                  <Link to="/login" className="block py-2 text-base font-medium text-primary-600">
+                  <Link
+                    to="/login"
+                    className="block py-2 text-base font-medium text-primary-600"
+                  >
                     Iniciar Sesión
                   </Link>
-                  <Link to="/register" className="block py-2 text-base font-medium text-primary-600">
+                  <Link
+                    to="/register"
+                    className="block py-2 text-base font-medium text-primary-600"
+                  >
                     Crear Cuenta
                   </Link>
                 </div>
@@ -274,35 +348,65 @@ const MainLayout: React.FC = () => {
                 <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold">T</span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">TodoMontelibano</span>
+                <span className="text-lg font-bold text-gray-900">
+                  CordobaTech
+                </span>
               </div>
               <p className="text-gray-600 text-sm mb-4">
-                La plataforma integral para Montelibano. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
+                La plataforma integral para CordobaTech. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
               </p>
             </div>
-            
+
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Servicios</h3>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+                Servicios
+              </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/sports" className="hover:text-primary-600">Deportes</Link></li>
-                <li><Link to="/jobs" className="hover:text-primary-600">Empleos</Link></li>
-                <li><span className="text-gray-400">Eventos (Pronto)</span></li>
-                <li><span className="text-gray-400">Bienes Raíces (Pronto)</span></li>
+                <li>
+                  <Link to="/sports" className="hover:text-primary-600">
+                    Deportes
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/jobs" className="hover:text-primary-600">
+                    Empleos
+                  </Link>
+                </li>
+                <li>
+                  <span className="text-gray-400">Eventos (Pronto)</span>
+                </li>
+                <li>
+                  <span className="text-gray-400">Bienes Raíces (Pronto)</span>
+                </li>
               </ul>
             </div>
-            
+
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Legal</h3>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+                Legal
+              </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/privacy" className="hover:text-primary-600">Privacidad</Link></li>
-                <li><Link to="/terms" className="hover:text-primary-600">Términos</Link></li>
-                <li><Link to="/contact" className="hover:text-primary-600">Contacto</Link></li>
+                <li>
+                  <Link to="/privacy" className="hover:text-primary-600">
+                    Privacidad
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:text-primary-600">
+                    Términos
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="hover:text-primary-600">
+                    Contacto
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-200 mt-8 pt-8 text-center text-sm text-gray-500">
-            © 2024 TodoMontelibano. Todos los derechos reservados.
+            © 2024 CordobaTech. Todos los derechos reservados.
           </div>
         </div>
       </footer>

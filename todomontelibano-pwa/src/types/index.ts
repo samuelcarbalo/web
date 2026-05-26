@@ -30,6 +30,7 @@ export interface Profile {
   updated_at?: string;
   completion_percentage?: number;
   preferences?: Record<string, unknown>;
+  credits?: number;
 }
 
 // User básico (para auth simple)
@@ -49,6 +50,7 @@ export interface User {
   location?: string;
   job_title?: string;
   completion_percentage?: number;
+  credits?: number;
 }
 
 // Para login/register (respuesta simple)

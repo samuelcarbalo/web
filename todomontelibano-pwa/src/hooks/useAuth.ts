@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 
+
+
 // Hook para obtener el perfil completo
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -12,12 +14,21 @@ export const useMe = () => {
   return useQuery({
     queryKey: ['me'],
     queryFn: async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        setLoading(false);
+        return null;
+      }
       try {
-        // Llama a /auth/me/ que retorna el Profile completo
-        const response = await api.get<Profile>('/auth/me/');
-        const profile = response.data;
+        // Concurrente: perfil y datos de autenticación del usuario
+        const [profileRes, userRes] = await Promise.all([
+          api.get<Profile>('/profiles/me/'),
+          api.get<any>('/auth/me/'),
+        ]);
+        const profile = profileRes.data;
+        const user_res = userRes.data;
         
-        // Convierte Profile a User para el store
+        // Convierte Profile y User a User para el store
         const user: User = {
           id: profile.user,
           email: profile.user_email,
@@ -27,24 +38,21 @@ export const useMe = () => {
           phone: profile.phone,
           organization: profile.organization,
           organization_name: profile.organization_name,
-          role: profile.role as "user" | "manager" | "admin",
-          user_type: 'person', // Esto también
+          role: user_res.role as "user" | "manager" | "admin",
+          user_type: user_res.user_type || 'person',
           avatar: profile.avatar,
           bio: profile.bio || undefined,
           location: profile.location || undefined,
           job_title: profile.job_title || undefined,
           completion_percentage: profile.completion_percentage,
+          credits: user_res.credits,
         };
-        console.log(user.role)
         
-        // Actualiza store solo si hay token
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          setAuth(user, { 
-            access: token, 
-            refresh: localStorage.getItem('refresh_token') || '' 
-          });
-        }
+        // Actualiza store
+        setAuth(user, { 
+          access: token, 
+          refresh: localStorage.getItem('refresh_token') || '' 
+        });
         
         return profile; // Retorna el profile completo
       } catch (error: any) {
@@ -63,8 +71,6 @@ export const useMe = () => {
     staleTime: 5 * 60 * 1000,
   });
 };
-
-// Hook para obtener el perfil (alternativa más específica)
 export const useProfile = () => {
   return useQuery({
     queryKey: ['profile'],
@@ -132,6 +138,7 @@ export const useLogin = () => {
         location: profile.location || undefined,
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
+        credits: user_res.credits,
       };
       
       setAuth(user, { access: data.access, refresh: data.refresh });
@@ -153,12 +160,19 @@ export const useRegister = () => {
       return response.data;
     },
     onSuccess: async (data) => {
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
+      const accessToken = data.tokens?.access || data.access;
+      const refreshToken = data.tokens?.refresh || data.refresh;
       
-      // Fetch perfil después de registro
-      const profileRes = await api.get<Profile>('/profiles/me/');
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
+      
+      // Fetch perfil y usuario después de registro
+      const [profileRes, userRes] = await Promise.all([
+        api.get<Profile>('/profiles/me/'),
+        api.get<any>('/auth/me/'),
+      ]);
       const profile = profileRes.data;
+      const user_res = userRes.data;
       
       const user: User = {
         id: profile.user,
@@ -168,13 +182,17 @@ export const useRegister = () => {
         name: profile.user_name,
         organization: profile.organization,
         organization_name: profile.organization_name,
-        role: 'user',
-        user_type: data.user.user_type || 'person',
+        role: user_res.role || 'user',
+        user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
+        bio: profile.bio || undefined,
+        location: profile.location || undefined,
+        job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
+        credits: user_res.credits,
       };
       
-      setAuth(user, { access: data.access, refresh: data.refresh });
+      setAuth(user, { access: accessToken, refresh: refreshToken });
       queryClient.setQueryData(['me'], profile);
       navigate('/dashboard');
     },

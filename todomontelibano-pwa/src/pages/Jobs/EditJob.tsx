@@ -12,7 +12,7 @@ import {
   X
 } from 'lucide-react';
 import { useJob, useUpdateJob } from '../../hooks/useJobs';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import type { Job } from '../../types';
 
 // Tipo para el formulario
@@ -35,7 +35,7 @@ const EditJob: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const jobId = id || '';
-  const { user } = useAuthStore();
+  const { isOwner: checkIsOwner } = usePermissions();
   
   const { data: job, isLoading } = useJob(jobId);
   const updateJob = useUpdateJob();
@@ -63,7 +63,7 @@ const EditJob: React.FC = () => {
   useEffect(() => {
     if (job) {
       // Verificar si el usuario es el dueño (comparando IDs)
-      const isOwner = user?.role === 'manager' && user?.id === job?.posted_by;
+      const isOwner = checkIsOwner(job);
       
       if (!isOwner) {
         navigate(`/jobs/${jobId}`);
@@ -90,7 +90,7 @@ const EditJob: React.FC = () => {
         setBenefits((job as any).benefits);
       }
     }
-  }, [job, user, jobId, navigate]);
+  }, [job, checkIsOwner, jobId, navigate]);
   const addSkill = () => {
     if (newSkill.trim() && !formData.skills?.includes(newSkill.trim())) {
       setFormData(prev => ({
@@ -319,7 +319,7 @@ const EditJob: React.FC = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="input-field pl-10"
-                    placeholder="Ej: Montelibano, Córdoba"
+                    placeholder="Ej: CordobaTech, Córdoba"
                   />
                 </div>
               </div>

@@ -10,7 +10,7 @@ import {
   Shield,
   X,
 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import {
   useMatchLineup,
   useSetLineup,
@@ -54,8 +54,8 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   playerCards,
   matchTimer,
 }) => {
-  const { user } = useAuthStore();
-  const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
+  const { isOwner: checkIsOwner } = usePermissions();
+  const isOwner = checkIsOwner(match);
 
   const isScheduled = match.status === 'scheduled';
   const isLive = match.status === 'live';

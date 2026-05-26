@@ -91,7 +91,7 @@ const JobsList: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Empleos</h1>
               <p className="mt-2 text-gray-600">
-                Encuentra tu próxima oportunidad laboral en Montelibano
+                Encuentra tu próxima oportunidad laboral en CordobaTech
               </p>
             </div>
             {isAuthenticated && user?.user_type === 'company' && (

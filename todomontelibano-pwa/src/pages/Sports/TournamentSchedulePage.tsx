@@ -15,7 +15,7 @@ import {
   Loader2,
   Eye,
 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import {
   useTournament,
   useTeams,
@@ -45,7 +45,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const TournamentSchedulePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuthStore();
+  const { isOwner: checkIsOwner } = usePermissions();
 
   const { data: tournament } = useTournament(slug || '');
   const { data: teamsData } = useTeams(slug || '');
@@ -72,7 +72,7 @@ const TournamentSchedulePage: React.FC = () => {
     );
   };
 
-  const isOwner = user?.role === 'manager' && user?.id === tournament?.posted_by;
+  const isOwner = checkIsOwner(tournament);
 
   const teams = teamsData?.results || [];
   const matches = matchesData?.results || [];

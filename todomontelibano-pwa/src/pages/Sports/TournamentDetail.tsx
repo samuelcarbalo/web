@@ -27,7 +27,7 @@ import {
   useBannersByPosition,
 } from '../../hooks/useSports';
 
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import CreateTeamModal from './CreateTeamModal';
 import CreateBannerModal from '../../components/CreateBannerModal';
@@ -37,12 +37,8 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuthStore();
+  const { user, isOwner: checkIsOwner } = usePermissions();
   const queryClient = useQueryClient();
-
-  const handleTeamCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['teams', slug] });
-  };
 
   const { data: tournament, isLoading } = useTournament(slug || '');
   const deleteMutation = useDeleteTournament();
@@ -57,8 +53,7 @@ const TournamentDetail: React.FC = () => {
   const [isCreateBannerModalOpen, setIsCreateBannerModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const isManager = user?.role === 'manager';
-  const isOwner = isManager && user?.id === tournament?.posted_by;
+  const isOwner = checkIsOwner(tournament);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';

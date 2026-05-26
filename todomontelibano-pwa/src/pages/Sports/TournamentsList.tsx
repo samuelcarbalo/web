@@ -22,10 +22,10 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTournaments, useBannersByPosition } from '../../hooks/useSports';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import { getMatches } from '../../lib/sportsApi';
 import type { SportType, Match } from '../../types/sports';
-import { sportTypeLabels, sportTypeColors } from '../../types/sports';
+import { sportTypeColors } from '../../types/sports';
 import { useLocation } from 'react-router-dom';
 import BannerAd from '../../components/BannerAd';
 
@@ -104,10 +104,16 @@ const TournamentsList: React.FC = () => {
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { user } = useAuthStore();
-  let isManager = user?.role === 'manager';
+  const { isManager, isAdmin } = usePermissions();
   const location = useLocation();
-  if (location.pathname === '/sports/') isManager = false;
+  const showMyTournamentsOption = isManager || isAdmin;
+
+  const [viewMode, setViewMode] = useState<'all' | 'mine'>(() => {
+    if (location.pathname.includes('my_tournaments')) {
+      return 'mine';
+    }
+    return 'all';
+  });
 
   const isMatchesTab = activeTab === 'matches';
 
@@ -115,7 +121,7 @@ const TournamentsList: React.FC = () => {
   const { data: tournamentsData, isLoading: loadingTournaments } = useTournaments({
     sport_type: isMatchesTab ? '' : (activeTab as SportType | ''),
     status: selectedStatus ? selectedStatus : 'active',
-    enabled: isManager,
+    enabled: viewMode === 'mine',
   });
 
   // ── Banners publicitarios ────────────────────────────────────────────────
@@ -251,7 +257,7 @@ const TournamentsList: React.FC = () => {
               </p>
             </div>
 
-            {isManager && (
+            {(isManager || isAdmin) && (
               <Link
                 to="/sports/tournaments/create"
                 className="inline-flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-500 rounded-xl text-white font-semibold transition-all shadow-lg shadow-green-900/30 hover:shadow-xl hover:shadow-green-900/40 hover:-translate-y-0.5 flex-shrink-0"
@@ -287,6 +293,33 @@ const TournamentsList: React.FC = () => {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {showMyTournamentsOption && !isMatchesTab && (
+          <div className="flex justify-start mb-6">
+            <div className="bg-white p-1.5 rounded-2xl border border-gray-200/80 flex gap-1 shadow-sm">
+              <button
+                onClick={() => setViewMode('all')}
+                className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                  viewMode === 'all'
+                    ? 'bg-green-600 text-white shadow-md shadow-green-600/10'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                Todos los torneos
+              </button>
+              <button
+                onClick={() => setViewMode('mine')}
+                className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                  viewMode === 'mine'
+                    ? 'bg-green-600 text-white shadow-md shadow-green-600/10'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                Mis torneos
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Barra de búsqueda y tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -643,7 +676,7 @@ const TournamentsList: React.FC = () => {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                       ) : (
-                        <div className={`w-full h-full ${sportTypeColors[tournament.sport_type]} flex items-center justify-center`}>
+                        <div className={`w-full h-full ${sportTypeColors[tournament.sport_type as SportType] || 'bg-blue-600'} flex items-center justify-center`}>
                           <div className="text-center">
                             {getSportIcon(tournament.sport_type)}
                             <p className="text-white/80 text-xs mt-2 font-medium uppercase tracking-wider">

@@ -129,6 +129,7 @@ export interface Player {
   id_number: string;
   email: string;
   team_name: string;
+  team_slug: string;
   photo: string | null;
   birth_date: string | null;
   nationality: string | null;

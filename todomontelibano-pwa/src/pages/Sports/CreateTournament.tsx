@@ -17,6 +17,9 @@ const CreateTournament: React.FC = () => {
   const { user } = useAuthStore();
   const createMutation = useCreateTournament();
   
+  const userCredits = user?.credits ?? 0;
+  const hasEnoughCredits = userCredits >= 50;
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -116,12 +119,28 @@ const CreateTournament: React.FC = () => {
             Crear nuevo torneo
           </h1>
           <p className="mt-2 text-gray-600">
-            Organiza un torneo deportivo en Montelibano
+            Organiza un torneo deportivo en CordobaTech
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Alerta de Créditos */}
+        <div className={`p-4 rounded-xl border mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${hasEnoughCredits ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🪙</span>
+            <div>
+              <p className="font-semibold text-sm sm:text-base">Costo de creación: 50 créditos</p>
+              <p className="text-xs sm:text-sm">Tienes <strong className="font-bold">{userCredits}</strong> créditos disponibles en tu cuenta.</p>
+            </div>
+          </div>
+          {!hasEnoughCredits && (
+            <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+              Créditos Insuficientes
+            </span>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">
@@ -332,16 +351,18 @@ const CreateTournament: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 btn-primary py-3 disabled:opacity-50"
+              disabled={createMutation.isPending || !hasEnoughCredits}
+              className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createMutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Creando...
                 </span>
+              ) : !hasEnoughCredits ? (
+                'Créditos insuficientes (Cuesta 50 🪙)'
               ) : (
-                'Crear torneo'
+                'Crear torneo (Cuesta 50 🪙)'
               )}
             </button>
           </div>

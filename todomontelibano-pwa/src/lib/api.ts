@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
   }
   
   // Agregar tenant header si existe
-  const tenant = localStorage.getItem('tenant_slug') || 'todomontelibano';
+  const tenant = localStorage.getItem('tenant_slug') || 'cordobatech';
   config.headers['X-Tenant'] = tenant;
   
   return config;

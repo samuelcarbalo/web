@@ -19,12 +19,12 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { usePlayer, useTournament } from '../../hooks/useSports';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 
 const PlayerProfilePage: React.FC = () => {
   const { playerId } = useParams<{ playerId: string }>();
-  const { user } = useAuthStore();
+  const { user, isOwner: checkIsOwner } = usePermissions();
 
   const { data: player, isLoading: loadingPlayer } = usePlayer(playerId || '');
   
@@ -37,7 +37,7 @@ const PlayerProfilePage: React.FC = () => {
   const isLoading = loadingPlayer || loadingTournament;
 
   // Verificar si el usuario puede editar (coach del equipo o owner del torneo)
-  const canEdit = user?.email === player?.team_name || user?.id === tournament?.posted_by;
+  const canEdit = user?.email === player?.team_name || checkIsOwner(tournament);
 
   if (isLoading) {
     return (
@@ -283,12 +283,12 @@ const PlayerProfilePage: React.FC = () => {
         
         <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link 
-            to={player.team ? `/sports/tournaments/${player.tournament_slug}/teams/${player.team}` : '/sports'}
-            className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Volver al equipo
-          </Link>
+              to={player.team ? `/sports/tournaments/${player.tournament_slug}/teams/${player.team_slug}` : '/sports'}
+              className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Volver al equipo
+            </Link>
           <div className="flex items-center gap-4">
             {player.photo ? (
               <img 

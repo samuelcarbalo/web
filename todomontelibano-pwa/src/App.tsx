@@ -30,8 +30,10 @@ import MatchDetailPage from './pages/Sports/MatchDetailPage';
 import TournamentStandingsPage from './pages/Sports/TournamentStandingsPage';
 import PlayerStatsPage from './pages/Sports/PlayerStatsPage';
 import TournamentPlayerStatsPage from './pages/Sports/TournamentPlayerStatsPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 // Hooks & Store
-// import { useMe } from './hooks/useAuth';
+import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 
 const queryClient = new QueryClient({
@@ -60,8 +62,8 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setLoading(false);
   }, [setLoading]);
 
-  // No llamar useMe() por ahora
-  // const { isLoading } = useMe();
+  // Llama useMe para mantener el store sincronizado con el backend en segundo plano
+  useMe();
   
   return <>{children}</>;
 };
@@ -100,6 +102,8 @@ const App: React.FC = () => {
               {/* Rutas públicas - NO requieren auth */}
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<Home />} />
+                <Route path="privacy" element={<PrivacyPolicy />} />
+                <Route path="terms" element={<TermsOfService />} />
                 <Route path="jobs" element={<JobsList />} />
                 <Route path="jobs/:id" element={<JobDetail />} />
                 <Route path="jobs/my_offers" element={<MyOffers />} />

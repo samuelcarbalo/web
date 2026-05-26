@@ -27,7 +27,7 @@ import {
   Ban,
   ArrowUpRight,
 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import {
   useMatch,
   useTournament,
@@ -164,7 +164,7 @@ const TimelineSkeleton: React.FC = () => (
 
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuthStore();
+  const { isOwner: checkIsOwner } = usePermissions();
   const navigate = useNavigate();
 
   const { data: match, isLoading } = useMatch(id || '');
@@ -256,7 +256,7 @@ const MatchDetailPage: React.FC = () => {
     description: '',
   });
 
-  const isOwner = user?.role === 'manager' && user?.id === match?.posted_by;
+  const isOwner = checkIsOwner(match);
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
 

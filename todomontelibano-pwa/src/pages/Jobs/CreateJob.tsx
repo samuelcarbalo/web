@@ -12,12 +12,17 @@ import {
   X
 } from 'lucide-react';
 import { useCreateJob } from '../../hooks/useJobs';
+import { useAuthStore } from '../../store/authStore';
 
 type JobType = 'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship';
 
 const CreateJob: React.FC = () => {
   const navigate = useNavigate();
   const createJob = useCreateJob();
+  const { user } = useAuthStore();
+  
+  const userCredits = user?.credits ?? 0;
+  const hasEnoughCredits = userCredits >= 5;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -138,12 +143,28 @@ const CreateJob: React.FC = () => {
           </button>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Publicar nueva oferta</h1>
           <p className="mt-2 text-gray-600">
-            Completa los detalles de la vacante para encontrar al candidato ideal
+            Completa los detalles de la vacante para encontrar al candidato ideal en CordobaTech
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Alerta de Créditos */}
+        <div className={`p-4 rounded-xl border mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${hasEnoughCredits ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🪙</span>
+            <div>
+              <p className="font-semibold text-sm sm:text-base">Costo de publicación: 5 créditos</p>
+              <p className="text-xs sm:text-sm">Tienes <strong className="font-bold">{userCredits}</strong> créditos disponibles en tu cuenta.</p>
+            </div>
+          </div>
+          {!hasEnoughCredits && (
+            <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+              Créditos Insuficientes
+            </span>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">
@@ -223,7 +244,7 @@ const CreateJob: React.FC = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="input-field pl-10"
-                    placeholder="Ej: Montelibano, Córdoba"
+                    placeholder="Ej: CordobaTech, Córdoba"
                   />
                 </div>
               </div>
@@ -251,7 +272,7 @@ const CreateJob: React.FC = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input-field"
-                  placeholder="Describe las responsabilidades del puesto, el equipo, la cultura de la empresa..."
+                  placeholder="Descubre oportunidades laborales en CordobaTech y zona bananera. Publica vacantes si eres empresa."
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Sé claro y atractivo. Los mejores candidatos valoran la transparencia.
@@ -269,7 +290,7 @@ const CreateJob: React.FC = () => {
                   value={formData.requirements}
                   onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                   className="input-field"
-                  placeholder="Lista los requisitos obligatorios y deseables: experiencia, estudios, habilidades técnicas..."
+                  placeholder="Lista los requisitos para la comunidad de CordobaTech, ofreciendo una experiencia, estudios, habilidades técnicas..."
                 />
               </div>
             </div>
@@ -515,7 +536,7 @@ const CreateJob: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createJob.isPending}
+              disabled={createJob.isPending || !hasEnoughCredits}
               className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createJob.isPending ? (
@@ -523,8 +544,10 @@ const CreateJob: React.FC = () => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Publicando...
                 </span>
+              ) : !hasEnoughCredits ? (
+                'Créditos insuficientes (Cuesta 5 🪙)'
               ) : (
-                'Publicar oferta'
+                'Publicar oferta (Cuesta 5 🪙)'
               )}
             </button>
           </div>
