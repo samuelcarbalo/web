@@ -25,6 +25,14 @@ const MainLayout: React.FC = () => {
   const { user, isAuthenticated } = useAuthStore();
   const logout = useLogout();
 
+  React.useEffect(() => {
+    if (location.pathname.startsWith("/jobs")) {
+      document.title = "Portal de Empleo | CordobaTech";
+    } else {
+      document.title = "CordobaTech";
+    }
+  }, [location.pathname]);
+
   const services = [
     {
       name: "Deportes",

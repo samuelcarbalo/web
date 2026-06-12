@@ -34,6 +34,12 @@ const JobDetail: React.FC = () => {
   const applyMutation = useApplyJob();
   const deleteMutation = useDeleteJob();
 
+  React.useEffect(() => {
+    if (job) {
+      document.title = `${job.title} | Portal de Empleo | CordobaTech`;
+    }
+  }, [job]);
+
   const isOwner = checkIsOwner(job);
   const hasApplied = false; // TODO: Check if user already applied
 
@@ -87,230 +93,270 @@ const JobDetail: React.FC = () => {
     );
   }
 
+  const getJobTypeLabel = (type: string) => {
+    switch (type) {
+      case "full_time":
+        return "Tiempo completo";
+      case "part_time":
+        return "Medio tiempo";
+      case "contract":
+        return "Contrato";
+      case "freelance":
+        return "Freelance";
+      case "internship":
+        return "Pasantía";
+      default:
+        return type;
+    }
+  };
+
+  const getJobTypeStyle = (type: string) => {
+    switch (type) {
+      case "full_time":
+        return "bg-emerald-50 text-emerald-700 border border-emerald-200/85";
+      case "part_time":
+        return "bg-blue-50 text-blue-700 border border-blue-200/85";
+      case "contract":
+        return "bg-amber-50 text-amber-700 border border-amber-200/85";
+      case "freelance":
+        return "bg-purple-50 text-purple-700 border border-purple-200/85";
+      case "internship":
+        return "bg-cyan-50 text-cyan-700 border border-cyan-200/85";
+      default:
+        return "bg-slate-50 text-slate-700 border border-slate-200/85";
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-slate-50/50 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white border-b border-slate-200/80 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
           <Link
             to="/jobs"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-slate-500 hover:text-blue-600 font-semibold text-sm transition-colors mb-5 group"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-0.5 transition-transform" />
             Volver a empleos
           </Link>
-
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
-                  {job.category}
-                </span>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-                  {job.job_type === "full_time"
-                    ? "Tiempo completo"
-                    : job.job_type === "part_time"
-                      ? "Medio tiempo"
-                      : job.job_type === "contract"
-                        ? "Contrato"
-                        : job.job_type === "freelance"
-                          ? "Freelance"
-                          : "Pasantía"}
-                </span>
+ 
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              {/* Company Logo in Header */}
+              <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                {job.logo ? (
+                  <img
+                    src={job.logo}
+                    alt={job.company_name}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
+                ) : (
+                  <Building2 className="w-8 h-8 text-slate-400" />
+                )}
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {job.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
-                <span className="flex items-center">
-                  <Building2 className="w-4 h-4 mr-1" />
-                  {job.company_name}
-                </span>
-                <span className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {job.location}
-                </span>
-                <span className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  Publicado{" "}
-                  {new Date(job.posted_at).toLocaleDateString("es-CO")}
-                </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60 rounded-md">
+                    {job.category}
+                  </span>
+                  <span className={`px-2.5 py-0.5 text-xs font-bold rounded-md ${getJobTypeStyle(job.job_type)}`}>
+                    {getJobTypeLabel(job.job_type)}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                  {job.title}
+                </h1>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3.5 text-xs sm:text-sm text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Building2 className="w-4 h-4 text-slate-400" />
+                    <span className="text-slate-900">{job.company_name}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4 text-rose-400" />
+                    <span>{job.location}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    <span>Publicado {new Date(job.posted_at).toLocaleDateString("es-CO")}</span>
+                  </span>
+                </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                <Share2 className="w-5 h-5 text-gray-600" />
+ 
+            <div className="flex items-center gap-2.5 self-start md:self-center">
+              <button className="p-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 text-slate-600 transition-all">
+                <Share2 className="w-5 h-5" />
               </button>
-              <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                <Bookmark className="w-5 h-5 text-gray-600" />
+              <button className="p-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 text-slate-600 transition-all">
+                <Bookmark className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
       </div>
-
+ 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
+            <div className="card bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2.5">
                 Descripción del puesto
               </h2>
-              <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-line">
+              <div className="prose prose-sm max-w-none text-slate-600 font-medium leading-relaxed whitespace-pre-line">
                 {job.description}
               </div>
             </div>
-
-            <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
-                Requisitos
-              </h2>
-              <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-line">
-                {job.requirements}
+ 
+            {job.requirements && (
+              <div className="card bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2.5">
+                  Requisitos
+                </h2>
+                <div className="prose prose-sm max-w-none text-slate-600 font-medium leading-relaxed whitespace-pre-line">
+                  {job.requirements}
+                </div>
               </div>
-            </div>
-
+            )}
+ 
             {/* Company Info */}
-            <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
+            <div className="card bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2.5">
                 Sobre la empresa
               </h2>
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
                   {job.logo ? (
                     <img
                       src={job.logo}
                       alt={job.company_name}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover rounded-2xl"
                     />
                   ) : (
-                    <Building2 className="w-8 h-8 text-gray-400" />
+                    <Building2 className="w-8 h-8 text-slate-400" />
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">
+                  <h3 className="font-bold text-slate-900 text-base">
                     {job.company_name}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {"Empresa registrada en CordobaTech"}
-                    {/* job.company_description ||  */}
+                  <p className="text-sm text-slate-500 font-medium mt-1">
+                    {"Empresa certificada y registrada en CordobaTech"}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-
+ 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Apply Card */}
-            <div className="card bg-primary-50 border-primary-200">
-              <h3 className="font-bold text-gray-900 mb-4">
+            <div className="card bg-gradient-to-br from-blue-50/60 to-indigo-50/60 border border-blue-100/70 shadow-sm rounded-2xl p-6">
+              <h3 className="font-bold text-slate-900 text-base mb-4">
                 ¿Interesado en este empleo?
               </h3>
-
+ 
               {isAuthenticated ? (
                 <>
                   {isOwner ? (
                     <div className="space-y-3">
                       <Link
                         to={`/jobs/edit/${job.id}`}
-                        className="w-full btn-secondary block text-center"
+                        className="w-full btn-secondary block text-center font-bold py-2.5 text-sm rounded-xl"
                       >
                         Editar oferta
                       </Link>
                       <button
                         onClick={handleDelete}
-                        className="w-full py-2 px-4 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
+                        className="w-full py-2.5 px-4 border border-rose-200 text-rose-600 bg-white hover:bg-rose-50 rounded-xl text-sm font-bold transition-colors cursor-pointer"
                       >
                         Eliminar oferta
                       </button>
                       <Link
                         to={`/jobs/${job.id}/applications`}
-                        className="w-full btn-primary block text-center"
+                        className="w-full btn-primary block text-center font-bold py-2.5 text-sm rounded-xl"
                       >
                         Ver aplicaciones ({job.applications_count})
                       </Link>
                     </div>
                   ) : hasApplied ? (
-                    <div className="text-center py-4">
+                    <div className="text-center py-4 bg-white rounded-xl border border-green-100 shadow-sm">
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Send className="w-6 h-6 text-green-600" />
                       </div>
-                      <p className="text-green-800 font-medium">
+                      <p className="text-green-800 font-bold text-sm">
                         Ya aplicaste a este empleo
                       </p>
-                      <p className="text-sm text-green-600 mt-1">
+                      <p className="text-xs text-green-600 mt-1 font-medium">
                         La empresa revisará tu aplicación
                       </p>
                     </div>
                   ) : (
                     <button
                       onClick={() => setShowApplyModal(true)}
-                      className="w-full btn-primary py-3"
+                      className="w-full btn-primary font-bold py-3 text-sm rounded-xl cursor-pointer"
                     >
                       Aplicar ahora
                     </button>
                   )}
                 </>
               ) : (
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-3">
-                    Inicia sesión para aplicar a este empleo
+                <div className="text-center py-2">
+                  <p className="text-xs font-medium text-slate-500 mb-4">
+                    Inicia sesión para poder postularte a esta vacante laboral.
                   </p>
                   <Link
                     to="/login"
-                    className="w-full btn-primary block text-center py-3"
+                    className="w-full btn-primary block text-center font-bold py-3 text-sm rounded-xl"
                   >
                     Iniciar sesión
                   </Link>
                 </div>
               )}
             </div>
-
+ 
             {/* Job Details */}
-            <div className="card">
-              <h3 className="font-bold text-gray-900 mb-4">
+            <div className="card bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-slate-900 text-base mb-4 border-b border-slate-100 pb-2">
                 Detalles del empleo
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-4 text-sm font-medium">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 flex items-center">
-                    <DollarSign className="w-4 h-4 mr-2" />
+                  <span className="text-slate-500 flex items-center">
+                    <DollarSign className="w-4.5 h-4.5 mr-2 text-emerald-500" />
                     Salario
                   </span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-bold text-slate-800">
                     {job.salary_min || job.salary_max
                       ? `$${job.salary_min?.toLocaleString() || ""} - $${job.salary_max?.toLocaleString() || ""} ${job.currency}`
                       : "A convenir"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2" />
+                  <span className="text-slate-500 flex items-center">
+                    <Briefcase className="w-4.5 h-4.5 mr-2 text-blue-500" />
                     Tipo
                   </span>
-                  <span className="font-medium text-gray-900">
-                    {job.job_type === "full_time" ? "Tiempo completo" : "Otro"}
+                  <span className="font-bold text-slate-800">
+                    {getJobTypeLabel(job.job_type)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" />
+                  <span className="text-slate-500 flex items-center">
+                    <MapPin className="w-4.5 h-4.5 mr-2 text-rose-500" />
                     Ubicación
                   </span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-bold text-slate-800">
                     {job.location}
                   </span>
                 </div>
                 {job.expires_at && (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600 flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
+                    <span className="text-slate-500 flex items-center">
+                      <Calendar className="w-4.5 h-4.5 mr-2 text-slate-400" />
                       Vence
                     </span>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-bold text-slate-850">
                       {new Date(job.expires_at).toLocaleDateString("es-CO")}
                     </span>
                   </div>
