@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Shield, Coins } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { Shield, Coins, Target } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
 import CreditBalanceBadge from '../../components/Credits/CreditBalanceBadge';
@@ -9,14 +9,30 @@ import { useAuthStore } from '../../store/authStore';
 import { useCreatePreference, useCreditPackages } from '../../hooks/usePayments';
 
 const CreditPackagesPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { data: packages, isError, isFetching } = useCreditPackages();
   const createPreference = useCreatePreference();
+  const [searchParams] = useSearchParams();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
 
   const displayPackages = packages ?? FALLBACK_PACKAGES;
+
+  const neededParam = parseInt(searchParams.get('needed') || '', 10);
+  const needed = Number.isFinite(neededParam) && neededParam > 0 ? neededParam : 0;
+  const reason = searchParams.get('reason') || '';
+  const currentCredits = user?.credits ?? 0;
+  const missing = Math.max(0, needed - currentCredits);
+
+  /** Paquete más pequeño que cubre el faltante (para resaltarlo). */
+  const recommendedId = useMemo(() => {
+    if (!missing) return null;
+    const covering = [...displayPackages]
+      .filter((p) => p.credits >= missing)
+      .sort((a, b) => a.credits - b.credits);
+    return covering[0]?.id ?? null;
+  }, [displayPackages, missing]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -57,18 +73,34 @@ const CreditPackagesPage: React.FC = () => {
       </div>
 
       <div className="page-container -mt-8 relative z-10">
+        {missing > 0 && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border-2 border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-950/40 px-5 py-4">
+            <Target className="w-6 h-6 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="font-bold text-violet-900 dark:text-violet-100">
+                Necesitas {needed} créditos{reason ? ` para ${reason}` : ''}
+              </p>
+              <p className="text-sm text-violet-800 dark:text-violet-200 mt-0.5">
+                Saldo actual: <strong>{currentCredits}</strong> · Te faltan{' '}
+                <strong>{missing}</strong> créditos.
+                {recommendedId && ' Resaltamos el paquete recomendado que los cubre.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {isError && !isFetching && (
           <p className="mb-4 text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl px-4 py-3">
             No pudimos cargar los precios desde el servidor. Mostramos el catálogo local.
           </p>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {displayPackages.map((pkg) => (
             <CreditPackageCard
               key={pkg.id}
               pkg={pkg}
               isSelected={selectedId === pkg.id}
-              isPopular={pkg.id === 'oro'}
+              isPopular={recommendedId ? recommendedId === pkg.id : pkg.id === 'oro'}
               onSelect={() => handleSelect(pkg.id)}
               isProcessing={createPreference.isPending && selectedId === pkg.id}
             />

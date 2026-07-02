@@ -15,6 +15,9 @@ const InsufficientCreditsAlert: React.FC<InsufficientCreditsAlertProps> = ({
   actionLabel,
 }) => {
   const hasEnough = available >= required;
+  const buyHref = `${ROUTES_CREDITS.packages}?needed=${required}&reason=${encodeURIComponent(
+    actionLabel
+  )}`;
 
   return (
     <div
@@ -47,7 +50,7 @@ const InsufficientCreditsAlert: React.FC<InsufficientCreditsAlertProps> = ({
       </div>
       {!hasEnough && (
         <Link
-          to={ROUTES_CREDITS.packages}
+          to={buyHref}
           className="btn-primary whitespace-nowrap text-center text-sm"
         >
           Comprar créditos
