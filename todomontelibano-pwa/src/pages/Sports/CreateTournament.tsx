@@ -37,6 +37,8 @@ const CreateTournament: React.FC = () => {
     banner: '',
     rules_url: '',
     lineup_size: 9,
+    regulation_innings: 7,
+    mercy_rule_enabled: true,
   });
 
   const { data: formatTemplates } = useFormatTemplates(formData.sport_type);
@@ -128,7 +130,7 @@ const CreateTournament: React.FC = () => {
     });
   };
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -380,6 +382,36 @@ const CreateTournament: React.FC = () => {
                       onChange={() => handleChange('lineup_size', 10)}
                     />
                     <span className="text-sm">10 (9 en campo + DH/EP por el pitcher)</span>
+                  </label>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Entradas reglamentarias
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={15}
+                      value={formData.regulation_innings}
+                      onChange={(e) =>
+                        handleChange('regulation_innings', parseInt(e.target.value) || 7)
+                      }
+                      className="input-field"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Softbol estándar: 7 entradas.</p>
+                  </div>
+                  <label className="flex items-start gap-2 cursor-pointer pt-8">
+                    <input
+                      type="checkbox"
+                      checked={formData.mercy_rule_enabled}
+                      onChange={(e) => handleChange('mercy_rule_enabled', e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
+                      Aplicar nocaut por diferencia de carreras (mercy rule)
+                    </span>
                   </label>
                 </div>
               </div>

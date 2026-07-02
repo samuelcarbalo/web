@@ -43,7 +43,8 @@ const TournamentPlayerStatsPage: React.FC = () => {
     statKey, 
     statLabel, 
     colorClass, 
-    bgClass 
+    bgClass,
+    format,
   }: {
     title: string;
     icon: React.ReactNode;
@@ -52,6 +53,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
     statLabel: string;
     colorClass: string;
     bgClass: string;
+    format?: (v: any) => string;
   }) => {
     if (!players || players.length === 0) return null;
 
@@ -112,7 +114,9 @@ const TournamentPlayerStatsPage: React.FC = () => {
 
               {/* Stat */}
               <div className={`text-right ${colorClass}`}>
-                <span className="text-xl font-bold">{player[statKey]}</span>
+                <span className="text-xl font-bold">
+                  {format ? format(player[statKey]) : player[statKey]}
+                </span>
                 <span className="text-xs block text-gray-400">{statLabel}</span>
               </div>
             </div>
@@ -159,69 +163,111 @@ const TournamentPlayerStatsPage: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Top Goleadores */}
-          <StatSection
-            title="Top Goleadores"
-            icon={<Goal className="w-5 h-5 text-green-600" />}
-            players={stats.top_scorers}
-            statKey="goals"
-            statLabel="goles"
-            colorClass="text-green-600"
-            bgClass="bg-green-50"
-          />
+          {!isSoftball && (
+            <>
+              {/* Top Goleadores */}
+              <StatSection
+                title="Top Goleadores"
+                icon={<Goal className="w-5 h-5 text-green-600" />}
+                players={stats.top_scorers}
+                statKey="goals"
+                statLabel="goles"
+                colorClass="text-green-600"
+                bgClass="bg-green-50"
+              />
 
-          {/* Top Amarillas */}
-          <StatSection
-            title="Top Tarjetas Amarillas"
-            icon={<Shield className="w-5 h-5 text-yellow-600" />}
-            players={stats.top_yellow_cards}
-            statKey="yellow_cards"
-            statLabel="amarillas"
-            colorClass="text-yellow-600"
-            bgClass="bg-yellow-50"
-          />
+              {/* Top Amarillas */}
+              <StatSection
+                title="Top Tarjetas Amarillas"
+                icon={<Shield className="w-5 h-5 text-yellow-600" />}
+                players={stats.top_yellow_cards}
+                statKey="yellow_cards"
+                statLabel="amarillas"
+                colorClass="text-yellow-600"
+                bgClass="bg-yellow-50"
+              />
 
-          {/* Top Rojas */}
-          <StatSection
-            title="Top Tarjetas Rojas"
-            icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
-            players={stats.top_red_cards}
-            statKey="red_cards"
-            statLabel="rojas"
-            colorClass="text-red-600"
-            bgClass="bg-red-50"
-          />
+              {/* Top Rojas */}
+              <StatSection
+                title="Top Tarjetas Rojas"
+                icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
+                players={stats.top_red_cards}
+                statKey="red_cards"
+                statLabel="rojas"
+                colorClass="text-red-600"
+                bgClass="bg-red-50"
+              />
+            </>
+          )}
 
           {/* Stats de Softbol */}
           {isSoftball && (
             <>
               <StatSection
-                title="Top Strikes"
+                title="Líderes de bateo (AVG)"
                 icon={<Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />}
-                players={stats.top_strikes}
-                statKey="strikes"
-                statLabel="strikes"
+                players={stats.top_average}
+                statKey="batting_average"
+                statLabel="AVG"
                 colorClass="text-violet-600 dark:text-violet-400"
                 bgClass="bg-violet-50 dark:bg-violet-950/30"
+                format={(v) => (typeof v === 'number' ? v.toFixed(3).replace(/^0/, '') : v)}
               />
 
               <StatSection
-                title="Top Home Runs"
+                title="Top Hits"
+                icon={<Goal className="w-5 h-5 text-emerald-600" />}
+                players={stats.top_hits}
+                statKey="hits"
+                statLabel="hits"
+                colorClass="text-emerald-600"
+                bgClass="bg-emerald-50"
+              />
+
+              <StatSection
+                title="Top Jonrones"
                 icon={<Home className="w-5 h-5 text-purple-600" />}
                 players={stats.top_home_runs}
                 statKey="home_runs"
-                statLabel="home runs"
+                statLabel="jonrones"
                 colorClass="text-purple-600"
                 bgClass="bg-purple-50"
+              />
+
+              <StatSection
+                title="Top Carreras Impulsadas (RBI)"
+                icon={<Trophy className="w-5 h-5 text-amber-600" />}
+                players={stats.top_rbis}
+                statKey="rbis"
+                statLabel="RBI"
+                colorClass="text-amber-600"
+                bgClass="bg-amber-50"
+              />
+
+              <StatSection
+                title="Top Carreras Anotadas"
+                icon={<Zap className="w-5 h-5 text-sky-600" />}
+                players={stats.top_runs}
+                statKey="runs_scored"
+                statLabel="carreras"
+                colorClass="text-sky-600"
+                bgClass="bg-sky-50"
               />
             </>
           )}
         </div>
 
         {/* Sin datos */}
-        {!stats.top_scorers?.length && 
-         !stats.top_yellow_cards?.length && 
-         !stats.top_red_cards?.length && (
+        {((!isSoftball &&
+          !stats.top_scorers?.length &&
+          !stats.top_yellow_cards?.length &&
+          !stats.top_red_cards?.length) ||
+          (isSoftball &&
+            !stats.top_average?.length &&
+            !stats.top_hits?.length &&
+            !stats.top_home_runs?.length &&
+            !stats.top_rbis?.length &&
+            !stats.top_runs?.length)) && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-12 text-center">
             <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">Aún no hay estadísticas de jugadores registradas</p>

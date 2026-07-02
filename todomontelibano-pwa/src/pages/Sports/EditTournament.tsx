@@ -35,6 +35,8 @@ const EditTournament: React.FC = () => {
     status: 'upcoming',
     rules_url: '',
     lineup_size: 9,
+    regulation_innings: 7,
+    mercy_rule_enabled: true,
   });
 
   const sports: { value: SportType; label: string }[] = [
@@ -74,6 +76,8 @@ const EditTournament: React.FC = () => {
         status: tournament.status,
         rules_url: tournament.rules_url || '',
         lineup_size: tournament.lineup_size || 9,
+        regulation_innings: tournament.regulation_innings || 7,
+        mercy_rule_enabled: tournament.mercy_rule_enabled ?? true,
       });
     }
   }, [tournament, user, navigate]);
@@ -107,7 +111,7 @@ const EditTournament: React.FC = () => {
     });
   };
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -322,6 +326,35 @@ const EditTournament: React.FC = () => {
                       onChange={() => handleChange('lineup_size', 10)}
                     />
                     <span className="text-sm">10 (9 + DH/EP)</span>
+                  </label>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Entradas reglamentarias
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={15}
+                      value={formData.regulation_innings}
+                      onChange={(e) =>
+                        handleChange('regulation_innings', parseInt(e.target.value) || 7)
+                      }
+                      className="input-field"
+                    />
+                  </div>
+                  <label className="flex items-start gap-2 cursor-pointer pt-8">
+                    <input
+                      type="checkbox"
+                      checked={formData.mercy_rule_enabled}
+                      onChange={(e) => handleChange('mercy_rule_enabled', e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
+                      Nocaut por diferencia de carreras (mercy rule)
+                    </span>
                   </label>
                 </div>
               </div>

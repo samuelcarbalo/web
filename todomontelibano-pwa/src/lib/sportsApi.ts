@@ -170,6 +170,19 @@ export const addMatchEvent = async (id: string, data: {
   return response.data;
 };
 
+export const recordInning = async (id: string, data: {
+  number: number;
+  half: 'top' | 'bottom';
+  runs?: number;
+  hits?: number;
+  errors?: number;
+  is_complete?: boolean;
+  finish?: boolean;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/record_inning/`, data);
+  return response.data;
+};
+
 // Alineaciones
 export const setLineup = async (id: string, data: {
   team: string;

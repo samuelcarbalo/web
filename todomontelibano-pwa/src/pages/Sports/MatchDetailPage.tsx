@@ -51,6 +51,9 @@ import {
   getScoreLabel,
 } from '../../lib/matchScoring';
 import MatchLineupSection from './MatchLineupSection';
+import SoftballScoreboard from './SoftballScoreboard';
+import SoftballLiveControls from './SoftballLiveControls';
+import SoftballEventModal from './SoftballEventModal';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
@@ -241,6 +244,7 @@ const MatchDetailPage: React.FC = () => {
   }, [playerCards]);
 
   const [showTimerControls, setShowTimerControls] = useState(false);
+  const [showSoftballEvent, setShowSoftballEvent] = useState(false);
 
   const [editData, setEditData] = useState({
     match_date: '',
@@ -269,6 +273,8 @@ const MatchDetailPage: React.FC = () => {
   const isOwner = checkIsOwner(match);
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
+  const isSoftball = sportType === 'softball';
+  const regulationInnings = tournament?.regulation_innings ?? match?.regulation_innings ?? 7;
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -712,7 +718,7 @@ const MatchDetailPage: React.FC = () => {
                 )}
 
                 {/* Cronómetro del partido */}
-                {isLive && (
+                {isLive && !isSoftball && (
                   <div className="mt-3">
                     <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-3xl font-bold">
                       <Timer className="w-5 h-5 animate-pulse" />
@@ -778,8 +784,43 @@ const MatchDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* CONTROLES DE PERÍODOS - Rediseñados */}
-        {isLive && isOwner && (
+        {/* SOFTBOL: pizarra por entradas */}
+        {isSoftball && (isLive || isFinished) && match.line_score && (
+          <SoftballScoreboard
+            lineScore={match.line_score}
+            homeName={match.home_team_detail?.name}
+            awayName={match.away_team_detail?.name}
+            regulationInnings={regulationInnings}
+          />
+        )}
+
+        {/* SOFTBOL: controles de anotación en vivo */}
+        {isSoftball && isLive && isOwner && (
+          <>
+            <SoftballLiveControls
+              match={match}
+              lineScore={match.line_score}
+              regulationInnings={regulationInnings}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowSoftballEvent(true)}
+                className="w-full py-2.5 rounded-2xl border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 font-semibold text-sm hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors"
+              >
+                Registrar jugada (hit, ponche, RBI…)
+              </button>
+              <button
+                onClick={openFinishModal}
+                className="w-full py-2.5 rounded-2xl border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 font-semibold text-sm hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              >
+                Finalizar partido manualmente
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* CONTROLES DE PERÍODOS - Rediseñados (fútbol) */}
+        {isLive && isOwner && !isSoftball && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1390,6 +1431,16 @@ const MatchDetailPage: React.FC = () => {
           </div>
         );
       })()}
+
+      {/* Modal: Registrar jugada de softbol */}
+      {showSoftballEvent && (
+        <SoftballEventModal
+          match={match}
+          homePlayers={homePlayersData?.results ?? []}
+          awayPlayers={awayPlayersData?.results ?? []}
+          onClose={() => setShowSoftballEvent(false)}
+        />
+      )}
 
       {/* Modal: Confirmar eliminación */}
       {showDeleteConfirm && (

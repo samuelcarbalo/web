@@ -30,6 +30,8 @@ export interface Tournament {
   scoring_config?: Record<string, unknown>;
   rules_url?: string;
   lineup_size?: number;
+  regulation_innings?: number;
+  mercy_rule_enabled?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -59,6 +61,8 @@ export interface CreateTournamentData {
   scoring_config?: Record<string, unknown>;
   rules_url?: string;
   lineup_size?: number;
+  regulation_innings?: number;
+  mercy_rule_enabled?: boolean;
 }
 
 export interface FormatTemplate {
@@ -321,6 +325,8 @@ export interface Match {
   phase?: string | null;
   group?: string | null;
   sport_type?: string;
+  regulation_innings?: number;
+  line_score?: LineScore | null;
   notes: string;
   posted_by: string;
   events: MatchEvent[];
@@ -328,11 +334,75 @@ export interface Match {
   end_time?: string;
 }
 
+export interface LineScoreCell {
+  inning: number;
+  runs: number | null;
+  played: boolean;
+}
+
+export interface LineScoreSide {
+  line: LineScoreCell[];
+  runs: number;
+  hits: number;
+  errors: number;
+}
+
+export interface LineScore {
+  innings_count: number;
+  home: LineScoreSide;
+  away: LineScoreSide;
+}
+
+export interface RecordInningData {
+  number: number;
+  half: 'top' | 'bottom';
+  runs?: number;
+  hits?: number;
+  errors?: number;
+  is_complete?: boolean;
+  finish?: boolean;
+}
+
+export interface GameOverInfo {
+  over: boolean;
+  reason: string | null;
+  winner: 'home' | 'away' | null;
+}
+
+export type SoftballEventType =
+  | 'single'
+  | 'double'
+  | 'triple'
+  | 'home_run'
+  | 'walk'
+  | 'strikeout'
+  | 'run'
+  | 'rbi'
+  | 'error'
+  | 'out';
+
+export type MatchEventType =
+  | 'goal'
+  | 'own_goal'
+  | 'yellow_card'
+  | 'red_card'
+  | 'substitution_in'
+  | 'substitution_out'
+  | 'penalty_goal'
+  | 'penalty_missed'
+  | 'assist'
+  | 'expelled'
+  | 'other'
+  | SoftballEventType;
+
 export interface MatchEvent {
   id: string;
-  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'injury' | 'other';
+  event_type: MatchEventType;
   event_type_display: string;
-  minute: number;
+  minute: number | null;
+  inning_number?: number | null;
+  inning_half?: 'top' | 'bottom' | '';
+  rbi?: number;
   player: string;
   player_name: string;
   team: string;

@@ -20,6 +20,7 @@ import {
   finishMatch,
   updateScore,
   addMatchEvent,
+  recordInning,
   getPlayers,
   getPlayer,
   createPlayer,
@@ -348,7 +349,22 @@ export const useAddMatchEvent = () => {
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
     },
   });
-};// ============ ALINEACIONES ============
+};
+
+export const useRecordInning = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => recordInning(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings'] });
+      queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
+    },
+  });
+};
+// ============ ALINEACIONES ============
 
 
 export const useMatchLineup = (matchId: string) => {
