@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -28,7 +28,6 @@ const Register: React.FC = () => {
   });
 
   const register = useRegister();
-  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

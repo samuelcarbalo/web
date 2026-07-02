@@ -19,8 +19,17 @@ export interface Tournament {
   max_players_per_team: number;
   logo?: string;
   banner?: string;
-  status: 'active' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status:
+    | 'draft'
+    | 'registration'
+    | 'active'
+    | 'upcoming'
+    | 'ongoing'
+    | 'finished'
+    | 'completed'
+    | 'cancelled';
   teams_count: number;
+  matches_count?: number;
   created_at: string;
   updated_at: string;
   is_registration_open: boolean;

@@ -20,7 +20,6 @@ const PlayerStatsPage: React.FC = () => {
   const { data: tournament} = useTournament(player?.tournament_slug || '');
 
   const isSoftball = tournament?.sport_type === 'softball';
-  const isFootball = tournament?.sport_type === 'football'
 
 
   // Tarjetas de estadísticas principales

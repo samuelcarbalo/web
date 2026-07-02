@@ -8,7 +8,6 @@ import {
   Save,
   X,
   UserPlus,
-  Shirt,
   Crown,
   Loader2,
   Camera,
@@ -368,7 +367,6 @@ const TeamRosterPage: React.FC = () => {
   const activePlayers = players.filter((p) => p.is_active).length;
   const captains = players.filter((p) => p.is_captain).length;
   const totalGoals = players.reduce((sum, p) => sum + (p.goals || 0), 0);
-  const inactivePlayers = players.length - activePlayers;
 
   /* ═══════════════════════════════════════════
      RENDER

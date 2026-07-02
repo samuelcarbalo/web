@@ -53,7 +53,7 @@ export const useMe = () => {
         };
 
         setAuth(user, {
-          access: token,
+          access: localStorage.getItem('access_token') || '',
           refresh: localStorage.getItem('refresh_token') || '',
         });
 

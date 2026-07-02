@@ -54,7 +54,6 @@ const TeamDetailPage: React.FC = () => {
   }
 
   // Calcular estadísticas del equipo
-  const totalGoals = players.reduce((sum, p) => sum + (p.goals || 0), 0);
   const totalMatches = team.played || 0;
   const winRate = totalMatches > 0 ? ((team.won || 0) / totalMatches * 100).toFixed(1) : '0';
   const topScorer = [...players].sort((a, b) => (b.goals || 0) - (a.goals || 0))[0];

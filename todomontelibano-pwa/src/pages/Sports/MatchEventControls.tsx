@@ -22,7 +22,6 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
   homeTeamId,
   awayTeamId,
   isOwner,
-  isLive,
 }) => {
   const { mutate: updatePlayer } = useUpdatePlayer();
   const updateScoreMutation = useUpdateScore();

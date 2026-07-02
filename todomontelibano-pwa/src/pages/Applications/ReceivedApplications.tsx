@@ -4,7 +4,6 @@ import { Link, useParams } from 'react-router-dom';
 import { 
   User, 
   Mail, 
-  Phone, 
   Calendar, 
   Briefcase, 
   ChevronLeft, 

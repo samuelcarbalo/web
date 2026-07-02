@@ -44,7 +44,7 @@ const EventDetail: React.FC = () => {
 
   const { isOwner: checkIsOwner } = usePermissions();
 
-  const isOwner = checkIsOwner(event);
+  const isOwner = checkIsOwner(event as any);
 
 
 

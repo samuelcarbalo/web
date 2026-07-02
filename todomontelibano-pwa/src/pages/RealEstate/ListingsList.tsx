@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search, MapPin, House, Clock, Filter, ChevronDown, Plus, Sparkles, Key, Building,
+  Search, MapPin, House, Clock, Filter, ChevronDown, Plus, Sparkles, Building,
 } from 'lucide-react';
 import { useListings } from '../../hooks/useRealEstate';
 import { useAuthStore } from '../../store/authStore';

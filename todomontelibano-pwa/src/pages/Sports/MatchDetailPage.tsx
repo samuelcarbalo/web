@@ -11,16 +11,13 @@ import {
   Edit3,
   Trash2,
   Loader2,
-  Flag,
   AlertTriangle,
   UserPlus,
   Activity,
   Shield,
   Timer,
   Pause,
-  ChevronRight,
   Zap,
-  Users,
   Target,
   Swords,
   History,
@@ -208,7 +205,7 @@ const MatchDetailPage: React.FC = () => {
 
   // Estados del cronómetro
   const [matchTimer, setMatchTimer] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [, setIsTimerRunning] = useState(false);
   const [playerCards, setPlayerCards] = useState<Record<string, { yellow: number; red: boolean }>>({});
 
   // Sincronizar con eventos existentes del match
@@ -243,7 +240,6 @@ const MatchDetailPage: React.FC = () => {
     return playerCards[playerId]?.yellow || 0;
   }, [playerCards]);
 
-  const [showTimerControls, setShowTimerControls] = useState(false);
   const [showSoftballEvent, setShowSoftballEvent] = useState(false);
 
   const [editData, setEditData] = useState({
@@ -362,23 +358,6 @@ const MatchDetailPage: React.FC = () => {
       timerRef.current = null;
     }
     setIsTimerRunning(false);
-  };
-
-  const resumeTimer = () => {
-    startTimer();
-  };
-
-  const resetTimer = () => {
-    pauseTimer();
-    setMatchTimer(0);
-  };
-
-  const adjustTimer = (minutes: number) => {
-    setMatchTimer(prev => Math.max(0, Math.min(EXTRA_TIME_MINUTES, prev + minutes)));
-  };
-
-  const setTimerToMinute = (minute: number) => {
-    setMatchTimer(Math.max(0, Math.min(EXTRA_TIME_MINUTES, minute)));
   };
 
   const formatTimer = (minutes: number) => {

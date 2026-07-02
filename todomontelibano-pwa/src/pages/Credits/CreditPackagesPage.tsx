@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Shield, Coins, Target } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
@@ -16,6 +16,8 @@ const CreditPackagesPage: React.FC = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [initPoint, setInitPoint] = useState<string | null>(null);
+  const checkoutRef = useRef<HTMLDivElement>(null);
 
   const displayPackages = packages ?? FALLBACK_PACKAGES;
 
@@ -41,9 +43,15 @@ const CreditPackagesPage: React.FC = () => {
   const handleSelect = async (packageId: string) => {
     setSelectedId(packageId);
     setPreferenceId(null);
+    setInitPoint(null);
     try {
       const result = await createPreference.mutateAsync(packageId);
       setPreferenceId(result.preference_id);
+      setInitPoint(result.init_point || result.sandbox_init_point || null);
+      // Llevar la vista al checkout (queda debajo de la grilla de paquetes).
+      requestAnimationFrame(() => {
+        checkoutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     } catch {
       setSelectedId(null);
     }
@@ -108,7 +116,7 @@ const CreditPackagesPage: React.FC = () => {
         </div>
 
         {/* Checkout Mercado Pago — logo MP en primera posición (Wallet SDK) */}
-        <div className="mt-10 card-static max-w-lg mx-auto">
+        <div ref={checkoutRef} className="mt-10 card-static max-w-lg mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <img
               src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__large.png"
@@ -130,6 +138,7 @@ const CreditPackagesPage: React.FC = () => {
 
           <MercadoPagoCheckout
             preferenceId={preferenceId}
+            initPoint={initPoint}
             isLoading={createPreference.isPending}
           />
 

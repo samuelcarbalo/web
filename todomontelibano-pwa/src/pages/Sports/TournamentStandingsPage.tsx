@@ -4,7 +4,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 
 import { useTournament, useTournamentStandings, useTournamentStructure } from '../../hooks/useSports';
 
-import { Trophy, Loader2, Crown } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
 

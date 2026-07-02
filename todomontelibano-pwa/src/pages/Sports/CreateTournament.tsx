@@ -11,7 +11,7 @@ import { useCreateTournament, useFormatTemplates } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
-import type { SportType, sportTypeLabels } from '../../types/sports';
+import type { SportType } from '../../types/sports';
 
 const CreateTournament: React.FC = () => {
   const navigate = useNavigate();

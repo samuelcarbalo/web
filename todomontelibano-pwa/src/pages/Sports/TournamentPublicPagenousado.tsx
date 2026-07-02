@@ -5,7 +5,6 @@ import {
   Calendar,
   Trophy,
   TrendingUp,
-  Users,
   Clock,
   MapPin,
   Shield,

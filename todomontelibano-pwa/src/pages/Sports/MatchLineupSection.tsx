@@ -609,8 +609,8 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                 { id: match.id, data: { team: currentTeamId, players } },
                 {
                   onSuccess: () => setSaveError(null),
-                  onError: (err: { response?: { data?: { error?: unknown; players?: string[] } } }) => {
-                    const apiErr = err?.response?.data;
+                  onError: (err) => {
+                    const apiErr = (err as { response?: { data?: { error?: unknown; players?: string[] } } })?.response?.data;
                     const msg = Array.isArray(apiErr?.players)
                       ? apiErr.players.join(' ')
                       : typeof apiErr?.error === 'string'
