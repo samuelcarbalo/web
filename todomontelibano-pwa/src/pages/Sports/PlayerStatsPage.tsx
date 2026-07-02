@@ -35,7 +35,7 @@ const PlayerStatsPage: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Header del jugador */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
         <div className="flex items-center gap-4">
           {player.photo ? (
             <img src={player.photo} alt="" className="w-20 h-20 rounded-full object-cover" />
@@ -45,7 +45,7 @@ const PlayerStatsPage: React.FC = () => {
             </div>
           )}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{player.full_name}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{player.full_name}</h1>
             <p className="text-gray-500">#{player.jersey_number} • {player.position_display}</p>
             <p className="text-sm text-gray-400">{player.team_name}</p>
           </div>
@@ -55,11 +55,11 @@ const PlayerStatsPage: React.FC = () => {
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {mainStats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <div className={`inline-flex p-2 rounded-lg bg-${stat.color}-100 text-${stat.color}-600 mb-2`}>
+          <div key={stat.label} className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-4 text-center">
+            <div className={`inline-flex p-2 rounded-3xl bg-${stat.color}-100 text-${stat.color}-600 mb-2`}>
               {stat.icon}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
             <p className="text-xs text-gray-500">{stat.label}</p>
           </div>
         ))}
@@ -67,23 +67,23 @@ const PlayerStatsPage: React.FC = () => {
 
       {/* Stats específicas de softbol */}
       {isSoftball && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Estadísticas de Softbol</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h3 className="font-bold text-gray-900 dark:text-white mb-4">Estadísticas de Softbol</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{stats.average?.toFixed(3) || '0.000'}</p>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.average?.toFixed(3) || '0.000'}</p>
               <p className="text-xs text-gray-500">Average</p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{stats.strikes}</p>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.strikes}</p>
               <p className="text-xs text-gray-500">Strikes</p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{stats.walks}</p>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.walks}</p>
               <p className="text-xs text-gray-500">Walks</p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{stats.home_runs}</p>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.home_runs}</p>
               <p className="text-xs text-gray-500">Home Runs</p>
             </div>
           </div>

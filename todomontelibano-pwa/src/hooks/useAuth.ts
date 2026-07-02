@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { TENANT_CONFIG } from '../config/tenant';
 
 
 
@@ -39,6 +40,7 @@ export const useMe = () => {
           organization: profile.organization,
           organization_name: profile.organization_name,
           role: user_res.role as "user" | "manager" | "admin",
+          is_superuser: !!user_res.is_superuser,
           user_type: user_res.user_type || 'person',
           avatar: profile.avatar,
           bio: profile.bio || undefined,
@@ -109,8 +111,21 @@ export const useLogin = () => {
   
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      credentials.organization_slug = "conectando-empleo"
-      const response = await api.post('/auth/login/', credentials);
+      const payload: Record<string, string> = {
+        email: credentials.email,
+        password: credentials.password,
+      };
+
+      const orgSlug = credentials.organization_slug?.trim();
+      if (orgSlug) {
+        payload.organization_slug = orgSlug;
+      } else if (credentials.organization_slug === undefined) {
+        // Usuario tenant: slug por defecto del tenant configurado
+        payload.organization_slug = TENANT_CONFIG.slug;
+      }
+      // Si organization_slug es '' explícito → login superusuario (sin enviar el campo)
+
+      const response = await api.post('/auth/login/', payload);
       return response.data;
     },
     onSuccess: async (data) => {
@@ -132,6 +147,7 @@ export const useLogin = () => {
         organization: profile.organization,
         organization_name: profile.organization_name,
         role: user_res.role || 'user',
+        is_superuser: !!user_res.is_superuser,
         user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
         bio: profile.bio || undefined,
@@ -155,7 +171,7 @@ export const useRegister = () => {
   
   return useMutation({
     mutationFn: async (data: RegisterData) => {
-      data.organization_name = "conectando-empleo"
+      data.organization_name = TENANT_CONFIG.name;
       const response = await api.post('/auth/register/', data);
       return response.data;
     },
@@ -183,6 +199,7 @@ export const useRegister = () => {
         organization: profile.organization,
         organization_name: profile.organization_name,
         role: user_res.role || 'user',
+        is_superuser: !!user_res.is_superuser,
         user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
         bio: profile.bio || undefined,
@@ -228,4 +245,9 @@ export const isUser = () => {
   const user = useAuthStore((state) => state.user);
   if (!user) return false;
   return user.role === 'user';
+}
+
+export const isSuperUser = () => {
+  const user = useAuthStore((state) => state.user);
+  return !!user?.is_superuser;
 }

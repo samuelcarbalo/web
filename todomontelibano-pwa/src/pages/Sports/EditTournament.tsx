@@ -119,29 +119,29 @@ const EditTournament: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Torneo no encontrado</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Torneo no encontrado</h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white mb-4"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Volver
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center">
             <Trophy className="w-8 h-8 mr-3 text-green-600" />
             Editar torneo
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             {tournament.name}
           </p>
         </div>
@@ -151,11 +151,11 @@ const EditTournament: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Información básica</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Información básica</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Nombre del torneo
                 </label>
                 <input
@@ -167,7 +167,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Deporte
                 </label>
                 <select
@@ -182,7 +182,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Estado
                 </label>
                 <select
@@ -197,7 +197,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Descripción
                 </label>
                 <textarea
@@ -212,11 +212,11 @@ const EditTournament: React.FC = () => {
 
           {/* Fechas */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Fechas</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Fechas</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Inicio del torneo
                 </label>
                 <input
@@ -228,7 +228,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Finalización
                 </label>
                 <input
@@ -240,7 +240,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Límite de inscripción
                 </label>
                 <input
@@ -255,11 +255,11 @@ const EditTournament: React.FC = () => {
 
           {/* Configuración */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Configuración de equipos</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Configuración de equipos</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Máximo de equipos
                 </label>
                 <input
@@ -271,7 +271,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Jugadores mínimos
                 </label>
                 <input
@@ -283,7 +283,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Jugadores máximos
                 </label>
                 <input
@@ -298,11 +298,11 @@ const EditTournament: React.FC = () => {
 
           {/* Imágenes */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Imágenes</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Imágenes</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   URL del logo
                 </label>
                 <input
@@ -314,7 +314,7 @@ const EditTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   URL del banner
                 </label>
                 <input
@@ -329,7 +329,7 @@ const EditTournament: React.FC = () => {
 
           {/* Error */}
           {updateMutation.isError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-3xl">
               <p className="text-sm text-red-600">
                 Error al actualizar el torneo.
               </p>
@@ -364,7 +364,7 @@ const EditTournament: React.FC = () => {
               type="button"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
-              className="w-full sm:w-auto py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center"
+              className="w-full sm:w-auto py-2 px-4 bg-red-600 text-white rounded-3xl hover:bg-red-700 flex items-center justify-center"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar torneo'}

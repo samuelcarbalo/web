@@ -18,9 +18,9 @@ import type { Match, Team } from '../../types/sports';
 type TabType = 'schedule' | 'standings' | 'stats';
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
+  scheduled: 'bg-violet-100 dark:bg-violet-950/40 text-blue-700',
   live: 'bg-red-100 text-red-700 animate-pulse',
-  finished: 'bg-gray-100 text-gray-600',
+  finished: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   postponed: 'bg-yellow-100 text-yellow-700',
   cancelled: 'bg-red-50 text-red-500 line-through',
 };
@@ -78,7 +78,7 @@ const TournamentPublicPage: React.FC = () => {
 
   if (loadingTournament) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
       </div>
     );
@@ -86,7 +86,7 @@ const TournamentPublicPage: React.FC = () => {
 
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 text-lg">Torneo no encontrado</p>
           <Link to="/sports" className="text-green-600 hover:underline mt-2 inline-block">
@@ -98,7 +98,7 @@ const TournamentPublicPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header del torneo */}
       <div className="relative h-48 bg-gray-900 overflow-hidden">
         {tournament.banner && (
@@ -110,7 +110,7 @@ const TournamentPublicPage: React.FC = () => {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="absolute bottom-0 left-0 right-0 page-container py-6">
           <Link
             to="/sports"
             className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
@@ -137,8 +137,8 @@ const TournamentPublicPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+        <div className="page-container">
           <div className="flex gap-1">
             {tabs.map((tab) => (
               <button
@@ -147,7 +147,7 @@ const TournamentPublicPage: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-green-600 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-200'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -158,7 +158,7 @@ const TournamentPublicPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         
         {/* TAB: CALENDARIO */}
         {activeTab === 'schedule' && (
@@ -181,7 +181,7 @@ const TournamentPublicPage: React.FC = () => {
                   return (
                     <div key={date}>
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+                        <div className="bg-green-100 text-green-700 px-3 py-1 rounded-3xl text-sm font-medium">
                           {dateInfo.day}
                         </div>
                         <span className="text-gray-500 text-sm">{dateInfo.date}</span>
@@ -192,7 +192,7 @@ const TournamentPublicPage: React.FC = () => {
                           <Link
                             key={match.id}
                             to={`/sports/matches/${match.id}`}
-                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow block"
+                            className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-2xl transition-shadow block"
                           >
                             <div className="flex items-center justify-between">
                               {/* Local */}
@@ -208,7 +208,7 @@ const TournamentPublicPage: React.FC = () => {
                                     {match.home_team_name?.[0]}
                                   </div>
                                 )}
-                                <span className="font-medium text-gray-900">{match.home_team_name}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{match.home_team_name}</span>
                               </div>
 
                               {/* Centro */}
@@ -223,7 +223,7 @@ const TournamentPublicPage: React.FC = () => {
                                     </p>
                                   </div>
                                 ) : match.status === 'finished' ? (
-                                  <p className="text-xl font-bold text-gray-900">
+                                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                                     {match.home_score} - {match.away_score}
                                   </p>
                                 ) : (
@@ -241,7 +241,7 @@ const TournamentPublicPage: React.FC = () => {
 
                               {/* Visitante */}
                               <div className="flex items-center gap-3 flex-1 justify-end">
-                                <span className="font-medium text-gray-900">{match.away_team_name}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{match.away_team_name}</span>
                                 {match.away_team_logo ? (
                                   <img
                                     src={match.away_team_logo}
@@ -275,10 +275,10 @@ const TournamentPublicPage: React.FC = () => {
 
         {/* TAB: POSICIONES */}
         {activeTab === 'standings' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipo</th>
@@ -294,11 +294,11 @@ const TournamentPublicPage: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {standings.map((team: Team, index: number) => (
-                    <tr key={team.id} className="hover:bg-gray-50">
+                    <tr key={team.id} className="hover:bg-gray-50 dark:bg-gray-900/50">
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                           index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                          index === 1 ? 'bg-gray-100 text-gray-600' :
+                          index === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
                           index === 2 ? 'bg-orange-100 text-orange-700' :
                           'text-gray-500'
                         }`}>
@@ -315,24 +315,24 @@ const TournamentPublicPage: React.FC = () => {
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-gray-900">{team.name}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{team.name}</p>
                             <p className="text-xs text-gray-500">{team.abbreviation}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center text-sm text-gray-600">{team.played}</td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400">{team.played}</td>
                       <td className="px-4 py-3 text-center text-sm text-green-600 font-medium">{team.won}</td>
                       <td className="px-4 py-3 text-center text-sm text-yellow-600">{team.drawn}</td>
                       <td className="px-4 py-3 text-center text-sm text-red-600">{team.lost}</td>
-                      <td className="px-4 py-3 text-center text-sm text-gray-600">{team.goals_for}</td>
-                      <td className="px-4 py-3 text-center text-sm text-gray-600">{team.goals_against}</td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400">{team.goals_for}</td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400">{team.goals_against}</td>
                       <td className="px-4 py-3 text-center text-sm font-medium">
                         <span className={team.goal_difference >= 0 ? 'text-green-600' : 'text-red-600'}>
                           {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="font-bold text-gray-900">{team.points}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{team.points}</span>
                       </td>
                     </tr>
                   ))}
@@ -353,34 +353,34 @@ const TournamentPublicPage: React.FC = () => {
         {activeTab === 'stats' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Resumen del torneo */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-blue-500" />
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                 Resumen
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Equipos</span>
+                  <span className="text-gray-600 dark:text-gray-400">Equipos</span>
                   <span className="font-bold">{teams.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Partidos jugados</span>
+                  <span className="text-gray-600 dark:text-gray-400">Partidos jugados</span>
                   <span className="font-bold">{matches.filter((m: Match) => m.status === 'finished').length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Partidos pendientes</span>
+                  <span className="text-gray-600 dark:text-gray-400">Partidos pendientes</span>
                   <span className="font-bold">{matches.filter((m: Match) => m.status === 'scheduled').length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">En vivo</span>
+                  <span className="text-gray-600 dark:text-gray-400">En vivo</span>
                   <span className="font-bold text-red-600">{matches.filter((m: Match) => m.status === 'live').length}</span>
                 </div>
               </div>
             </div>
 
             {/* Mejores equipos */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
                 Mejores Equipos
               </h3>
@@ -396,7 +396,7 @@ const TournamentPublicPage: React.FC = () => {
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-gray-900">{team.name}</p>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">{team.name}</p>
                     </div>
                     <span className="font-bold text-sm">{team.points} pts</span>
                   </div>
@@ -405,8 +405,8 @@ const TournamentPublicPage: React.FC = () => {
             </div>
 
             {/* Goleadores (si tuvieras datos de jugadores por torneo) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" />
                 Goleadores
               </h3>

@@ -1,11 +1,20 @@
 import axios from 'axios';
+import { TENANT_CONFIG } from '../config/tenant';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 const PUBLIC_ENDPOINTS = [
   '/sports/matches/',      // GET match detail
   '/sports/tournaments/',  // GET tournaments
   '/jobs/',                // GET jobs list/detail
-  // Agrega más según necesites
+  '/real-estate/',         // GET real estate list/detail
+  '/payments/packages/',   // GET catálogo de créditos (público)
+  '/payments/config/',     // GET public key MP
+  '/events/',              // GET eventos
+  '/advertising/sponsorships/plans/',
+  '/advertising/sponsorships/availability/',
+  '/advertising/campaigns/plans/',
+  '/sports/banners/config/',
+  '/contact/messages/',
 ];
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,7 +31,7 @@ api.interceptors.request.use((config) => {
   }
   
   // Agregar tenant header si existe
-  const tenant = localStorage.getItem('tenant_slug') || 'cordobatech';
+  const tenant = localStorage.getItem('tenant_slug') || TENANT_CONFIG.slug;
   config.headers['X-Tenant'] = tenant;
   
   return config;
@@ -66,3 +75,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const getMediaUrl = (path?: string | null): string | undefined => {
+  if (!path) return undefined;
+  if (path.startsWith('http')) return path;
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace('/api/v1', '');
+  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};

@@ -37,11 +37,11 @@ const MyOffers: React.FC = () => {
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { bg: string; text: string; label: string }> = {
       published: { bg: 'bg-green-100', text: 'text-green-800', label: 'Publicado' },
-      draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Borrador' },
+      draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-100', label: 'Borrador' },
       closed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cerrado' },
       archived: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Archivado' },
     };
-    return configs[status] || { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
+    return configs[status] || { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-100', label: status };
   };
 
   const getJobTypeLabel = (type: string) => {
@@ -65,17 +65,17 @@ const MyOffers: React.FC = () => {
 
   if (!isManager) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+        <div className="page-container">
           <div className="card text-center py-12">
             <AlertCircle className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Acceso restringido
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Esta sección solo está disponible para cuentas de empresa.
             </p>
-            <Link to="/dashboard" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/dashboard" className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium">
               Volver al dashboard →
             </Link>
           </div>
@@ -85,22 +85,22 @@ const MyOffers: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="page-container">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Mis empleos publicados
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               {totalCount} {totalCount === 1 ? 'oferta activa' : 'ofertas activas'}
             </p>
           </div>
           <Link
             to="/jobs/create"
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-3xl font-medium hover:from-violet-500 hover:to-indigo-500 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
             Publicar nuevo empleo
@@ -113,7 +113,7 @@ const MyOffers: React.FC = () => {
             <div className="animate-pulse space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center space-x-4 p-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                  <div className="w-12 h-12 bg-gray-200 rounded-3xl"></div>
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                     <div className="h-3 bg-gray-200 rounded w-1/4"></div>
@@ -141,11 +141,11 @@ const MyOffers: React.FC = () => {
         {!isLoading && !error && jobs.length === 0 && (
           <div className="card text-center py-12">
             <Briefcase className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No tienes empleos publicados</h2>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No tienes empleos publicados</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
               Comienza a publicar tus primeras ofertas laborales para encontrar los mejores candidatos.
             </p>
-            <Link to="/jobs/create" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+            <Link to="/jobs/create" className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-3xl font-medium hover:from-violet-500 hover:to-indigo-500">
               <Plus className="w-5 h-5 mr-2" />
               Publicar mi primer empleo
             </Link>
@@ -159,23 +159,23 @@ const MyOffers: React.FC = () => {
               const statusConfig = getStatusConfig(job.status);
               
               return (
-                <div key={job.id} className="card hover:shadow-md transition-shadow">
+                <div key={job.id} className="card hover:shadow-2xl transition-shadow">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                     
                     {/* Job Info */}
                     <div className="flex-1">
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 bg-violet-100 dark:bg-violet-950/40 rounded-3xl flex items-center justify-center flex-shrink-0">
                           {job.logo ? (
                             <img src={job.logo} alt={job.company_name} className="w-8 h-8 object-contain" />
                           ) : (
-                            <Briefcase className="w-6 h-6 text-blue-600" />
+                            <Briefcase className="w-6 h-6 text-violet-600 dark:text-violet-400" />
                           )}
                         </div>
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-lg font-bold text-gray-900 truncate">{job.title}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{job.title}</h3>
                             <span className={`px-2 py-1 text-xs rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
                               {statusConfig.label}
                             </span>
@@ -184,7 +184,7 @@ const MyOffers: React.FC = () => {
                             )}
                           </div>
                           
-                          <p className="text-sm text-gray-600 mt-1">{job.company_name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{job.company_name}</p>
                           
                           <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                             <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" />{job.location}</span>
@@ -206,20 +206,20 @@ const MyOffers: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 mt-4 lg:mt-0 lg:ml-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-100">
-                      <button onClick={() => navigate(`/jobs/${job.id}`)} className="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                      <button onClick={() => navigate(`/jobs/${job.id}`)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-800 rounded-3xl">
                         <Eye className="w-4 h-4 mr-1" /><span className="text-sm">Ver</span>
                       </button>
                       
-                      <button onClick={() => navigate(`/applications/received`)} className="flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <button onClick={() => navigate(`/applications/received`)} className="flex items-center px-3 py-2 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:bg-violet-950/30 rounded-3xl">
                         <Users className="w-4 h-4 mr-1" />
                         <span className="text-sm">Aplicaciones {job.applications_count > 0 && `(${job.applications_count})`}</span>
                       </button>
                       
-                      <button onClick={() => navigate(`/jobs/edit/${job.id}`)} className="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <button onClick={() => navigate(`/jobs/edit/${job.id}`)} className="flex items-center px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 rounded-3xl">
                         <Edit className="w-4 h-4" />
                       </button>
                       
-                      <button onClick={() => handleDelete(job.id.toString())} className="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+                      <button onClick={() => handleDelete(job.id.toString())} className="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-3xl">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -232,10 +232,10 @@ const MyOffers: React.FC = () => {
 
         {/* Pagination Info */}
         {!isLoading && !error && jobs.length > 0 && (
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Mostrando {jobs.length} de {totalCount} empleos
             {(jobsData as any)?.links?.next && (
-              <button className="ml-4 text-blue-600 hover:text-blue-700 font-medium inline-flex items-center">
+              <button className="ml-4 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium inline-flex items-center">
                 Ver más <ChevronRight className="w-4 h-4 ml-1" />
               </button>
             )}

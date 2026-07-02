@@ -36,8 +36,8 @@ const BannerAd: React.FC<BannerAdProps> = ({
   const content = (
     <div
       className={`
-        relative overflow-hidden rounded-2xl border border-gray-200/60
-        bg-white shadow-sm hover:shadow-lg transition-all duration-300
+        relative overflow-hidden rounded-3xl border border-gray-200/60 dark:border-gray-700/60
+        bg-white dark:bg-gray-900 shadow-sm hover:shadow-2xl transition-all duration-300
         group cursor-pointer
         ${variantStyles[variant]}
         ${className}
@@ -46,7 +46,7 @@ const BannerAd: React.FC<BannerAdProps> = ({
       <img
         src={image}
         alt={title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
         loading="lazy"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
@@ -58,7 +58,7 @@ const BannerAd: React.FC<BannerAdProps> = ({
 
       {/* Badge publicitario */}
       <div className="absolute top-3 right-3">
-        <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider text-gray-600 rounded-full shadow-sm">
+        <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 rounded-full shadow-sm">
           Publicidad
         </span>
       </div>

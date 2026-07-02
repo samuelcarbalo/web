@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useCreateJob } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
+import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
+import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
 
 type JobType = 'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship';
 
@@ -22,7 +24,7 @@ const CreateJob: React.FC = () => {
   const { user } = useAuthStore();
   
   const userCredits = user?.credits ?? 0;
-  const hasEnoughCredits = userCredits >= 5;
+  const hasEnoughCredits = userCredits >= CREDIT_COSTS.job;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -93,6 +95,10 @@ const CreateJob: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasEnoughCredits) {
+      navigate(ROUTES_CREDITS.packages);
+      return;
+    }
     
     const jobData = {
       ...formData,
@@ -130,54 +136,44 @@ const CreateJob: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white mb-4"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Volver
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Publicar nueva oferta</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Publicar nueva oferta</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Completa los detalles de la vacante para encontrar al candidato ideal en CordobaTech
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Alerta de Créditos */}
-        <div className={`p-4 rounded-xl border mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${hasEnoughCredits ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🪙</span>
-            <div>
-              <p className="font-semibold text-sm sm:text-base">Costo de publicación: 5 créditos</p>
-              <p className="text-xs sm:text-sm">Tienes <strong className="font-bold">{userCredits}</strong> créditos disponibles en tu cuenta.</p>
-            </div>
-          </div>
-          {!hasEnoughCredits && (
-            <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
-              Créditos Insuficientes
-            </span>
-          )}
-        </div>
+        <InsufficientCreditsAlert
+          required={CREDIT_COSTS.job}
+          available={userCredits}
+          actionLabel="publicación de empleo"
+        />
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary-100 rounded-lg">
-                <Briefcase className="w-5 h-5 text-primary-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/50 rounded-3xl">
+                <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Información básica</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Información básica</h2>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Título del puesto *
                 </label>
                 <input
@@ -193,7 +189,7 @@ const CreateJob: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Categoría *
                   </label>
                   <div className="relative">
@@ -214,7 +210,7 @@ const CreateJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="job_type" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="job_type" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Tipo de empleo *
                   </label>
                   <select
@@ -232,7 +228,7 @@ const CreateJob: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Ubicación *
                 </label>
                 <div className="relative">
@@ -254,15 +250,15 @@ const CreateJob: React.FC = () => {
           {/* Descripción */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                <FileText className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Descripción del puesto</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Descripción del puesto</h2>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Descripción general *
                 </label>
                 <textarea
@@ -280,7 +276,7 @@ const CreateJob: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Requisitos *
                 </label>
                 <textarea
@@ -298,10 +294,10 @@ const CreateJob: React.FC = () => {
           {/* Skills */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Briefcase className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Habilidades requeridas</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Habilidades requeridas</h2>
             </div>
             <div className="space-y-4">
               <div className="flex gap-2">
@@ -327,13 +323,13 @@ const CreateJob: React.FC = () => {
                   {formData.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-violet-100 dark:bg-violet-950/40 text-blue-800"
                     >
                       {skill}
                       <button
                         type="button"
                         onClick={() => removeSkill(index)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-violet-600 dark:text-violet-400 hover:text-blue-800"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -346,16 +342,16 @@ const CreateJob: React.FC = () => {
           {/* Salario */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-green-100 rounded-3xl">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Compensación</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Compensación</h2>
             </div>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label htmlFor="salary_min" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="salary_min" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Salario mínimo
                   </label>
                   <div className="relative">
@@ -373,7 +369,7 @@ const CreateJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="salary_max" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="salary_max" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Salario máximo
                   </label>
                   <div className="relative">
@@ -391,7 +387,7 @@ const CreateJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Moneda
                   </label>
                   <select
@@ -414,10 +410,10 @@ const CreateJob: React.FC = () => {
           {/* Beneficios */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 rounded-3xl">
                 <Plus className="w-5 h-5 text-purple-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Beneficios (opcional)</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Beneficios (opcional)</h2>
             </div>
 
             <div className="space-y-4">
@@ -464,14 +460,14 @@ const CreateJob: React.FC = () => {
           {/* Fecha de expiración */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-orange-100 rounded-lg">
+              <div className="p-2 bg-orange-100 rounded-3xl">
                 <Calendar className="w-5 h-5 text-orange-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Vigencia de la oferta</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Vigencia de la oferta</h2>
             </div>
 
             <div>
-              <label htmlFor="expires_at" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="expires_at" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Fecha de cierre (opcional)
               </label>
               <input
@@ -489,25 +485,25 @@ const CreateJob: React.FC = () => {
           </div>
 
           {/* Preview Card */}
-          <div className="card bg-gray-50 border-2 border-dashed border-gray-300">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Vista previa</h3>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="card bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-300 dark:border-gray-700">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-4">Vista previa</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl p-4 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
               <div className="flex items-center gap-2 mb-2">
                 {formData.category && (
-                  <span className="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 rounded-full">
                     {formData.category}
                   </span>
                 )}
                 {formData.job_type && (
-                  <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
                     {jobTypes.find(t => t.value === formData.job_type)?.label}
                   </span>
                 )}
               </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-1">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                 {formData.title || 'Título del puesto'}
               </h4>
-              <p className="text-sm text-gray-600 mb-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                 {formData.location || 'Ubicación no especificada'}
               </p>
               <p className="text-sm text-gray-500 line-clamp-2">
@@ -518,7 +514,7 @@ const CreateJob: React.FC = () => {
 
           {/* Error Message */}
           {createJob.isError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-3xl">
               <p className="text-sm text-red-600">
                 Error al publicar la oferta. Verifica que tienes un plan activo y todos los campos requeridos.
               </p>

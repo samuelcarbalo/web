@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const TermsOfService: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50/50 py-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb / Back button */}
@@ -19,16 +19,16 @@ const TermsOfService: React.FC = () => {
         </div>
 
         {/* Hero Header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-8 md:p-12 mb-8 relative overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-8 md:p-12 mb-8 relative overflow-hidden">
           <div className="absolute right-0 top-0 w-32 h-32 bg-green-500/5 rounded-full -mr-8 -mt-8" />
-          <div className="absolute left-10 bottom-0 w-24 h-24 bg-blue-500/5 rounded-full -ml-8 -mb-8" />
+          <div className="absolute left-10 bottom-0 w-24 h-24 bg-violet-50 dark:bg-violet-950/300/5 rounded-full -ml-8 -mb-8" />
           
           <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-            <div className="p-4 bg-green-50 rounded-2xl shrink-0">
+            <div className="p-4 bg-green-50 rounded-3xl shrink-0">
               <BookOpen className="w-12 h-12 text-green-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
+              <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white leading-tight">
                 Términos de Servicio
               </h1>
               <p className="text-gray-500 text-lg mt-2">
@@ -45,12 +45,12 @@ const TermsOfService: React.FC = () => {
         <div className="space-y-6">
           
           {/* Sección 1 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <FileText className="w-6 h-6 text-green-600" />
               1. Aceptación de los Términos
             </h2>
-            <div className="text-gray-600 space-y-3 leading-relaxed">
+            <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
                 Al acceder y utilizar este portal multi-tenant, aceptas cumplir con los presentes Términos de Servicio, así como con todas las leyes y regulaciones vigentes en Colombia y en la administración de Montelíbano. Si no estás de acuerdo con alguna de estas condiciones, debes abstenerte de utilizar nuestros servicios.
               </p>
@@ -58,12 +58,12 @@ const TermsOfService: React.FC = () => {
           </div>
 
           {/* Sección 2 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <HelpCircle className="w-6 h-6 text-green-600" />
               2. Registro y Cuentas de Usuario
             </h2>
-            <div className="text-gray-600 space-y-3 leading-relaxed">
+            <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
                 Para acceder a ciertas funciones (como publicar ofertas de trabajo o registrar equipos deportivos), el usuario debe registrarse y mantener una cuenta activa:
               </p>
@@ -76,29 +76,29 @@ const TermsOfService: React.FC = () => {
           </div>
 
           {/* Sección 3 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <Trophy className="w-6 h-6 text-green-600" />
               3. Normas de Uso de los Módulos
             </h2>
-            <div className="text-gray-600 space-y-4 leading-relaxed">
+            <div className="text-gray-600 dark:text-gray-400 space-y-4 leading-relaxed">
               
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">A. Módulo de Empleo</h3>
+                <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">A. Módulo de Empleo</h3>
                 <p>
                   Las empresas y empleadores autorizados se comprometen a publicar ofertas de trabajo reales, lícitas y con información clara respecto a las condiciones. Los candidatos declaran que la experiencia y habilidades registradas en su currículum son veraces.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">B. Módulo de Deportes y Torneos</h3>
+                <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">B. Módulo de Deportes y Torneos</h3>
                 <p>
                   La inscripción de equipos, jugadores y estadísticas debe realizarse de acuerdo con las normativas internas del torneo local y el espíritu del juego limpio (fair play). Los organizadores (managers) tienen los permisos para programar y editar eventos y actas de partidos.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">C. Módulo de Publicidad y Banners</h3>
+                <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">C. Módulo de Publicidad y Banners</h3>
                 <p>
                   Las imágenes de patrocinio deben contar con los derechos comerciales y no infringir ninguna norma ética o comunitaria. Todos los banners se configuran con una fecha de caducidad estricta (por defecto 30 días si no se especifica). Una vez cumplida dicha fecha, el sistema elimina físicamente el banner de la base de datos de manera automática.
                 </p>
@@ -108,12 +108,12 @@ const TermsOfService: React.FC = () => {
           </div>
 
           {/* Sección 4 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <ShieldAlert className="w-6 h-6 text-green-600" />
               4. Limitación de Responsabilidad
             </h2>
-            <div className="text-gray-600 space-y-3 leading-relaxed">
+            <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
                 Este portal opera como una herramienta tecnológica para la comunidad de Montelíbano. Por lo tanto:
               </p>
@@ -126,12 +126,12 @@ const TermsOfService: React.FC = () => {
           </div>
 
           {/* Sección 5 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-green-600" />
               5. Modificaciones de los Términos
             </h2>
-            <div className="text-gray-600 space-y-3 leading-relaxed">
+            <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
                 Nos reservamos el derecho de modificar estos Términos de Servicio en cualquier momento. La fecha de última actualización al principio del documento reflejará los cambios más recientes. El uso continuado del portal después de cualquier modificación constituye la aceptación de los nuevos términos.
               </p>

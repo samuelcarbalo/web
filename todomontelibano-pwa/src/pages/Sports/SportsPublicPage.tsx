@@ -50,10 +50,10 @@ const SportsPublicPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Hero Section */}
       <div className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <h1 className="text-4xl font-bold mb-4">Deportes</h1>
           <p className="text-gray-400 text-lg">
             Sigue tus torneos favoritos, resultados en vivo y estadísticas
@@ -61,7 +61,7 @@ const SportsPublicPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         
         {/* Filtro de deportes */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
@@ -72,7 +72,7 @@ const SportsPublicPage: React.FC = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 selectedSport === sport.value
                   ? 'bg-green-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  : 'bg-white text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800'
               }`}
             >
               <sport.icon className="w-4 h-4" />
@@ -86,14 +86,14 @@ const SportsPublicPage: React.FC = () => {
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <h2 className="text-xl font-bold text-gray-900">En Vivo Ahora</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">En Vivo Ahora</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {liveMatches.map((match: Match) => (
                 <Link
                   key={match.id}
                   to={`/sports/matches/${match.id}`}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-2xl transition-shadow"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full animate-pulse">
@@ -103,7 +103,7 @@ const SportsPublicPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-center flex-1">
-                      <p className="font-bold text-gray-900">{match.home_team_name}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{match.home_team_name}</p>
                     </div>
                     <div className="px-4">
                       <span className="text-2xl font-bold text-red-600">
@@ -111,7 +111,7 @@ const SportsPublicPage: React.FC = () => {
                       </span>
                     </div>
                     <div className="text-center flex-1">
-                      <p className="font-bold text-gray-900">{match.away_team_name}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{match.away_team_name}</p>
                     </div>
                   </div>
                 </Link>
@@ -124,7 +124,7 @@ const SportsPublicPage: React.FC = () => {
           
           {/* Columna principal - Torneos */}
           <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500" />
               Torneos Activos
             </h2>
@@ -134,7 +134,7 @@ const SportsPublicPage: React.FC = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
               </div>
             ) : tournaments.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-8 text-center">
                 <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">No hay torneos activos</p>
               </div>
@@ -144,7 +144,7 @@ const SportsPublicPage: React.FC = () => {
                   <Link
                     key={tournament.id}
                     to={`/sports/tournaments/${tournament.slug}`}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
+                    className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition-shadow group"
                   >
                     {/* Banner */}
                     <div className={`h-24 ${sportTypeColors[tournament.sport_type]} relative`}>
@@ -156,7 +156,7 @@ const SportsPublicPage: React.FC = () => {
                         />
                       )}
                       <div className="absolute top-3 left-3">
-                        <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <span className="bg-white/90 text-gray-800 dark:text-gray-100 text-xs font-medium px-2 py-1 rounded-full">
                           {sportTypeLabels[tournament.sport_type]}
                         </span>
                       </div>
@@ -165,7 +165,7 @@ const SportsPublicPage: React.FC = () => {
                     <div className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-bold text-gray-900 group-hover:text-green-600 transition-colors">
+                          <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-green-600 transition-colors">
                             {tournament.name}
                           </h3>
                           <p className="text-sm text-gray-500 mt-1">
@@ -199,13 +199,13 @@ const SportsPublicPage: React.FC = () => {
 
           {/* Sidebar - Próximos partidos */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-500" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-violet-500 dark:text-violet-400" />
               Próximos Partidos
             </h2>
             
             {upcomingMatches.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 text-center">
                 <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                 <p className="text-gray-500 text-sm">No hay partidos programados</p>
               </div>
@@ -217,18 +217,18 @@ const SportsPublicPage: React.FC = () => {
                     <Link
                       key={match.id}
                       to={`/sports/matches/${match.id}`}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow block"
+                      className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-2xl transition-shadow block"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs text-gray-500">{match.tournament_name}</span>
-                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2 py-0.5 rounded-full">
                           {dateInfo.day} {dateInfo.month}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-900">{match.home_team_name}</span>
+                        <span className="font-medium text-sm text-gray-900 dark:text-white">{match.home_team_name}</span>
                         <span className="text-xs text-gray-400 mx-2">vs</span>
-                        <span className="font-medium text-sm text-gray-900">{match.away_team_name}</span>
+                        <span className="font-medium text-sm text-gray-900 dark:text-white">{match.away_team_name}</span>
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                         <Clock className="w-3 h-3" />

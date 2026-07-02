@@ -34,13 +34,20 @@ import {
   resumePeriod,
   endPeriod,
   getTournamentStandings,
+  getFormatTemplates,
+  getTournamentStructure,
+  assignGroupTeams,
+  generateFixture,
+  getTournamentSchedule,
+  advancePhase,
+  getTournamentBracket,
   getPlayerStats,
   getTournamentPlayerStats,
   getBannersByPosition,
   trackBannerClick,
   createBanner,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreateMatchData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
@@ -326,6 +333,8 @@ export const useFinishMatch = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => finishMatch(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings'] });
+      queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
     },
   });
 };
@@ -440,11 +449,82 @@ export const usePlayerStats = (playerId: string) => {
 
 // ============ TABLA DE POSICIONES ============
 
-export const useTournamentStandings = (slug: string) => {
+export const useTournamentStandings = (slug: string, scope?: StandingsScope) => {
   return useQuery({
-    queryKey: [TOURNAMENTS_KEY, 'standings', slug],
-    queryFn: () => getTournamentStandings(slug),
+    queryKey: [TOURNAMENTS_KEY, 'standings', slug, scope?.phase, scope?.group],
+    queryFn: () => getTournamentStandings(slug, scope),
     enabled: !!slug,
+  });
+};
+
+export const useFormatTemplates = (sportType?: string) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'format-templates', sportType],
+    queryFn: () => getFormatTemplates(sportType),
+    enabled: !!sportType,
+  });
+};
+
+export const useTournamentStructure = (slug: string) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'structure', slug],
+    queryFn: () => getTournamentStructure(slug),
+    enabled: !!slug,
+  });
+};
+
+export const useAssignGroupTeams = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ groupId, teamIds }: { groupId: string; teamIds: string[] }) =>
+      assignGroupTeams(slug, groupId, teamIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
+    },
+  });
+};
+
+export const useGenerateFixture = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { phase_id: string; group_id?: string; match_date: string; venue?: string }) =>
+      generateFixture(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, slug] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
+    },
+  });
+};
+
+export const useTournamentSchedule = (
+  slug: string,
+  params?: { status?: string; team?: string; phase?: string; group?: string }
+) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'schedule', slug, params],
+    queryFn: () => getTournamentSchedule(slug, params),
+    enabled: !!slug,
+  });
+};
+
+export const useAdvancePhase = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AdvancePhaseData) => advancePhase(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, slug] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+    },
+  });
+};
+
+export const useTournamentBracket = (slug: string, phaseSlug: string) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'bracket', slug, phaseSlug],
+    queryFn: () => getTournamentBracket(slug, phaseSlug),
+    enabled: !!slug && !!phaseSlug,
   });
 };
 
@@ -458,10 +538,14 @@ export const useTournamentPlayerStats = (slug: string) => {
   });
 };
 
-export const useBannersByPosition = (position: string, tournamentId?: string) => {
+export const useBannersByPosition = (
+  position: string,
+  tournamentId?: string,
+  objectId?: string
+) => {
   return useQuery({
-    queryKey: ['banners', 'by-position', position, tournamentId],
-    queryFn: () => getBannersByPosition(position, tournamentId),
+    queryKey: ['banners', 'by-position', position, tournamentId, objectId],
+    queryFn: () => getBannersByPosition(position, tournamentId, objectId),
     enabled: !!position,
   });
 };

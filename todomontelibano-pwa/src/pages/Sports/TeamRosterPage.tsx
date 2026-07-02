@@ -99,10 +99,10 @@ const PositionBadge: React.FC<{ position: string }> = ({ position }) => {
     forward: 'bg-rose-100 text-rose-700 border-rose-200',
     midfielder: 'bg-indigo-100 text-indigo-700 border-indigo-200',
     defender: 'bg-sky-100 text-sky-700 border-sky-200',
-    utility: 'bg-gray-100 text-gray-600 border-gray-200',
+    utility: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800',
   };
 
-  const style = positionStyles[position] || 'bg-gray-100 text-gray-600 border-gray-200';
+  const style = positionStyles[position] || 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800';
 
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${style}`}>
@@ -121,12 +121,12 @@ const StatCard: React.FC<{
   accent: string;
   accentBg: string;
 }> = ({ icon, value, label, accent, accentBg }) => (
-  <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-5 group hover:shadow-lg hover:border-slate-300 transition-all duration-300">
-    <div className={`absolute top-0 right-0 w-20 h-20 ${accentBg} rounded-bl-full opacity-60 group-hover:scale-110 transition-transform duration-300`} />
-    <div className={`w-10 h-10 rounded-xl ${accentBg} flex items-center justify-center mb-3`}>
+  <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/80 dark:border-gray-800/80 p-5 group hover:shadow-2xl hover:border-slate-300 dark:hover:border-gray-600 transition-all duration-300">
+    <div className={`absolute top-0 right-0 w-20 h-20 ${accentBg} rounded-bl-full opacity-60 group-hover:scale-[1.02] transition-transform duration-300`} />
+    <div className={`w-10 h-10 rounded-3xl ${accentBg} flex items-center justify-center mb-3`}>
       <span className={accent}>{icon}</span>
     </div>
-    <p className="text-2xl font-black text-slate-900 tracking-tight">{value}</p>
+    <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</p>
     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{label}</p>
   </div>
 );
@@ -374,23 +374,23 @@ const TeamRosterPage: React.FC = () => {
      RENDER
      ═══════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
       {/* ═══════════ HEADER ═══════════ */}
       <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 backdrop-blur-xl bg-white/90">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4">
+        <div className="page-container h-16 flex items-center gap-4">
           <Link
             to={`/sports/tournaments/${tournamentSlug}`}
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-3xl text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:text-gray-100 hover:bg-slate-100 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div className="h-8 w-px bg-slate-200" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-200">
+            <div className="w-10 h-10 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-200">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 leading-tight">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
                 {myTeam?.name || 'Plantilla del Equipo'}
               </h1>
               <p className="text-xs text-slate-400 font-medium">
@@ -409,27 +409,27 @@ const TeamRosterPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* ═══════════ SIDEBAR FORM ═══════════ */}
           {myTeam ? (
             <div className="lg:col-span-4 xl:col-span-3">
               <div className="sticky top-24 space-y-6">
                 {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
                   {/* Form Header */}
                   <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5">
                     <h2 className="text-base font-bold text-white flex items-center gap-2">
                       {editingPlayer ? (
                         <>
-                          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                            <Edit3 className="w-4 h-4 text-blue-400" />
+                          <div className="w-8 h-8 rounded-3xl bg-violet-50 dark:bg-violet-950/300/20 flex items-center justify-center">
+                            <Edit3 className="w-4 h-4 text-violet-400" />
                           </div>
                           Editar Jugador
                         </>
                       ) : (
                         <>
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-3xl bg-emerald-500/20 flex items-center justify-center">
                             <UserPlus className="w-4 h-4 text-emerald-400" />
                           </div>
                           Nuevo Jugador
@@ -446,7 +446,7 @@ const TeamRosterPage: React.FC = () => {
                   <form onSubmit={handleSubmit} className="p-6 space-y-5">
                     {/* ── Photo Upload Zone ── */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                         Foto del Jugador
                       </label>
                       <input
@@ -463,7 +463,7 @@ const TeamRosterPage: React.FC = () => {
                             <img
                               src={previewPhoto || formData.photo}
                               alt="Preview"
-                              className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200 shadow-sm"
+                              className="w-20 h-20 rounded-3xl object-cover border-2 border-slate-200 dark:border-gray-800 shadow-sm"
                             />
                             <button
                               type="button"
@@ -476,13 +476,13 @@ const TeamRosterPage: React.FC = () => {
                               <X className="w-3 h-3" />
                             </button>
                             {uploadingPhoto && (
-                              <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center">
+                              <div className="absolute inset-0 bg-black/40 rounded-3xl flex items-center justify-center">
                                 <Loader2 className="w-6 h-6 text-white animate-spin" />
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-700">
+                            <p className="text-sm font-medium text-slate-700 dark:text-gray-200">
                               {uploadingPhoto ? 'Subiendo...' : 'Foto lista'}
                             </p>
                             <button
@@ -501,16 +501,16 @@ const TeamRosterPage: React.FC = () => {
                           onDragLeave={handleDrag}
                           onDragOver={handleDrag}
                           onDrop={handleDrop}
-                          className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${
+                          className={`relative border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 ${
                             dragActive
                               ? 'border-indigo-500 bg-indigo-50'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              : 'border-slate-200 dark:border-gray-800 hover:border-slate-300 hover:bg-slate-50 dark:bg-gray-900/50'
                           }`}
                         >
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-2">
+                          <div className="w-12 h-12 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-2">
                             <Camera className="w-5 h-5 text-slate-400" />
                           </div>
-                          <p className="text-sm font-medium text-slate-600">
+                          <p className="text-sm font-medium text-slate-600 dark:text-gray-400">
                             {dragActive
                               ? 'Suelta la imagen aquí'
                               : 'Arrastra o haz clic'}
@@ -535,7 +535,7 @@ const TeamRosterPage: React.FC = () => {
                             onChange={(e) =>
                               handleChange('photo', e.target.value)
                             }
-                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl text-sm text-slate-700 dark:text-gray-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                             placeholder="O pegar URL de imagen"
                           />
                           <Camera className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -546,7 +546,7 @@ const TeamRosterPage: React.FC = () => {
                     {/* ── Name Fields ── */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Nombre *
                         </label>
                         <div className="relative">
@@ -556,10 +556,10 @@ const TeamRosterPage: React.FC = () => {
                             onChange={(e) =>
                               handleChange('first_name', e.target.value)
                             }
-                            className={`w-full px-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
+                            className={`w-full px-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
                               errors.first_name
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                : 'border-slate-200'
+                                : 'border-slate-200 dark:border-gray-800'
                             }`}
                             placeholder="Juan"
                           />
@@ -572,7 +572,7 @@ const TeamRosterPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Apellido *
                         </label>
                         <input
@@ -581,10 +581,10 @@ const TeamRosterPage: React.FC = () => {
                           onChange={(e) =>
                             handleChange('last_name', e.target.value)
                           }
-                          className={`w-full px-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
+                          className={`w-full px-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
                             errors.last_name
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                              : 'border-slate-200'
+                              : 'border-slate-200 dark:border-gray-800'
                           }`}
                           placeholder="Pérez"
                         />
@@ -598,7 +598,7 @@ const TeamRosterPage: React.FC = () => {
 
                     {/* ── Nickname ── */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                         Apodo
                       </label>
                       <div className="relative">
@@ -608,7 +608,7 @@ const TeamRosterPage: React.FC = () => {
                           onChange={(e) =>
                             handleChange('nickname', e.target.value)
                           }
-                          className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                           placeholder='Ej: "El Comandante"'
                         />
                         <Sparkles className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -618,7 +618,7 @@ const TeamRosterPage: React.FC = () => {
                     {/* ── ID & Email ── */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Cédula
                         </label>
                         <div className="relative">
@@ -628,7 +628,7 @@ const TeamRosterPage: React.FC = () => {
                             onChange={(e) =>
                               handleChange('id_number', e.target.value)
                             }
-                            className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                             placeholder="12345678"
                           />
                           <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -638,7 +638,7 @@ const TeamRosterPage: React.FC = () => {
                         </p>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Correo
                         </label>
                         <div className="relative">
@@ -648,10 +648,10 @@ const TeamRosterPage: React.FC = () => {
                             onChange={(e) =>
                               handleChange('email', e.target.value)
                             }
-                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
+                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
                               errors.email
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                : 'border-slate-200'
+                                : 'border-slate-200 dark:border-gray-800'
                             }`}
                             placeholder="jugador@email.com"
                           />
@@ -672,7 +672,7 @@ const TeamRosterPage: React.FC = () => {
                     {/* ── Jersey Number & Position ── */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Número *
                         </label>
                         <div className="relative">
@@ -687,10 +687,10 @@ const TeamRosterPage: React.FC = () => {
                                 parseInt(e.target.value) || 0
                               )
                             }
-                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
+                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border rounded-3xl text-sm text-slate-800 dark:text-gray-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
                               errors.jersey_number
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                : 'border-slate-200'
+                                : 'border-slate-200 dark:border-gray-800'
                             }`}
                           />
                           <Hash className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -702,7 +702,7 @@ const TeamRosterPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                           Posición *
                         </label>
                         <div className="relative">
@@ -711,10 +711,10 @@ const TeamRosterPage: React.FC = () => {
                             onChange={(e) =>
                               handleChange('position', e.target.value)
                             }
-                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none ${
+                            className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border rounded-3xl text-sm text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none ${
                               errors.position
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                : 'border-slate-200'
+                                : 'border-slate-200 dark:border-gray-800'
                             }`}
                           >
                             <option value="">Seleccionar...</option>
@@ -737,7 +737,7 @@ const TeamRosterPage: React.FC = () => {
 
                     {/* ── Birth Date ── */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                         Fecha de Nacimiento
                       </label>
                       <div className="relative">
@@ -747,7 +747,7 @@ const TeamRosterPage: React.FC = () => {
                           onChange={(e) =>
                             handleChange('birth_date', e.target.value)
                           }
-                          className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl text-sm text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                         />
                         <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                       </div>
@@ -781,7 +781,7 @@ const TeamRosterPage: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                        <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover:text-slate-900 dark:text-white transition-colors">
                           Capitán
                         </span>
                       </label>
@@ -808,7 +808,7 @@ const TeamRosterPage: React.FC = () => {
                             }`}
                           />
                         </div>
-                        <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                        <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover:text-slate-900 dark:text-white transition-colors">
                           Activo
                         </span>
                       </label>
@@ -821,7 +821,7 @@ const TeamRosterPage: React.FC = () => {
                           <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full inline-flex justify-center items-center px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 font-semibold text-sm shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
+                            className="w-full inline-flex justify-center items-center px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-700 text-white rounded-3xl hover:from-violet-700 hover:to-blue-800 disabled:opacity-50 font-semibold text-sm shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
                           >
                             {isSubmitting ? (
                               <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -833,7 +833,7 @@ const TeamRosterPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={resetForm}
-                            className="w-full px-4 py-3 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-semibold text-sm transition-all active:scale-[0.98]"
+                            className="w-full px-4 py-3 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 rounded-3xl hover:bg-slate-50 dark:bg-gray-900/50 font-semibold text-sm transition-all active:scale-[0.98]"
                           >
                             Cancelar
                           </button>
@@ -842,7 +842,7 @@ const TeamRosterPage: React.FC = () => {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full inline-flex justify-center items-center px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 font-semibold text-sm shadow-lg shadow-emerald-200 transition-all active:scale-[0.98]"
+                          className="w-full inline-flex justify-center items-center px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-3xl hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 font-semibold text-sm shadow-lg shadow-emerald-200 transition-all active:scale-[0.98]"
                         >
                           {isSubmitting ? (
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -860,14 +860,14 @@ const TeamRosterPage: React.FC = () => {
           ) : (
             <div className="lg:col-span-4 xl:col-span-3">
               <div className="sticky top-24">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-gray-800/80 p-8 text-center">
+                  <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
                     <Users className="w-8 h-8 text-slate-400" />
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mb-1">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
                     Acceso Restringido
                   </h3>
-                  <p className="text-sm text-slate-500 mb-1">
+                  <p className="text-sm text-slate-500 dark:text-gray-400 mb-1">
                     No eres entrenador de ningún equipo
                   </p>
                   <p className="text-xs text-slate-400">
@@ -881,15 +881,15 @@ const TeamRosterPage: React.FC = () => {
           {/* ═══════════ MAIN CONTENT ═══════════ */}
           <div className="lg:col-span-8 xl:col-span-9 space-y-6">
             {/* Players Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-gray-800/80 overflow-hidden">
               {/* Card Header */}
               <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-3xl bg-emerald-50 flex items-center justify-center">
                     <Users className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-slate-900">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
                       Jugadores Inscritos
                     </h2>
                     <p className="text-xs text-slate-400 font-medium">
@@ -897,7 +897,7 @@ const TeamRosterPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-black rounded-lg border border-emerald-200">
+                <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-black rounded-3xl border border-emerald-200">
                   {players.length}
                 </span>
               </div>
@@ -905,10 +905,10 @@ const TeamRosterPage: React.FC = () => {
               {/* Loading State */}
               {loadingPlayers ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-3xl bg-emerald-50 flex items-center justify-center mb-3">
                     <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">
+                  <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">
                     Cargando plantilla...
                   </p>
                 </div>
@@ -918,7 +918,7 @@ const TeamRosterPage: React.FC = () => {
                   <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center mb-4 shadow-inner">
                     <UserPlus className="w-10 h-10 text-slate-300" />
                   </div>
-                  <h3 className="text-base font-bold text-slate-700 mb-1">
+                  <h3 className="text-base font-bold text-slate-700 dark:text-gray-200 mb-1">
                     Plantilla vacía
                   </h3>
                   <p className="text-sm text-slate-400 text-center max-w-xs">
@@ -955,7 +955,7 @@ const TeamRosterPage: React.FC = () => {
                         return (
                           <tr
                             key={player.id}
-                            className="group hover:bg-slate-50/60 transition-all duration-150"
+                            className="group hover:bg-slate-50 dark:hover:bg-gray-800/50/60 transition-all duration-150"
                           >
                             {/* Player Info */}
                             <td className="px-5 py-4">
@@ -965,7 +965,7 @@ const TeamRosterPage: React.FC = () => {
                                     <img
                                       src={player.photo}
                                       alt={player.full_name}
-                                      className="w-11 h-11 rounded-xl object-cover ring-2 ring-slate-100 group-hover:ring-indigo-200 transition-all"
+                                      className="w-11 h-11 rounded-3xl object-cover ring-2 ring-slate-100 group-hover:ring-indigo-200 transition-all"
                                       onError={(e) => {
                                         (
                                           e.target as HTMLImageElement
@@ -980,13 +980,13 @@ const TeamRosterPage: React.FC = () => {
                                   </div>
                                 ) : (
                                   <div
-                                    className={`w-11 h-11 rounded-xl ${jerseyColor.bg} flex items-center justify-center text-white font-black text-sm shadow-sm`}
+                                    className={`w-11 h-11 rounded-3xl ${jerseyColor.bg} flex items-center justify-center text-white font-black text-sm shadow-sm`}
                                   >
                                     {player.full_name?.[0]?.toUpperCase()}
                                   </div>
                                 )}
                                 <div className="min-w-0">
-                                  <p className="text-sm font-bold text-slate-900 truncate flex items-center gap-1.5">
+                                  <p className="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5">
                                     {player.full_name}
                                     {player.is_captain && (
                                       <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
@@ -1009,7 +1009,7 @@ const TeamRosterPage: React.FC = () => {
                             {/* Jersey Number */}
                             <td className="px-5 py-4 text-center">
                               <span
-                                className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${jerseyColor.bg} ${jerseyColor.text} font-black text-sm shadow-sm ring-2 ${jerseyColor.ring}`}
+                                className={`inline-flex items-center justify-center w-10 h-10 rounded-3xl ${jerseyColor.bg} ${jerseyColor.text} font-black text-sm shadow-sm ring-2 ${jerseyColor.ring}`}
                               >
                                 {player.jersey_number}
                               </span>
@@ -1028,7 +1028,7 @@ const TeamRosterPage: React.FC = () => {
                                   Activo
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 dark:text-gray-400 text-xs font-bold border border-slate-200 dark:border-gray-800">
                                   <UserX className="w-3 h-3" />
                                   Inactivo
                                 </span>
@@ -1040,14 +1040,14 @@ const TeamRosterPage: React.FC = () => {
                               <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={() => handleEdit(player)}
-                                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-3xl transition-all"
                                   title="Editar"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(player.id)}
-                                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-all"
                                   title="Eliminar"
                                 >
                                   <Trash2 className="w-4 h-4" />

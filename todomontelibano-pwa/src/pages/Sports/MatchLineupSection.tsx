@@ -283,7 +283,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto" />
         <p className="text-gray-500 mt-2">Cargando alineaciones...</p>
       </div>
@@ -293,7 +293,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   return (
     <div className="space-y-6">
       {/* Selector de equipo */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-4">
         <div className="flex gap-2">
           <button
             onClick={() => {
@@ -302,10 +302,10 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               setSelectedSubstituteOut((prev) => ({ ...prev, home: '' }));
               setSelectedSubstituteIn((prev) => ({ ...prev, home: '' }));
             }}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-3xl font-medium text-sm transition-colors ${
               activeTeam === 'home'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200'
             }`}
           >
             {match.home_team_detail?.name || 'Local'}
@@ -317,10 +317,10 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               setSelectedSubstituteOut((prev) => ({ ...prev, away: '' }));
               setSelectedSubstituteIn((prev) => ({ ...prev, away: '' }));
             }}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-3xl font-medium text-sm transition-colors ${
               activeTeam === 'away'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200'
             }`}
           >
             {match.away_team_detail?.name || 'Visitante'}
@@ -329,11 +329,11 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       </div>
 
       {/* EN CANCHA */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Shirt className="w-5 h-5 text-green-600" />
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               En Cancha — {currentTeamName}
             </h3>
           </div>
@@ -361,12 +361,12 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                       setSaveError(null);
                     }
                   }}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-3xl border transition-all ${
                     isSelectedForSubOut
                       ? 'border-red-300 bg-red-50'
                       : hasRedCard
                       ? 'border-red-200 bg-red-50 opacity-60'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700'
                   } ${isLive && isOwner && !hasRedCard ? 'cursor-pointer' : 'cursor-default'}`}
                 >
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm relative">
@@ -383,13 +383,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className={`font-medium ${hasRedCard ? 'text-red-700 line-through' : 'text-gray-900'}`}>
+                    <p className={`font-medium ${hasRedCard ? 'text-red-700 line-through' : 'text-gray-900 dark:text-white'}`}>
                       {player.player_name || playerInfo?.full_name || 'Jugador'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {player.position || playerInfo?.position || 'Jugador'}
                       {!player.is_starter && (
-                        <span className="ml-1 text-blue-600 font-medium">(Ingresó)</span>
+                        <span className="ml-1 text-violet-600 dark:text-violet-400 font-medium">(Ingresó)</span>
                       )}
                       {hasRedCard && (
                         <span className="ml-1 text-red-600 font-bold">(EXPULSADO)</span>
@@ -399,7 +399,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                   {isLive && isOwner && !hasRedCard && (
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        isSelectedForSubOut ? 'border-red-500 bg-red-500' : 'border-gray-300'
+                        isSelectedForSubOut ? 'border-red-500 bg-red-500' : 'border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       {isSelectedForSubOut && <X className="w-3 h-3 text-white" />}
@@ -411,7 +411,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
             })}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+          <div className="text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
             <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
             <p className="text-gray-500 text-sm">No hay jugadores en cancha</p>
           </div>
@@ -420,18 +420,18 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
       {/* PANEL DE SUSTITUCIÓN */}
       {isLive && isOwner && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
-            <ArrowRightLeft className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-gray-900">Sustitución</h3>
+            <ArrowRightLeft className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sustitución</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Sale (en cancha)
               </label>
-              <div className="p-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[38px]">
+              <div className="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-200 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-200 min-h-[38px]">
                 {selectedSubstituteOut[activeTeam] ? (
                   <span className="font-medium">
                     {getPlayerById(selectedSubstituteOut[activeTeam])?.full_name || 'Seleccionado'}
@@ -443,7 +443,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Entra (disponible)
               </label>
               <select
@@ -452,7 +452,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                   setSelectedSubstituteIn((prev) => ({ ...prev, [activeTeam]: e.target.value }));
                   setSaveError(null);
                 }}
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-blue-500 focus:ring-violet-500 text-sm"
               >
                 <option value="">Seleccionar jugador</option>
                 {availableForSubIn
@@ -467,7 +467,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Minuto
               </label>
               <input
@@ -476,7 +476,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                 max={120}
                 value={substitutionMinute}
                 onChange={(e) => setSubstitutionMinute(parseInt(e.target.value) || 0)}
-                className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-blue-500 focus:ring-violet-500 text-sm"
               />
             </div>
           </div>
@@ -488,7 +488,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               !selectedSubstituteOut[activeTeam] ||
               !selectedSubstituteIn[activeTeam]
             }
-            className="mt-4 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+            className="mt-4 w-full py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-3xl hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2 transition-colors"
           >
             {substituteMutation.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -502,7 +502,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
       {/* SUSTITUIDOS */}
       {substitutedOut.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4">
             Sustituidos / Fuera de Cancha
           </h3>
@@ -512,13 +512,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               return (
                 <div
                   key={`${player.player}-${player.entry_number || 0}`}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200 opacity-60"
+                  className="flex items-center gap-3 p-3 rounded-3xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 opacity-60"
                 >
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-bold">
                     {player.jersey_number || playerInfo?.jersey_number || '—'}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-700 line-through">
+                    <p className="font-medium text-gray-700 dark:text-gray-200 line-through">
                       {player.player_name || playerInfo?.full_name || 'Jugador'}
                     </p>
                     <p className="text-xs text-gray-400">
@@ -538,11 +538,11 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
       {/* CONFIGURACIÓN INICIAL DE ALINEACIÓN */}
       {isOwner && isScheduled && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-bold text-gray-900">
+              <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Plantilla — {currentTeamName}
               </h3>
             </div>
@@ -573,24 +573,24 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                     <div
                       key={player.id}
                       onClick={() => handleToggleStarter(player.player)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-3xl border cursor-pointer transition-all ${
                         isSelected
                           ? 'border-green-300 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                          isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-700'
                         }`}
                       >
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 font-bold text-sm">
                         {player.jersey_number || playerInfo?.jersey_number || '—'}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 dark:text-white">
                           {player.player_name || playerInfo?.full_name || 'Jugador'}
                         </p>
                         <p className="text-xs text-gray-500">
@@ -618,24 +618,24 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                     <div
                       key={player.id}
                       onClick={() => handleToggleStarter(player.id)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-3xl border cursor-pointer transition-all ${
                         isSelected
                           ? 'border-green-300 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                          isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-700'
                         }`}
                       >
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 font-bold text-sm">
                         {player.jersey_number || '—'}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">{player.full_name}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{player.full_name}</p>
                         <p className="text-xs text-gray-500">
                           {player.position || 'Jugador'}
                         </p>
@@ -648,16 +648,16 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
           )}
 
           {availablePlayers.length === 0 && benchPlayers.length === 0 && (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <div className="text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
               <AlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-gray-500 text-sm">No hay jugadores registrados en este equipo</p>
             </div>
           )}
 
           {/* Botón guardar */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
             {saveError && (
-              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-3xl flex items-center gap-2 text-sm text-red-700">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {saveError}
               </div>
@@ -667,7 +667,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               disabled={
                 selectedStarters[activeTeam].length < minStarters || setLineupMutation.isPending
               }
-              className="w-full py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2 transition-colors"
             >
               {setLineupMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -682,10 +682,10 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
       {/* VISTA SOLO LECTURA */}
       {(!isOwner || (!isScheduled && !isLive)) && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-bold text-gray-900">
+            <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               Plantilla — {currentTeamName}
             </h3>
           </div>
@@ -702,17 +702,17 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                 return (
                   <div
                     key={player.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                    className={`flex items-center gap-3 p-3 rounded-3xl border ${
                       isOnField
                         ? 'border-green-200 bg-green-50'
                         : wasSubstituted
-                        ? 'border-gray-200 bg-gray-50 opacity-60'
-                        : 'border-gray-200'
+                        ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 opacity-60'
+                        : 'border-gray-200 dark:border-gray-800'
                     }`}
                   >
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm relative ${
-                        isOnField ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                        isOnField ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                       }`}
                     >
                       {player.jersey_number || '—'}
@@ -732,7 +732,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                     <div className="flex-1">
                       <p
                         className={`font-medium ${
-                          wasSubstituted ? 'line-through text-gray-500' : 'text-gray-900'
+                          wasSubstituted ? 'line-through text-gray-500' : 'text-gray-900 dark:text-white'
                         }`}
                       >
                         {player.full_name}
@@ -740,7 +740,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                       <p className="text-xs text-gray-500">
                         {player.position || 'Jugador'}
                         {entry?.status === 'entered' && (
-                          <span className="ml-1 text-blue-600">(Ingresó de cambio)</span>
+                          <span className="ml-1 text-violet-600 dark:text-violet-400">(Ingresó de cambio)</span>
                         )}
                       </p>
                     </div>
@@ -759,7 +759,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               })}
             </div>
           ) : (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <div className="text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
               <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-gray-500 text-sm">No hay jugadores registrados</p>
             </div>
@@ -770,8 +770,8 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       {/* Modal confirmar guardar */}
       {showSaveConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Confirmar alineación</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 w-full max-w-sm">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Confirmar alineación</h2>
             <p className="text-sm text-gray-500 mb-4">
               Vas a alinear <strong>{selectedStarters[activeTeam].length}</strong> jugadores
               titulares para <strong>{currentTeamName}</strong>.
@@ -784,7 +784,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               <button
                 onClick={handleSaveLineup}
                 disabled={setLineupMutation.isPending}
-                className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-2 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-medium text-sm flex items-center justify-center gap-2"
               >
                 {setLineupMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -795,7 +795,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               </button>
               <button
                 onClick={() => setShowSaveConfirm(false)}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm"
+                className="flex-1 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-medium text-sm"
               >
                 Cancelar
               </button>

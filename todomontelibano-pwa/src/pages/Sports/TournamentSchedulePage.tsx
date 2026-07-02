@@ -26,11 +26,14 @@ import {
   useFinishMatch,
 } from '../../hooks/useSports';
 import type { CreateMatchData, Match } from '../../types/sports';
+import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
+import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
+import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
+  scheduled: 'bg-violet-100 dark:bg-violet-950/40 text-blue-700',
   live: 'bg-red-100 text-red-700 animate-pulse',
-  finished: 'bg-gray-100 text-gray-600',
+  finished: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   postponed: 'bg-yellow-100 text-yellow-700',
   cancelled: 'bg-red-50 text-red-500 line-through',
 };
@@ -48,6 +51,7 @@ const TournamentSchedulePage: React.FC = () => {
   const { isOwner: checkIsOwner } = usePermissions();
 
   const { data: tournament } = useTournament(slug || '');
+  const { data: sponsorshipAvailability } = useSponsorshipAvailability(slug || '');
   const { data: teamsData } = useTeams(slug || '');
   const { data: matchesData, isLoading: loadingMatches } = useMatches({
     tournament: slug || '',
@@ -172,29 +176,29 @@ const TournamentSchedulePage: React.FC = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="page-container py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 to={`/sports/tournaments/${slug}`}
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 mr-1" />
                 Volver al torneo
               </Link>
               <div className="h-6 w-px bg-gray-300" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Calendario</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Calendario</h1>
                 <p className="text-sm text-gray-500">{tournament?.name}</p>
               </div>
             </div>
             {isOwner && (
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-3xl hover:bg-green-700 transition-colors text-sm font-medium"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 {showForm ? 'Cancelar' : 'Crear partido'}
@@ -204,22 +208,33 @@ const TournamentSchedulePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+      <div className="page-container py-8">
+        <div className="space-y-3 mb-8">
+          <SponsorshipAvailabilityBanner
+            availability={sponsorshipAvailability}
+            showPurchaseButton={false}
+          />
+          <TournamentAdSlot
+            position="standings_top"
+            tournamentId={tournament?.id}
+            variant="horizontal"
+          />
+        </div>
+
         {/* Formulario crear/editar partido */}
         {showForm && isOwner && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-8">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               {editingMatch ? 'Editar Partido' : 'Nuevo Partido'}
             </h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Equipo local *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Equipo local *</label>
                 <select
                   value={formData.home_team}
                   onChange={(e) => setFormData(prev => ({ ...prev, home_team: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                   required
                 >
                   <option value="">Seleccionar...</option>
@@ -230,11 +245,11 @@ const TournamentSchedulePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Equipo visitante *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Equipo visitante *</label>
                 <select
                   value={formData.away_team}
                   onChange={(e) => setFormData(prev => ({ ...prev, away_team: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                   required
                 >
                   <option value="">Seleccionar...</option>
@@ -245,56 +260,56 @@ const TournamentSchedulePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Fecha y hora *</label>
                 <input
                   type="datetime-local"
                   value={formData.match_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, match_date: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Lugar / Cancha</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Lugar / Cancha</label>
                 <input
                   type="text"
                   value={formData.venue}
                   onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value, stadium: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                   placeholder="Estadio El Campín"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jornada</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jornada</label>
                 <input
                   type="number"
                   min={1}
                   value={formData.match_week}
                   onChange={(e) => setFormData(prev => ({ ...prev, match_week: parseInt(e.target.value) || 1 }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ronda</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ronda</label>
                 <input
                   type="number"
                   min={1}
                   value={formData.round_number}
                   onChange={(e) => setFormData(prev => ({ ...prev, round_number: parseInt(e.target.value) || 1 }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
 
               <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notas</label>
                 <input
                   type="text"
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500"
                   placeholder="Notas adicionales..."
                 />
               </div>
@@ -303,14 +318,14 @@ const TournamentSchedulePage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                  className="px-6 py-2 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-medium"
                 >
                   {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingMatch ? 'Guardar cambios' : 'Crear partido'}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-medium"
                 >
                   Cancelar
                 </button>
@@ -322,7 +337,7 @@ const TournamentSchedulePage: React.FC = () => {
         {/* Filtros */}
         <div className="flex items-center gap-2 mb-6">
           <Filter className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-600">Filtrar:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Filtrar:</span>
           {['', 'scheduled', 'live', 'finished', 'postponed'].map((status) => (
             <button
               key={status || 'all'}
@@ -330,7 +345,7 @@ const TournamentSchedulePage: React.FC = () => {
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 statusFilter === status
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
               }`}
             >
               {status ? STATUS_LABELS[status] : 'Todos'}
@@ -358,7 +373,7 @@ const TournamentSchedulePage: React.FC = () => {
               return (
                 <div key={date}>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+                    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-3xl text-sm font-medium">
                       {dateInfo.day}
                     </div>
                     <span className="text-gray-500 text-sm">{dateInfo.date}</span>
@@ -368,7 +383,7 @@ const TournamentSchedulePage: React.FC = () => {
                     {dayMatches.map((match: Match) => (
                       <div
                         key={match.id}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                        className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-2xl transition-shadow"
                       >
                         <div className="flex items-center justify-between">
                           {/* Equipo local */}
@@ -384,9 +399,9 @@ const TournamentSchedulePage: React.FC = () => {
                               </div>
                             )}
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 truncate">{match.home_team_name}</p>
+                              <p className="font-medium text-gray-900 dark:text-white truncate">{match.home_team_name}</p>
                               {match.status === 'finished' && (
-                                <p className="text-2xl font-bold text-gray-900">{match.home_score ?? '-'}</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{match.home_score ?? '-'}</p>
                               )}
                             </div>
                           </div>
@@ -401,7 +416,7 @@ const TournamentSchedulePage: React.FC = () => {
                                 {match.home_score} - {match.away_score}
                               </p>
                             ) : match.status === 'finished' ? (
-                              <p className="text-xl font-bold text-gray-900 mt-1">
+                              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
                                 {match.home_score} - {match.away_score}
                               </p>
                             ) : (
@@ -418,9 +433,9 @@ const TournamentSchedulePage: React.FC = () => {
                           {/* Equipo visitante */}
                           <div className="flex items-center gap-3 flex-1 justify-end">
                             <div className="min-w-0 text-right">
-                              <p className="font-medium text-gray-900 truncate">{match.away_team_name}</p>
+                              <p className="font-medium text-gray-900 dark:text-white truncate">{match.away_team_name}</p>
                               {match.status === 'finished' && (
-                                <p className="text-2xl font-bold text-gray-900">{match.away_score ?? '-'}</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{match.away_score ?? '-'}</p>
                               )}
                             </div>
                             {match.away_team_logo ? (
@@ -452,10 +467,10 @@ const TournamentSchedulePage: React.FC = () => {
                           {/* ← BOTÓN VER DETALLE (visible para todos) */}
                           <Link
                             to={`/sports/matches/${match.id}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors group"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:bg-gray-800 rounded-3xl transition-colors group"
                             title="Ver detalle del partido"
                           >
-                            <Eye className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                            <Eye className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-400" />
                             <span>Ver Detalle</span>
                           </Link>
 
@@ -464,7 +479,7 @@ const TournamentSchedulePage: React.FC = () => {
                                 {match.status === 'scheduled' && (
                                   <button
                                     onClick={() => handleStartMatch(match.id)}
-                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-3xl transition-colors"
                                     title="Iniciar partido"
                                   >
                                     <Play className="w-4 h-4" />
@@ -479,7 +494,7 @@ const TournamentSchedulePage: React.FC = () => {
                                         away_score: match.away_score ?? 0,
                                       });
                                     }}
-                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-3xl transition-colors"
                                     title="Finalizar partido"
                                   >
                                     <Square className="w-4 h-4" />
@@ -487,14 +502,14 @@ const TournamentSchedulePage: React.FC = () => {
                                 )}
                                 <button
                                   onClick={() => handleEdit(match)}
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  className="p-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:bg-violet-950/30 rounded-3xl transition-colors"
                                   title="Editar"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(match.id)}
-                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-3xl transition-colors"
                                   title="Eliminar"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -515,8 +530,8 @@ const TournamentSchedulePage: React.FC = () => {
       {/* Modal: Finalizar partido */}
       {finishingMatch && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Finalizar partido</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 w-full max-w-sm">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Finalizar partido</h2>
             <p className="text-sm text-gray-500 mb-5">
               {finishingMatch.home_team_detail?.name} vs {finishingMatch.away_team_detail?.name}
             </p>
@@ -529,7 +544,7 @@ const TournamentSchedulePage: React.FC = () => {
                   min={0}
                   value={scoreData.home_score}
                   onChange={(e) => setScoreData(prev => ({ ...prev, home_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 rounded-lg py-2 focus:border-green-500 focus:ring-green-500"
+                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 dark:border-gray-800 rounded-3xl py-2 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
               <span className="text-2xl font-bold text-gray-400">-</span>
@@ -540,7 +555,7 @@ const TournamentSchedulePage: React.FC = () => {
                   min={0}
                   value={scoreData.away_score}
                   onChange={(e) => setScoreData(prev => ({ ...prev, away_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 rounded-lg py-2 focus:border-green-500 focus:ring-green-500"
+                  className="w-full text-center text-3xl font-bold border-2 border-gray-200 dark:border-gray-800 rounded-3xl py-2 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -549,14 +564,14 @@ const TournamentSchedulePage: React.FC = () => {
               <button
                 onClick={handleFinishMatch}
                 disabled={finishMutation.isPending}
-                className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
+                className="flex-1 py-2 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
               >
                 {finishMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
                 Confirmar
               </button>
               <button
                 onClick={() => { setFinishingMatch(null); setScoreData({ home_score: 0, away_score: 0 }); }}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                className="flex-1 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-medium"
               >
                 Cancelar
               </button>

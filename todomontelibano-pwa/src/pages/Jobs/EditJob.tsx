@@ -198,7 +198,7 @@ const EditJob: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
       </div>
     );
@@ -206,12 +206,12 @@ const EditJob: React.FC = () => {
 
   if (!job) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Empleo no encontrado</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Empleo no encontrado</h2>
           <button 
             onClick={() => navigate('/jobs')}
-            className="mt-4 text-primary-600 hover:text-primary-700"
+            className="mt-4 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:text-violet-300"
           >
             Ver todos los empleos
           </button>
@@ -221,19 +221,19 @@ const EditJob: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white mb-4"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Volver
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Editar oferta</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Editar oferta</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Actualiza los detalles de la vacante 
           </p>
         </div>
@@ -244,15 +244,15 @@ const EditJob: React.FC = () => {
           {/* Información básica */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary-100 rounded-lg">
-                <Briefcase className="w-5 h-5 text-primary-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/50 rounded-3xl">
+                <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Información básica</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Información básica</h2>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Título del puesto *
                 </label>
                 <input
@@ -268,7 +268,7 @@ const EditJob: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Categoría *
                   </label>
                   <div className="relative">
@@ -289,7 +289,7 @@ const EditJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="job_type" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="job_type" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Tipo de empleo *
                   </label>
                   <select
@@ -307,7 +307,7 @@ const EditJob: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Ubicación *
                 </label>
                 <div className="relative">
@@ -326,7 +326,7 @@ const EditJob: React.FC = () => {
 
               {/* Estado de la oferta */}
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Estado de la oferta
                 </label>
                 <select
@@ -346,15 +346,15 @@ const EditJob: React.FC = () => {
           {/* Descripción */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                <FileText className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Descripción del puesto</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Descripción del puesto</h2>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Descripción general *
                 </label>
                 <textarea
@@ -369,7 +369,7 @@ const EditJob: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Requisitos *
                 </label>
                 <textarea
@@ -387,10 +387,10 @@ const EditJob: React.FC = () => {
           {/* Skills */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Briefcase className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Habilidades requeridas</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Habilidades requeridas</h2>
             </div>
 
             <div className="space-y-4">
@@ -417,13 +417,13 @@ const EditJob: React.FC = () => {
                   {formData.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-violet-100 dark:bg-violet-950/40 text-blue-800"
                     >
                       {skill}
                       <button
                         type="button"
                         onClick={() => removeSkill(index)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-violet-600 dark:text-violet-400 hover:text-blue-800"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -436,16 +436,16 @@ const EditJob: React.FC = () => {
           {/* Salario */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-green-100 rounded-3xl">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Compensación</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Compensación</h2>
             </div>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label htmlFor="salary_min" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="salary_min" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Salario mínimo
                   </label>
                   <div className="relative">
@@ -463,7 +463,7 @@ const EditJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="salary_max" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="salary_max" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Salario máximo
                   </label>
                   <div className="relative">
@@ -481,7 +481,7 @@ const EditJob: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Moneda
                   </label>
                   <select
@@ -502,10 +502,10 @@ const EditJob: React.FC = () => {
           {/* Beneficios */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 rounded-3xl">
                 <Plus className="w-5 h-5 text-purple-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Beneficios (opcional)</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Beneficios (opcional)</h2>
             </div>
 
             <div className="space-y-4">
@@ -552,14 +552,14 @@ const EditJob: React.FC = () => {
           {/* Fecha de expiración */}
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-orange-100 rounded-lg">
+              <div className="p-2 bg-orange-100 rounded-3xl">
                 <Calendar className="w-5 h-5 text-orange-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Vigencia de la oferta</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Vigencia de la oferta</h2>
             </div>
 
             <div>
-              <label htmlFor="expires_at" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="expires_at" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Fecha de cierre (opcional)
               </label>
               <input
@@ -575,7 +575,7 @@ const EditJob: React.FC = () => {
 
           {/* Error Message */}
           {updateJob.isError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-3xl">
               <p className="text-sm text-red-600">
                 Error al actualizar la oferta. Por favor intenta de nuevo.
               </p>

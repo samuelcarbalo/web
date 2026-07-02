@@ -1,6 +1,9 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTournament, useTournamentPlayerStats } from '../../hooks/useSports';
+import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
+import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
+import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
 import { Trophy, Loader2, ChevronLeft, Goal, Shield, AlertTriangle, Zap, Home } from 'lucide-react';
 
 const TournamentPlayerStatsPage: React.FC = () => {
@@ -8,6 +11,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
   
   const { data: tournament, isLoading: tournamentLoading } = useTournament(slug || '');
   const { data: stats, isLoading: statsLoading } = useTournamentPlayerStats(slug || '');
+  const { data: sponsorshipAvailability } = useSponsorshipAvailability(slug || '');
 
   if (tournamentLoading || statsLoading) {
     return (
@@ -52,8 +56,8 @@ const TournamentPlayerStatsPage: React.FC = () => {
     if (!players || players.length === 0) return null;
 
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className={`px-4 py-3 ${bgClass} border-b border-gray-200 flex items-center gap-2`}>
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className={`px-4 py-3 ${bgClass} border-b border-gray-200 dark:border-gray-800 flex items-center gap-2`}>
           {icon}
           <h3 className={`font-bold ${colorClass}`}>{title}</h3>
         </div>
@@ -70,7 +74,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
                 index === 0 ? 'bg-yellow-500 text-white' :
                 index === 1 ? 'bg-gray-400 text-white' :
                 index === 2 ? 'bg-orange-400 text-white' :
-                'bg-gray-100 text-gray-600'
+                'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
               }`}>
                 {index + 1}
               </div>
@@ -88,7 +92,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <Link
                   to={`/sports/players/${player.id}`}
-                  className="font-medium text-gray-900 text-sm hover:text-green-600 transition-colors truncate block"
+                  className="font-medium text-gray-900 dark:text-white text-sm hover:text-green-600 transition-colors truncate block"
                 >
                   {player.full_name}
                 </Link>
@@ -119,13 +123,13 @@ const TournamentPlayerStatsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             to={`/sports/tournaments/${slug}`}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
             Volver al torneo
@@ -134,10 +138,22 @@ const TournamentPlayerStatsPage: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-3 mb-6">
+          <SponsorshipAvailabilityBanner
+            availability={sponsorshipAvailability}
+            showPurchaseButton={false}
+          />
+          <TournamentAdSlot
+            position="standings_top"
+            tournamentId={tournament.id}
+            variant="horizontal"
+          />
+        </div>
+
         <div className="flex items-center gap-3 mb-6">
           <Trophy className="w-8 h-8 text-green-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Estadísticas de Jugadores</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Estadísticas de Jugadores</h1>
             <p className="text-gray-500">{tournament.name}</p>
           </div>
         </div>
@@ -181,12 +197,12 @@ const TournamentPlayerStatsPage: React.FC = () => {
             <>
               <StatSection
                 title="Top Strikes"
-                icon={<Zap className="w-5 h-5 text-blue-600" />}
+                icon={<Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />}
                 players={stats.top_strikes}
                 statKey="strikes"
                 statLabel="strikes"
-                colorClass="text-blue-600"
-                bgClass="bg-blue-50"
+                colorClass="text-violet-600 dark:text-violet-400"
+                bgClass="bg-violet-50 dark:bg-violet-950/30"
               />
 
               <StatSection
@@ -206,7 +222,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
         {!stats.top_scorers?.length && 
          !stats.top_yellow_cards?.length && 
          !stats.top_red_cards?.length && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-12 text-center">
             <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">Aún no hay estadísticas de jugadores registradas</p>
             <p className="text-gray-400 text-sm mt-1">

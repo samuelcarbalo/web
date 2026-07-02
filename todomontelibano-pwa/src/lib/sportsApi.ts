@@ -1,5 +1,6 @@
 import { api } from './api';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData } from '../types/sports';
+import { getViewerHash } from './viewerHash';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -106,6 +107,8 @@ export const getMatches = async (params?: {
   from?: string;
   to?: string;
   page?: number;
+  phase?: string;
+  group?: string;
 }) => {
   const response = await api.get<PaginatedResponse<Match>>('/sports/matches/', { params });
   return response.data;
@@ -267,8 +270,67 @@ export const getPlayerStats = async (id: string) => {
 
 // ============ TABLA DE POSICIONES ============
 
-export const getTournamentStandings = async (slug: string) => {
-  const response = await api.get(`/sports/tournaments/${slug}/standings/`);
+export const getTournamentStandings = async (slug: string, scope?: StandingsScope) => {
+  const params: Record<string, string> = {};
+  if (scope?.phase) params.phase = scope.phase;
+  if (scope?.group) params.group = scope.group;
+  const response = await api.get(`/sports/tournaments/${slug}/standings/`, { params });
+  return response.data;
+};
+
+// ============ ESTRUCTURA DE TORNEO ============
+
+export const getFormatTemplates = async (sportType?: string) => {
+  const params = sportType ? { sport_type: sportType } : {};
+  const response = await api.get<FormatTemplate[]>('/sports/tournaments/format_templates/', { params });
+  return response.data;
+};
+
+export const getTournamentStructure = async (slug: string) => {
+  const response = await api.get<TournamentStructure>(`/sports/tournaments/${slug}/structure/`);
+  return response.data;
+};
+
+export const assignGroupTeams = async (slug: string, groupId: string, teamIds: string[]) => {
+  const response = await api.post<CompetitionGroup>(
+    `/sports/tournaments/${slug}/assign_group_teams/`,
+    { group_id: groupId, team_ids: teamIds }
+  );
+  return response.data;
+};
+
+export const generateFixture = async (
+  slug: string,
+  data: { phase_id: string; group_id?: string; match_date: string; venue?: string }
+) => {
+  const response = await api.post<{ created_count: number; matches: Match[] }>(
+    `/sports/tournaments/${slug}/generate_fixture/`,
+    data
+  );
+  return response.data;
+};
+
+export const getTournamentSchedule = async (
+  slug: string,
+  params?: { status?: string; team?: string; phase?: string; group?: string }
+) => {
+  const response = await api.get<Match[]>(`/sports/tournaments/${slug}/schedule/`, { params });
+  return response.data;
+};
+
+export const advancePhase = async (slug: string, data: AdvancePhaseData) => {
+  const response = await api.post<AdvancePhaseResult>(
+    `/sports/tournaments/${slug}/advance_phase/`,
+    data
+  );
+  return response.data;
+};
+
+export const getTournamentBracket = async (slug: string, phaseSlug: string) => {
+  const response = await api.get<Bracket>(
+    `/sports/tournaments/${slug}/bracket/`,
+    { params: { phase: phaseSlug } }
+  );
   return response.data;
 };
 
@@ -279,10 +341,16 @@ export const getTournamentPlayerStats = async (slug: string) => {
   return response.data;
 };
 
-export const getBannersByPosition = async (position: string, tournamentId?: string) => {
-  const params: any = { position };
-  if (tournamentId) {
-    params.tournament = tournamentId;
+export const getBannersByPosition = async (
+  position: string,
+  tournamentId?: string,
+  objectId?: string
+) => {
+  const params: Record<string, string> = { position };
+  if (tournamentId) params.tournament = tournamentId;
+  if (objectId) {
+    params.object_id = objectId;
+    params.viewer_hash = getViewerHash();
   }
   const response = await api.get('/sports/banners/by_position/', { params });
   return response.data;

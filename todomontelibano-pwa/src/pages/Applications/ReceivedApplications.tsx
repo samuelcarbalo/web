@@ -20,6 +20,7 @@ import {
 import { useJobApplications, useUpdateApplication } from '../../hooks/useJobs';
 import type { JobApplication, Application } from '../../types';
 import Modal from '../../components/UI/Modal';
+import ApplicationChatButton from '../../components/Chat/ApplicationChatButton';
 
 const ReceivedApplications: React.FC = () => {
     const { jobId } = useParams<{ jobId: string }>();
@@ -49,7 +50,7 @@ const ReceivedApplications: React.FC = () => {
         case 'applied':
           return <Clock className="w-5 h-5 text-yellow-500" />;
         case 'reviewing':
-          return <AlertCircle className="w-5 h-5 text-blue-500" />;
+          return <AlertCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />;
         case 'shortlisted':
           return <CheckCircle2 className="w-5 h-5 text-green-500" />;
         case 'rejected':
@@ -64,7 +65,7 @@ const ReceivedApplications: React.FC = () => {
     const getStatusColor = (status: JobApplication['status']) => {
         const colorMap: Record<JobApplication['status'], string> = {
         pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-        reviewing: 'bg-blue-50 text-blue-700 border-blue-200',
+        reviewing: 'bg-violet-50 dark:bg-violet-950/30 text-blue-700 border-violet-200 dark:border-violet-800',
         shortlisted: 'bg-green-50 text-green-700 border-green-200',
         rejected: 'bg-red-50 text-red-700 border-red-200',
         hired: 'bg-green-100 text-green-800 border-green-300',
@@ -72,7 +73,7 @@ const ReceivedApplications: React.FC = () => {
         interview: 'bg-indigo-50 text-indigo-700 border-indigo-200' 
       };
       
-      return colorMap[status] || 'bg-gray-50 text-gray-700 border-gray-200';
+      return colorMap[status] || 'bg-gray-50 dark:bg-gray-900/50 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-800';
     };
     const handleCloseModal = () => {
         setSelectedApplication(null);
@@ -117,28 +118,28 @@ const ReceivedApplications: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600" />
             </div>
         );
     }
 
     return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="page-container">
         {/* Header */}
         <div className="mb-8">
           <Link 
             to={id ? `/jobs/${id}` : '/dashboard'} 
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white mb-4"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             {id ? 'Volver al empleo' : 'Volver al dashboard'}
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {id ? 'Aplicaciones recibidas' : 'Todas las aplicaciones recibidas'}
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             {id 
               ? `Revisa los candidatos que aplicaron a este empleo` 
               : 'Gestiona todas las aplicaciones a tus empleos publicados'}
@@ -180,13 +181,13 @@ const ReceivedApplications: React.FC = () => {
         {/* Lista de aplicaciones */}
         {filteredApplications.length === 0 ? (
           <div className="card text-center py-16">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No hay aplicaciones {statusFilter ? 'con este filtro' : 'aún'}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               {statusFilter 
                 ? 'Prueba con otro filtro de estado' 
                 : 'Las aplicaciones aparecerán aquí cuando los candidatos apliquen a tus empleos'}
@@ -195,12 +196,12 @@ const ReceivedApplications: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {filteredApplications.map((application) => (
-              <div key={application.id} className="card hover:shadow-md transition-shadow">
+              <div key={application.id} className="card hover:shadow-2xl transition-shadow">
                 <div className="flex flex-col md:flex-row md:items-start gap-6">
                   {/* Avatar/Info del candidato */}
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-blue-600 font-bold text-lg">
+                    <div className="w-12 h-12 bg-violet-100 dark:bg-violet-950/40 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-violet-600 dark:text-violet-400 font-bold text-lg">
                         {application.applicant_name?.[0]}{application.applicant_name?.[1]}
                       </span>
                     </div>
@@ -208,10 +209,10 @@ const ReceivedApplications: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             {application.applicant_name}
                           </h3>
-                          <p className="text-sm text-gray-600 flex items-center gap-4 mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-4 mt-1">
                             <span className="flex items-center">
                               <Mail className="w-4 h-4 mr-1" />
                               {application.applicant_email}
@@ -250,8 +251,8 @@ const ReceivedApplications: React.FC = () => {
                       </p>
 
                       {application.cover_letter && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-700 line-clamp-2">
+                        <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+                          <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-2">
                             "{application.cover_letter}"
                           </p>
                         </div>
@@ -261,6 +262,7 @@ const ReceivedApplications: React.FC = () => {
 
                   {/* Acciones */}
                   <div className="flex flex-row md:flex-col gap-2">
+                    <ApplicationChatButton applicationId={application.id} />
                     <button
                       onClick={() => setSelectedApplication(application)}
                       className="btn-secondary text-sm py-2 px-4 flex items-center"
@@ -290,16 +292,16 @@ const ReceivedApplications: React.FC = () => {
         {/* Stats */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { label: 'Total', value: applications.length, color: 'bg-gray-500' },
+            { label: 'Total', value: applications.length, color: 'bg-gray-50 dark:bg-gray-900/500' },
             { label: 'Pendientes', value: applications.filter(a => a.status === 'pending').length, color: 'bg-yellow-500' },
-            { label: 'En revisión', value: applications.filter(a => a.status === 'reviewing').length, color: 'bg-blue-500' },
+            { label: 'En revisión', value: applications.filter(a => a.status === 'reviewing').length, color: 'bg-violet-50 dark:bg-violet-950/300' },
             { label: 'Preseleccionados', value: applications.filter(a => a.status === 'shortlisted').length, color: 'bg-green-500' },
             { label: 'Contratados', value: applications.filter(a => a.status === 'hired').length, color: 'bg-green-600' },
           ].map((stat) => (
             <div key={stat.label} className="card text-center">
               <div className={`w-3 h-3 rounded-full ${stat.color} mx-auto mb-2`} />
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-sm text-gray-600">{stat.label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -316,39 +318,39 @@ const ReceivedApplications: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-xl">
+              <div className="w-16 h-16 bg-violet-100 dark:bg-violet-950/40 rounded-full flex items-center justify-center">
+                <span className="text-violet-600 dark:text-violet-400 font-bold text-xl">
                   {selectedApplication.applicant_name[0]}
                   {selectedApplication.applicant_name[1]}
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   {selectedApplication.applicant_name}
                 </h3>
-                {/* <p className="text-gray-600">{selectedApplication.applicant.email}</p>
+                {/* <p className="text-gray-600 dark:text-gray-400">{selectedApplication.applicant.email}</p>
                 {selectedApplication.applicant.phone && (
-                  <p className="text-gray-600">{selectedApplication.applicant.phone}</p>
+                  <p className="text-gray-600 dark:text-gray-400">{selectedApplication.applicant.phone}</p>
                 )} */}
               </div>
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-medium text-gray-900 mb-2">Empleo aplicado</h4>
-              <p className="text-gray-600">{selectedApplication.offer_title}</p>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Empleo aplicado</h4>
+              <p className="text-gray-600 dark:text-gray-400">{selectedApplication.offer_title}</p>
             </div>
 
             {selectedApplication.cover_letter && (
               <div className="border-t pt-4">
-                <h4 className="font-medium text-gray-900 mb-2">Carta de presentación</h4>
-                <p className="text-gray-600 text-sm whitespace-pre-line">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Carta de presentación</h4>
+                <p className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line">
                   {selectedApplication.cover_letter}
                 </p>
               </div>
             )}
 
             <div className="border-t pt-4">
-              <h4 className="font-medium text-gray-900 mb-2">Cambiar estado</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cambiar estado</h4>
               <div className="flex flex-wrap gap-2">
                 {(['pending', 'reviewing', 'shortlisted', 'rejected', 'hired'] as const).map((status) => (
                   <button
@@ -357,7 +359,7 @@ const ReceivedApplications: React.FC = () => {
                     className={`px-3 py-1 rounded-full text-sm font-medium border ${
                       selectedApplication.status === status 
                         ? getStatusColor(status) 
-                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                        : 'bg-white text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-900/50'
                     }`}
                   >
                     {status === 'pending' && 'Pendiente'}

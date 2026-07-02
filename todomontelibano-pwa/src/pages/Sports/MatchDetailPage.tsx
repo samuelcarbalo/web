@@ -43,8 +43,17 @@ import {
   useResumePeriod,
   useEndPeriod,
 } from '../../hooks/useSports';
-import type { MatchEvent } from '../../types/sports';
+import type { MatchEvent, SportType } from '../../types/sports';
+import {
+  getMatchHomeScore,
+  getMatchAwayScore,
+  buildFinishScorePayload,
+  getScoreLabel,
+} from '../../lib/matchScoring';
 import MatchLineupSection from './MatchLineupSection';
+import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
+import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
+import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   goal: <Trophy className="w-4 h-4 text-yellow-500" />,
@@ -52,7 +61,7 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   yellow_card: <Shield className="w-4 h-4 text-yellow-500" />,
   red_card: <Shield className="w-4 h-4 text-red-600" />,
   substitution_in: <UserPlus className="w-4 h-4 text-green-500" />,
-  substitution_out: <ArrowUpRight className="w-4 h-4 text-blue-500" />,
+  substitution_out: <ArrowUpRight className="w-4 h-4 text-violet-500 dark:text-violet-400" />,
   penalty_goal: <Target className="w-4 h-4 text-green-500" />,
   penalty_missed: <Ban className="w-4 h-4 text-red-400" />,
   assist: <Zap className="w-4 h-4 text-yellow-400" />,
@@ -80,17 +89,17 @@ const EVENT_COLORS: Record<string, string> = {
   yellow_card: 'bg-yellow-50 border-yellow-200 text-yellow-800',
   red_card: 'bg-red-50 border-red-200 text-red-800',
   substitution_in: 'bg-green-50 border-green-200 text-green-800',
-  substitution_out: 'bg-blue-50 border-blue-200 text-blue-800',
+  substitution_out: 'bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800 text-blue-800',
   penalty_goal: 'bg-green-50 border-green-200 text-green-800',
   penalty_missed: 'bg-red-50 border-red-200 text-red-800',
   assist: 'bg-yellow-50 border-yellow-200 text-yellow-800',
   expelled: 'bg-red-50 border-red-200 text-red-800',
-  other: 'bg-gray-50 border-gray-200 text-gray-800',
+  other: 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-100',
 };
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
   scheduled: { 
-    bg: 'bg-blue-50', 
+    bg: 'bg-violet-50 dark:bg-violet-950/30', 
     text: 'text-blue-700', 
     label: 'Programado',
     icon: <Calendar className="w-3.5 h-3.5" />
@@ -102,8 +111,8 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string; i
     icon: <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
   },
   finished: { 
-    bg: 'bg-gray-100', 
-    text: 'text-gray-600', 
+    bg: 'bg-gray-100 dark:bg-gray-800', 
+    text: 'text-gray-600 dark:text-gray-400', 
     label: 'Finalizado',
     icon: <Trophy className="w-3.5 h-3.5" />
   },
@@ -128,8 +137,8 @@ const EXTRA_TIME_MINUTES = 120;
 
 // ─── Skeleton Components ──────────────────────────────────────────────────────
 const MatchHeaderSkeleton: React.FC = () => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden animate-pulse">
-    <div className="h-12 bg-gray-100" />
+  <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden animate-pulse">
+    <div className="h-12 bg-gray-100 dark:bg-gray-800" />
     <div className="p-8">
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 flex flex-col items-center gap-3">
@@ -143,12 +152,12 @@ const MatchHeaderSkeleton: React.FC = () => (
         </div>
       </div>
     </div>
-    <div className="h-16 bg-gray-100" />
+    <div className="h-16 bg-gray-100 dark:bg-gray-800" />
   </div>
 );
 
 const TimelineSkeleton: React.FC = () => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 animate-pulse space-y-4">
+  <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 animate-pulse space-y-4">
     <div className="h-6 bg-gray-200 rounded w-48" />
     {[...Array(3)].map((_, i) => (
       <div key={i} className="flex items-start gap-4">
@@ -169,6 +178,7 @@ const MatchDetailPage: React.FC = () => {
 
   const { data: match, isLoading } = useMatch(id || '');
   const { data: tournament } = useTournament(match?.tournament_slug || '');
+  const { data: sponsorshipAvailability } = useSponsorshipAvailability(match?.tournament_slug || '');
   const { data: homePlayersData } = usePlayers(match?.home_team || '');
   const { data: awayPlayersData } = usePlayers(match?.away_team || '');
   const isLive = match?.status === 'live';
@@ -401,11 +411,13 @@ const MatchDetailPage: React.FC = () => {
 
   const openFinishModal = () => {
     if (!match) return;
+    const home = getMatchHomeScore(match, sportType as SportType);
+    const away = getMatchAwayScore(match, sportType as SportType);
     setScoreData({
-      home_score: match.home_score ?? 0,
-      away_score: match.away_score ?? 0,
-      home_runs: match.home_runs ?? 0,
-      away_runs: match.away_runs ?? 0,
+      home_score: home,
+      away_score: away,
+      home_runs: home,
+      away_runs: away,
     });
     setShowFinishModal(true);
   };
@@ -487,8 +499,10 @@ const MatchDetailPage: React.FC = () => {
   const handleFinishMatch = () => {
     if (!match) return;
     pauseTimer();
+    const home = sportType === 'softball' ? scoreData.home_runs : scoreData.home_score;
+    const away = sportType === 'softball' ? scoreData.away_runs : scoreData.away_score;
     finishMutation.mutate(
-      { id: match.id, data: scoreData },
+      { id: match.id, data: buildFinishScorePayload(sportType as SportType, home, away) },
       { onSuccess: () => setShowFinishModal(false) }
     );
   };
@@ -525,7 +539,7 @@ const MatchDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <MatchHeaderSkeleton />
           <div className="mt-6">
@@ -538,16 +552,16 @@ const MatchDetailPage: React.FC = () => {
 
   if (!match) {
     return (
-      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50 flex items-center justify-center">
         <div className="text-center max-w-md px-4">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <Swords className="w-10 h-10 text-gray-300" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Partido no encontrado</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Partido no encontrado</h2>
           <p className="text-gray-500 mb-6">El partido que buscas no existe o ha sido eliminado.</p>
           <Link 
             to="/sports/tournaments" 
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-3xl font-medium hover:bg-green-700 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
             Volver a torneos
@@ -559,18 +573,21 @@ const MatchDetailPage: React.FC = () => {
 
   const dateInfo = formatDate(match.match_date);
   const statusConfig = STATUS_CONFIG[match.status] || STATUS_CONFIG.scheduled;
+  const displayHome = getMatchHomeScore(match, sportType as SportType);
+  const displayAway = getMatchAwayScore(match, sportType as SportType);
+  const scoreUnit = getScoreLabel(sportType as SportType);
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50">
       {/* Header sticky */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200/80">
+      <div className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/80 dark:border-gray-800/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <Link
               to={`/sports/tournaments/${match.tournament_slug}`}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors text-sm font-medium"
             >
-              <div className="p-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+              <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-3xl hover:bg-gray-200 transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </div>
               <span className="hidden sm:inline">{match.tournament_name}</span>
@@ -587,7 +604,7 @@ const MatchDetailPage: React.FC = () => {
                 {isScheduled && (
                   <button
                     onClick={handleStartMatch}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-semibold"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 transition-colors text-xs font-semibold"
                   >
                     <Play className="w-3.5 h-3.5" />
                     Iniciar
@@ -595,14 +612,14 @@ const MatchDetailPage: React.FC = () => {
                 )}
                 <button
                   onClick={openEditModal}
-                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:bg-violet-950/30 rounded-3xl transition-colors"
                   title="Editar"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-colors"
                   title="Eliminar"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -614,9 +631,18 @@ const MatchDetailPage: React.FC = () => {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <SponsorshipAvailabilityBanner
+          availability={sponsorshipAvailability}
+          showPurchaseButton={false}
+        />
+        <TournamentAdSlot
+          position="match_detail"
+          tournamentId={tournament?.id || match.tournament}
+          variant="horizontal"
+        />
 
         {/* Tarjeta principal del partido - REDISEÑADA */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
           {/* Info del torneo */}
           <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white/80">
@@ -643,14 +669,14 @@ const MatchDetailPage: React.FC = () => {
                     <img
                       src={match.home_team_detail.logo}
                       alt={match.home_team_detail.name}
-                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-md mb-3 group-hover:scale-105 transition-transform duration-300 bg-white"
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-3xl object-cover shadow-md mb-3 group-hover:scale-[1.02] transition-transform duration-300 bg-white"
                     />
                   ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
                       {match.home_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                  <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-700 transition-colors">
                     {match.home_team_detail?.name}
                   </h2>
                 </Link>
@@ -662,25 +688,20 @@ const MatchDetailPage: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 md:gap-5">
                       <span className={`text-5xl md:text-7xl font-black tabular-nums tracking-tight ${
-                        (match.home_score ?? 0) > (match.away_score ?? 0) ? 'text-gray-900' : 'text-gray-400'
+                        displayHome > displayAway ? 'text-gray-900 dark:text-white' : 'text-gray-400'
                       }`}>
-                        {match.home_score ?? 0}
+                        {displayHome}
                       </span>
                       <span className="text-3xl md:text-5xl font-light text-gray-300">—</span>
                       <span className={`text-5xl md:text-7xl font-black tabular-nums tracking-tight ${
-                        (match.away_score ?? 0) > (match.home_score ?? 0) ? 'text-gray-900' : 'text-gray-400'
+                        displayAway > displayHome ? 'text-gray-900 dark:text-white' : 'text-gray-400'
                       }`}>
-                        {match.away_score ?? 0}
+                        {displayAway}
                       </span>
                     </div>
 
-                    {/* Marcador de carreras para softbol */}
-                    {sportType === 'softball' && (match.home_runs != null || match.away_runs != null) && (
-                      <div className="flex items-center justify-center gap-4 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-1.5">
-                        <span>C: {match.home_runs ?? 0}</span>
-                        <span className="text-gray-300">|</span>
-                        <span>C: {match.away_runs ?? 0}</span>
-                      </div>
+                    {sportType === 'softball' && (
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{scoreUnit}</p>
                     )}
                   </div>
                 ) : (
@@ -693,7 +714,7 @@ const MatchDetailPage: React.FC = () => {
                 {/* Cronómetro del partido */}
                 {isLive && (
                   <div className="mt-3">
-                    <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl font-bold">
+                    <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-3xl font-bold">
                       <Timer className="w-5 h-5 animate-pulse" />
                       <span className="text-2xl tabular-nums">{formatTimer(matchTimer)}</span>
                     </div>
@@ -715,14 +736,14 @@ const MatchDetailPage: React.FC = () => {
                     <img
                       src={match.away_team_detail.logo}
                       alt={match.away_team_detail.name}
-                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-md mb-3 group-hover:scale-105 transition-transform duration-300 bg-white"
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-3xl object-cover shadow-md mb-3 group-hover:scale-[1.02] transition-transform duration-300 bg-white"
                     />
                   ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-2xl mb-3 shadow-md">
                       {match.away_team_detail?.name?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                  <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-700 transition-colors">
                     {match.away_team_detail?.name}
                   </h2>
                 </Link>
@@ -732,23 +753,23 @@ const MatchDetailPage: React.FC = () => {
 
           {/* Info adicional - Rediseñada como pills */}
           <div className="bg-gray-50/80 border-t border-gray-100 px-6 py-4">
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs md:text-sm text-gray-600">
-              <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs md:text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-1.5 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-3xl border border-gray-200/60 dark:border-gray-700/60">
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
                 <span className="font-medium">{dateInfo.full}</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+              <div className="flex items-center gap-1.5 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-3xl border border-gray-200/60 dark:border-gray-700/60">
                 <Clock className="w-3.5 h-3.5 text-gray-400" />
                 <span className="font-medium">{dateInfo.time}</span>
               </div>
               {match.venue && (
-                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-gray-200/60">
+                <div className="flex items-center gap-1.5 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-3xl border border-gray-200/60 dark:border-gray-700/60">
                   <MapPin className="w-3.5 h-3.5 text-gray-400" />
                   <span className="font-medium">{match.venue}{match.stadium && ` — ${match.stadium}`}</span>
                 </div>
               )}
               {match.notes && (
-                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/60">
+                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-3xl border border-amber-200/60">
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                   <span className="font-medium text-amber-700">{match.notes}</span>
                 </div>
@@ -759,14 +780,14 @@ const MatchDetailPage: React.FC = () => {
 
         {/* CONTROLES DE PERÍODOS - Rediseñados */}
         {isLive && isOwner && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
+                <div className="p-2 bg-green-100 rounded-3xl">
                   <Activity className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">
                     {activePeriod ? activePeriod.name : 'Control del Partido'}
                   </h3>
                   <span className="text-xs text-gray-500">
@@ -782,7 +803,7 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   onClick={handleStartFirstHalf}
                   disabled={startPeriodMutation.isPending}
-                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-2xl"
                 >
                   <Play className="w-4 h-4" />
                   {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 1er Tiempo'}
@@ -793,7 +814,7 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   onClick={handlePause}
                   disabled={pausePeriodMutation.isPending}
-                  className="px-4 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-amber-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-amber-500 text-white rounded-3xl hover:bg-amber-600 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-amber-200 transition-all hover:shadow-2xl"
                 >
                   <Pause className="w-4 h-4" />
                   {pausePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Pausar'}
@@ -804,7 +825,7 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   onClick={handleResume}
                   disabled={resumePeriodMutation.isPending}
-                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-2xl"
                 >
                   <Play className="w-4 h-4" />
                   {resumePeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reanudar'}
@@ -815,7 +836,7 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   onClick={handleEndHalf}
                   disabled={endPeriodMutation.isPending}
-                  className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-blue-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-3xl hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-blue-200 transition-all hover:shadow-2xl"
                 >
                   <Square className="w-4 h-4" />
                   {endPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : `Finalizar ${activePeriod.name}`}
@@ -826,7 +847,7 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   onClick={handleStartSecondHalf}
                   disabled={startPeriodMutation.isPending}
-                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-green-200 transition-all hover:shadow-2xl"
                 >
                   <Play className="w-4 h-4" />
                   {startPeriodMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar 2do Tiempo'}
@@ -836,7 +857,7 @@ const MatchDetailPage: React.FC = () => {
               {lastCompletedPeriod?.period_number === 2 && !activePeriod && (
                 <button
                   onClick={openFinishModal}
-                  className="px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-red-200 transition-all hover:shadow-md"
+                  className="px-4 py-2.5 bg-red-600 text-white rounded-3xl hover:bg-red-700 text-sm font-semibold flex items-center gap-2 shadow-sm shadow-red-200 transition-all hover:shadow-2xl"
                 >
                   <Trophy className="w-4 h-4" />
                   Finalizar Partido
@@ -851,12 +872,12 @@ const MatchDetailPage: React.FC = () => {
                   {periods.map((period: any) => (
                     <div
                       key={period.id}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border ${
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-3xl text-xs font-semibold border ${
                         period.is_active
                           ? 'bg-green-50 border-green-200 text-green-700'
                           : period.is_completed
-                          ? 'bg-gray-50 border-gray-200 text-gray-600'
-                          : 'bg-blue-50 border-blue-200 text-blue-600'
+                          ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400'
+                          : 'bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400'
                       }`}
                     >
                       <Clock className="w-3 h-3" />
@@ -872,14 +893,14 @@ const MatchDetailPage: React.FC = () => {
 
         {/* Acciones para partido en vivo */}
         {isLive && isOwner && activePeriod && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Zap className="w-4 h-4 text-blue-600" />
+                <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                  <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">Registrar evento</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">Registrar evento</h3>
                   <span className="text-xs text-gray-500">Minuto actual: <span className="font-bold text-green-600">{matchTimer}'</span></span>
                 </div>
               </div>
@@ -887,9 +908,9 @@ const MatchDetailPage: React.FC = () => {
             <div className="p-4 grid grid-cols-2 gap-3">
               <button
                 onClick={() => openEventModal(match.home_team)}
-                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-xl transition-all border border-gray-200 hover:border-blue-200 text-sm font-semibold"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 dark:bg-gray-900/50 hover:bg-violet-50 dark:bg-violet-950/30 text-gray-700 dark:text-gray-200 hover:text-violet-700 dark:hover:text-violet-300 rounded-3xl transition-all border border-gray-200 dark:border-gray-800 hover:border-violet-200 dark:border-violet-800 text-sm font-semibold"
               >
-                <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-3xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
                   {match.home_team_detail?.logo ? (
                     <img src={match.home_team_detail.logo} alt="" className="w-6 h-6 rounded object-cover" />
                   ) : (
@@ -900,9 +921,9 @@ const MatchDetailPage: React.FC = () => {
               </button>
               <button
                 onClick={() => openEventModal(match.away_team)}
-                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-xl transition-all border border-gray-200 hover:border-blue-200 text-sm font-semibold"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 dark:bg-gray-900/50 hover:bg-violet-50 dark:bg-violet-950/30 text-gray-700 dark:text-gray-200 hover:text-violet-700 dark:hover:text-violet-300 rounded-3xl transition-all border border-gray-200 dark:border-gray-800 hover:border-violet-200 dark:border-violet-800 text-sm font-semibold"
               >
-                <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-3xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
                   {match.away_team_detail?.logo ? (
                     <img src={match.away_team_detail.logo} alt="" className="w-6 h-6 rounded object-cover" />
                   ) : (
@@ -929,13 +950,13 @@ const MatchDetailPage: React.FC = () => {
 
         {/* Timeline de eventos - REDISEÑADO */}
         {match.events && match.events.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 rounded-3xl">
                 <History className="w-4 h-4 text-purple-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Cronología del partido</h3>
-              <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cronología del partido</h3>
+              <span className="ml-auto text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full font-medium">
                 {match.events.length} eventos
               </span>
             </div>
@@ -960,12 +981,12 @@ const MatchDetailPage: React.FC = () => {
                 return (
                   <div
                     key={event.id}
-                    className={`flex items-start gap-4 p-4 md:px-6 hover:bg-gray-50/50 transition-colors ${
+                    className={`flex items-start gap-4 p-4 md:px-6 hover:bg-gray-50 dark:hover:bg-gray-800/50/50 transition-colors ${
                       isHomeEvent ? '' : 'flex-row-reverse'
                     }`}
                   >
                     {/* Icono con color */}
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border ${
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-3xl flex items-center justify-center border ${
                       EVENT_COLORS[event.event_type] || EVENT_COLORS.other
                     }`}>
                       {eventIcon}
@@ -973,19 +994,19 @@ const MatchDetailPage: React.FC = () => {
 
                     <div className={`flex-1 min-w-0 ${isHomeEvent ? '' : 'text-right'}`}>
                       <div className={`flex items-center gap-2 mb-1 ${isHomeEvent ? '' : 'flex-row-reverse'}`}>
-                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">
                           {event.minute}'
                         </span>
                         <span className={`text-sm font-bold ${
-                          isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900'
+                          isSecondYellow || hasDirectRed ? 'text-red-600' : 'text-gray-900 dark:text-white'
                         }`}>
                           {eventLabel}
                         </span>
                       </div>
 
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-gray-700 dark:text-gray-200">
                         <span className={`font-semibold ${
-                          isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : 'text-gray-900'
+                          isSecondYellow || hasDirectRed ? 'text-red-600 line-through' : 'text-gray-900 dark:text-white'
                         }`}>
                           {event.player_name}
                         </span>
@@ -994,7 +1015,7 @@ const MatchDetailPage: React.FC = () => {
                       </p>
 
                       {event.description && (
-                        <p className="text-xs text-gray-400 mt-1.5 bg-gray-50 px-2 py-1 rounded-lg inline-block">
+                        <p className="text-xs text-gray-400 mt-1.5 bg-gray-50 dark:bg-gray-900/50 px-2 py-1 rounded-3xl inline-block">
                           {event.description}
                         </p>
                       )}
@@ -1007,11 +1028,11 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {match.events?.length === 0 && (isLive || isFinished) && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <History className="w-8 h-8 text-gray-300" />
             </div>
-            <h4 className="text-gray-900 font-semibold mb-1">Sin eventos registrados</h4>
+            <h4 className="text-gray-900 dark:text-white font-semibold mb-1">Sin eventos registrados</h4>
             <p className="text-gray-500 text-sm">Los goles, tarjetas y sustituciones aparecerán aquí.</p>
           </div>
         )}
@@ -1022,77 +1043,77 @@ const MatchDetailPage: React.FC = () => {
       {/* Modal: Editar partido */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-xl">
-                <Edit3 className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                <Edit3 className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Editar Partido</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Editar Partido</h2>
                 <p className="text-sm text-gray-500">Modifica los detalles del encuentro</p>
               </div>
             </div>
 
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Fecha y hora</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Fecha y hora</label>
                 <input
                   type="datetime-local"
                   value={editData.match_date}
                   onChange={(e) => setEditData(prev => ({ ...prev, match_date: e.target.value }))}
-                  className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Lugar</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Lugar</label>
                   <input
                     type="text"
                     value={editData.venue}
                     onChange={(e) => setEditData(prev => ({ ...prev, venue: e.target.value }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     placeholder="Ej: Estadio Municipal"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Estadio</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Estadio</label>
                   <input
                     type="text"
                     value={editData.stadium}
                     onChange={(e) => setEditData(prev => ({ ...prev, stadium: e.target.value }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     placeholder="Ej: Cancha Principal"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Jornada</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Jornada</label>
                   <input
                     type="number"
                     min={1}
                     value={editData.match_week}
                     onChange={(e) => setEditData(prev => ({ ...prev, match_week: parseInt(e.target.value) || 1 }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Ronda</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Ronda</label>
                   <input
                     type="number"
                     min={1}
                     value={editData.round_number}
                     onChange={(e) => setEditData(prev => ({ ...prev, round_number: parseInt(e.target.value) || 1 }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notas</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Notas</label>
                 <textarea
                   value={editData.notes}
                   onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                  className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   rows={2}
                   placeholder="Información adicional..."
                 />
@@ -1101,14 +1122,14 @@ const MatchDetailPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
+                  className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
                 >
                   {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar cambios'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
+                  className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-semibold transition-colors"
                 >
                   Cancelar
                 </button>
@@ -1121,28 +1142,35 @@ const MatchDetailPage: React.FC = () => {
       {/* Modal: Finalizar partido */}
       {showFinishModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-yellow-100 rounded-xl">
+              <div className="p-2 bg-yellow-100 rounded-3xl">
                 <Trophy className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Finalizar partido</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Finalizar partido</h2>
                 <p className="text-sm text-gray-500">
                   {match.home_team_detail?.name} vs {match.away_team_detail?.name}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-6 bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-4 mb-6 bg-gray-50 dark:bg-gray-900/50 rounded-3xl p-4">
               <div className="flex-1 text-center">
                 <p className="text-xs text-gray-500 mb-2 font-medium truncate">{match.home_team_detail?.name}</p>
                 <input
                   type="number"
                   min={0}
-                  value={scoreData.home_score}
-                  onChange={(e) => setScoreData(prev => ({ ...prev, home_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-4xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white"
+                  value={sportType === 'softball' ? scoreData.home_runs : scoreData.home_score}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    setScoreData((prev) =>
+                      sportType === 'softball'
+                        ? { ...prev, home_runs: val, home_score: val }
+                        : { ...prev, home_score: val }
+                    );
+                  }}
+                  className="w-full text-center text-4xl font-black border-2 border-gray-200 dark:border-gray-800 rounded-3xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
               </div>
               <span className="text-2xl font-bold text-gray-300">—</span>
@@ -1151,25 +1179,36 @@ const MatchDetailPage: React.FC = () => {
                 <input
                   type="number"
                   min={0}
-                  value={scoreData.away_score}
-                  onChange={(e) => setScoreData(prev => ({ ...prev, away_score: parseInt(e.target.value) || 0 }))}
-                  className="w-full text-center text-4xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white"
+                  value={sportType === 'softball' ? scoreData.away_runs : scoreData.away_score}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    setScoreData((prev) =>
+                      sportType === 'softball'
+                        ? { ...prev, away_runs: val, away_score: val }
+                        : { ...prev, away_score: val }
+                    );
+                  }}
+                  className="w-full text-center text-4xl font-black border-2 border-gray-200 dark:border-gray-800 rounded-3xl py-3 focus:border-green-500 focus:ring-green-500/20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
+            <p className="text-xs text-center text-gray-500 mb-4 -mt-2">
+              Marcador en {scoreUnit.toLowerCase()}
+              {sportType === 'softball' && ' (no se permiten empates)'}
+            </p>
 
             <div className="flex gap-3">
               <button
                 onClick={handleFinishMatch}
                 disabled={finishMutation.isPending}
-                className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2 transition-colors"
+                className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 {finishMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
                 Confirmar resultado
               </button>
               <button
                 onClick={() => setShowFinishModal(false)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
+                className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-semibold transition-colors"
               >
                 Cancelar
               </button>
@@ -1192,24 +1231,24 @@ const MatchDetailPage: React.FC = () => {
 
         return (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-purple-100 rounded-xl">
+                <div className="p-2 bg-purple-100 rounded-3xl">
                   <Zap className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Registrar evento</h2>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Registrar evento</h2>
                   <p className="text-sm text-gray-500">{isHomeTeam ? match.home_team_detail?.name : match.away_team_detail?.name}</p>
                 </div>
               </div>
 
               <form onSubmit={handleAddEvent} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tipo de evento</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Tipo de evento</label>
                   <select
                     value={eventData.event_type}
                     onChange={(e) => setEventData(prev => ({ ...prev, event_type: e.target.value as MatchEvent['event_type'] }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                   >
                     {Object.entries(EVENT_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
@@ -1218,7 +1257,7 @@ const MatchDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
                     Minuto
                     {isLive && (
                       <span className="ml-2 text-xs text-green-600 font-normal bg-green-50 px-2 py-0.5 rounded-full">
@@ -1233,13 +1272,13 @@ const MatchDetailPage: React.FC = () => {
                       max={120}
                       value={eventData.minute}
                       onChange={(e) => setEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                      className="flex-1 rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                      className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     />
                     {isLive && (
                       <button
                         type="button"
                         onClick={() => setEventData(prev => ({ ...prev, minute: matchTimer }))}
-                        className="px-4 py-2.5 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 text-sm font-semibold whitespace-nowrap transition-colors"
+                        className="px-4 py-2.5 bg-green-100 text-green-700 rounded-3xl hover:bg-green-200 text-sm font-semibold whitespace-nowrap transition-colors"
                       >
                         Usar actual
                       </button>
@@ -1249,7 +1288,7 @@ const MatchDetailPage: React.FC = () => {
 
                 {/* Jugador con autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Jugador</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Jugador</label>
                   <input
                     type="text"
                     value={playerSearch}
@@ -1260,13 +1299,13 @@ const MatchDetailPage: React.FC = () => {
                       setShowPlayerDropdown(true);
                     }}
                     onFocus={() => setShowPlayerDropdown(true)}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     placeholder="Buscar por nombre o número..."
                     autoComplete="off"
                   />
 
                   {selectedPlayerName && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-xl border border-green-200">
+                    <div className="mt-2 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-3xl border border-green-200">
                       <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                       <span className="font-medium">{selectedPlayerName}</span>
                       <button
@@ -1276,7 +1315,7 @@ const MatchDetailPage: React.FC = () => {
                           setPlayerSearch('');
                           setEventData(prev => ({ ...prev, player: '' }));
                         }}
-                        className="ml-auto text-green-600 hover:text-green-800 font-bold w-6 h-6 flex items-center justify-center rounded-lg hover:bg-green-100 transition-colors"
+                        className="ml-auto text-green-600 hover:text-green-800 font-bold w-6 h-6 flex items-center justify-center rounded-3xl hover:bg-green-100 transition-colors"
                       >
                         ×
                       </button>
@@ -1284,7 +1323,7 @@ const MatchDetailPage: React.FC = () => {
                   )}
 
                   {showPlayerDropdown && !selectedPlayerName && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-52 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-xl max-h-52 overflow-y-auto">
                       {filteredPlayers.length === 0 ? (
                         <div className="px-4 py-4 text-sm text-gray-500 text-center">
                           No se encontraron jugadores
@@ -1304,10 +1343,10 @@ const MatchDetailPage: React.FC = () => {
                               }}
                               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 text-left transition-colors"
                             >
-                              <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                              <span className="w-8 h-8 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 flex-shrink-0">
                                 {player.jersey_number}
                               </span>
-                              <span className="text-sm font-medium text-gray-800">{player.full_name}</span>
+                              <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{player.full_name}</span>
                               <span className="ml-auto text-xs text-gray-400">{player.position_display}</span>
                             </button>
                           ))
@@ -1317,11 +1356,11 @@ const MatchDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Descripción</label>
                   <textarea
                     value={eventData.description}
                     onChange={(e) => setEventData(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5"
                     rows={2}
                     placeholder="Detalles adicionales..."
                   />
@@ -1331,7 +1370,7 @@ const MatchDetailPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={addEventMutation.isPending}
-                    className="flex-1 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
+                    className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
                   >
                     {addEventMutation.isPending
                       ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
@@ -1340,7 +1379,7 @@ const MatchDetailPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowEventModal(false)}
-                    className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
+                    className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-semibold transition-colors"
                   >
                     Cancelar
                   </button>
@@ -1354,18 +1393,18 @@ const MatchDetailPage: React.FC = () => {
       {/* Modal: Confirmar eliminación */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 rounded-xl">
+              <div className="p-2 bg-red-100 rounded-3xl">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">¿Eliminar partido?</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">¿Eliminar partido?</h2>
                 <p className="text-sm text-gray-500">Esta acción no se puede deshacer.</p>
               </div>
             </div>
 
-            <div className="bg-red-50 border border-red-100 rounded-xl p-3 mb-6">
+            <div className="bg-red-50 border border-red-100 rounded-3xl p-3 mb-6">
               <p className="text-sm text-red-700 font-medium">
                 {match.home_team_detail?.name} vs {match.away_team_detail?.name}
               </p>
@@ -1376,13 +1415,13 @@ const MatchDetailPage: React.FC = () => {
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 font-semibold transition-colors"
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-3xl hover:bg-red-700 disabled:opacity-50 font-semibold transition-colors"
               >
                 {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Eliminar'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
+                className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:bg-gray-900/50 font-semibold transition-colors"
               >
                 Cancelar
               </button>

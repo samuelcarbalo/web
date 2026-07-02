@@ -34,7 +34,7 @@ const TeamDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
       </div>
     );
@@ -42,9 +42,9 @@ const TeamDetailPage: React.FC = () => {
 
   if (!team) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Equipo no encontrado</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Equipo no encontrado</h2>
           <Link to={`/sports/tournaments/${tournamentSlug}`} className="text-green-600 mt-4 inline-block">
             ← Volver al torneo
           </Link>
@@ -60,7 +60,7 @@ const TeamDetailPage: React.FC = () => {
   const topScorer = [...players].sort((a, b) => (b.goals || 0) - (a.goals || 0))[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header con banner del equipo */}
       <div className="relative h-48 bg-gray-900 overflow-hidden">
         <div 
@@ -69,7 +69,7 @@ const TeamDetailPage: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="absolute bottom-0 left-0 right-0 page-container py-6">
           <Link 
             to={`/sports/tournaments/${tournamentSlug}`}
             className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
@@ -100,33 +100,33 @@ const TeamDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Columna izquierda - Info del equipo */}
           <div className="space-y-6">
             
             {/* Estadísticas del equipo */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
                 Estadísticas
               </h2>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-900">{totalMatches}</p>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalMatches}</p>
                   <p className="text-xs text-gray-500 uppercase">Partidos</p>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-center p-3 bg-green-50 rounded-3xl">
                   <p className="text-2xl font-bold text-green-600">{team.won || 0}</p>
                   <p className="text-xs text-gray-500 uppercase">Ganados</p>
                 </div>
-                <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                <div className="text-center p-3 bg-yellow-50 rounded-3xl">
                   <p className="text-2xl font-bold text-yellow-600">{team.drawn || 0}</p>
                   <p className="text-xs text-gray-500 uppercase">Empatados</p>
                 </div>
-                <div className="text-center p-3 bg-red-50 rounded-lg">
+                <div className="text-center p-3 bg-red-50 rounded-3xl">
                   <p className="text-2xl font-bold text-red-600">{team.lost || 0}</p>
                   <p className="text-xs text-gray-500 uppercase">Perdidos</p>
                 </div>
@@ -134,19 +134,19 @@ const TeamDetailPage: React.FC = () => {
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Puntos</span>
-                  <span className="text-xl font-bold text-gray-900">{team.points || 0}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Puntos</span>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">{team.points || 0}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Goles a favor</span>
-                  <span className="font-medium text-gray-900">{team.goals_for || 0}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Goles a favor</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{team.goals_for || 0}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Goles en contra</span>
-                  <span className="font-medium text-gray-900">{team.goals_against || 0}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Goles en contra</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{team.goals_against || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Diferencia</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Diferencia</span>
                   <span className={`font-medium ${(team.goal_difference || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {team.goal_difference > 0 ? '+' : ''}{team.goal_difference || 0}
                   </span>
@@ -154,8 +154,8 @@ const TeamDetailPage: React.FC = () => {
                 {totalMatches > 0 && (
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">% Victoria</span>
-                      <span className="font-bold text-blue-600">{winRate}%</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">% Victoria</span>
+                      <span className="font-bold text-violet-600 dark:text-violet-400">{winRate}%</span>
                     </div>
                   </div>
                 )}
@@ -163,30 +163,30 @@ const TeamDetailPage: React.FC = () => {
             </div>
 
             {/* Info del entrenador */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <UserCircle className="w-5 h-5 mr-2 text-blue-500" />
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <UserCircle className="w-5 h-5 mr-2 text-violet-500 dark:text-violet-400" />
                 Cuerpo técnico
               </h2>
               
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <UserCircle className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-950/40 flex items-center justify-center">
+                    <UserCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{team.coach_name || 'Sin entrenador'}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{team.coach_name || 'Sin entrenador'}</p>
                     <p className="text-xs text-gray-500">Entrenador</p>
                   </div>
                 </div>
                 {team.coach_email && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Mail className="w-4 h-4" />
                     {team.coach_email}
                   </div>
                 )}
                 {team.coach_phone && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Phone className="w-4 h-4" />
                     {team.coach_phone}
                   </div>
@@ -195,19 +195,19 @@ const TeamDetailPage: React.FC = () => {
             </div>
 
             {/* Colores del equipo */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Colores</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Colores</h2>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <div 
-                    className="h-12 rounded-lg border border-gray-200"
+                    className="h-12 rounded-3xl border border-gray-200 dark:border-gray-800"
                     style={{ backgroundColor: team.primary_color || '#3B82F6' }}
                   />
                   <p className="text-xs text-gray-500 mt-1 text-center">Primario</p>
                 </div>
                 <div className="flex-1">
                   <div 
-                    className="h-12 rounded-lg border border-gray-200"
+                    className="h-12 rounded-3xl border border-gray-200 dark:border-gray-800"
                     style={{ backgroundColor: team.secondary_color || '#FFFFFF' }}
                   />
                   <p className="text-xs text-gray-500 mt-1 text-center">Secundario</p>
@@ -219,7 +219,7 @@ const TeamDetailPage: React.FC = () => {
             {(isTeamCoach || isOwner) && (
               <Link
                 to={`/sports/tournaments/${tournamentSlug}/teams/${teamSlug}/roster`}
-                className="block w-full bg-green-600 text-white text-center py-3 rounded-xl font-medium hover:bg-green-700 transition-colors shadow-sm"
+                className="block w-full bg-green-600 text-white text-center py-3 rounded-3xl font-medium hover:bg-green-700 transition-colors shadow-sm"
               >
                 <Users className="w-5 h-5 inline mr-2" />
                 Gestionar plantilla
@@ -231,17 +231,17 @@ const TeamDetailPage: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Resumen de jugadores */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                   <Users className="w-5 h-5 mr-2 text-green-600" />
                   Plantilla
-                  <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded-full">
                     {players.length}
                   </span>
                 </h2>
                 {topScorer && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Target className="w-4 h-4 text-orange-500" />
                     <span>Goleador: <strong>{topScorer.first_name} {topScorer.last_name}</strong> ({topScorer.goals} gol{topScorer.goals !== 1 ? 'es' : ''})</span>
                   </div>
@@ -263,7 +263,7 @@ const TeamDetailPage: React.FC = () => {
                     <Link
                       key={player.id}
                       to={`/sports/players/${player.id}`}
-                      className="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
+                      className="flex items-center p-4 bg-gray-50 dark:bg-gray-900/50 rounded-3xl hover:bg-gray-100 dark:bg-gray-800 transition-colors group"
                     >
                       {player.photo ? (
                         <img 
@@ -280,7 +280,7 @@ const TeamDetailPage: React.FC = () => {
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900 truncate">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">
                             {player.first_name} {player.last_name}
                           </p>
                           {player.is_captain && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
@@ -321,16 +321,16 @@ const TeamDetailPage: React.FC = () => {
 
             {/* Estadísticas de jugadores */}
             {players.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-violet-500 dark:text-violet-400" />
                   Líderes del equipo
                 </h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Goleadores */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                       <Target className="w-4 h-4 text-orange-500" />
                       Goleadores
                     </h3>
@@ -339,7 +339,7 @@ const TeamDetailPage: React.FC = () => {
                       .slice(0, 3)
                       .map((p, i) => (
                         <div key={p.id} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
+                          <span className="text-gray-600 dark:text-gray-400 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
                           <span className="font-bold text-orange-600">{p.goals}</span>
                         </div>
                       ))}
@@ -347,8 +347,8 @@ const TeamDetailPage: React.FC = () => {
 
                   {/* Asistencias */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4 text-blue-500" />
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                      <TrendingUp className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                       Asistencias
                     </h3>
                     {[...players]
@@ -356,15 +356,15 @@ const TeamDetailPage: React.FC = () => {
                       .slice(0, 3)
                       .map((p, i) => (
                         <div key={p.id} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
-                          <span className="font-bold text-blue-600">{p.assists}</span>
+                          <span className="text-gray-600 dark:text-gray-400 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
+                          <span className="font-bold text-violet-600 dark:text-violet-400">{p.assists}</span>
                         </div>
                       ))}
                   </div>
 
                   {/* Partidos jugados */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                       <Activity className="w-4 h-4 text-green-500" />
                       Más partidos
                     </h3>
@@ -373,7 +373,7 @@ const TeamDetailPage: React.FC = () => {
                       .slice(0, 3)
                       .map((p, i) => (
                         <div key={p.id} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
+                          <span className="text-gray-600 dark:text-gray-400 truncate">{i + 1}. {p.first_name} {p.last_name}</span>
                           <span className="font-bold text-green-600">{p.matches_played}</span>
                         </div>
                       ))}

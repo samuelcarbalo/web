@@ -1,4 +1,7 @@
 export type SportType = 'football' | 'softball' | 'basketball' | 'volleyball';
+export type StructureMode = 'legacy' | 'structured';
+export type PhaseType = 'group_stage' | 'round_robin' | 'knockout' | 'placement';
+export type MatchType = 'group' | 'knockout' | 'friendly' | 'legacy';
 
 export interface Tournament {
   id: string;
@@ -22,6 +25,9 @@ export interface Tournament {
   updated_at: string;
   is_registration_open: boolean;
   posted_by: string;
+  structure_mode?: StructureMode;
+  format_template?: string;
+  scoring_config?: Record<string, unknown>;
 }
 
 export interface PaginatedResponse<T> {
@@ -45,6 +51,93 @@ export interface CreateTournamentData {
   slug: string;
   logo?: string;
   banner?: string;
+  structure_mode?: StructureMode;
+  format_template?: string;
+  format_group_count?: number;
+  scoring_config?: Record<string, unknown>;
+}
+
+export interface FormatTemplate {
+  id: string;
+  label: string;
+  description: string;
+  sport_types: SportType[];
+  structure_mode: StructureMode;
+  default_max_teams?: number;
+}
+
+export interface GroupMembership {
+  id: string;
+  team: Team;
+  seed?: number;
+}
+
+export interface CompetitionGroup {
+  id: string;
+  name: string;
+  slug: string;
+  order: number;
+  max_teams: number;
+  teams_count?: number;
+  memberships: GroupMembership[];
+}
+
+export interface TournamentPhase {
+  id: string;
+  name: string;
+  slug: string;
+  phase_type: PhaseType;
+  phase_type_display?: string;
+  order: number;
+  status: 'pending' | 'active' | 'finished';
+  status_display?: string;
+  config: Record<string, unknown>;
+  advancement_rules: Record<string, unknown>;
+  groups: CompetitionGroup[];
+  bracket?: Bracket;
+}
+
+export interface TournamentStructure {
+  structure_mode: StructureMode;
+  format_template: string;
+  phases: TournamentPhase[];
+}
+
+export interface BracketNode {
+  id: string;
+  round: 'quarterfinal' | 'semifinal' | 'final' | 'third_place';
+  round_display: string;
+  position: number;
+  match: Match | null;
+  home_source: Record<string, unknown>;
+  away_source: Record<string, unknown>;
+  home_team: Team | null;
+  away_team: Team | null;
+  home_label: string;
+  away_label: string;
+}
+
+export interface Bracket {
+  id: string;
+  name: string;
+  nodes: BracketNode[];
+}
+
+export interface AdvancePhaseData {
+  from_phase: string;
+  match_date?: string;
+  venue?: string;
+}
+
+export interface AdvancePhaseResult {
+  from_phase: TournamentPhase;
+  next_phase: TournamentPhase;
+  matches_created: Match[];
+}
+
+export interface StandingsScope {
+  phase?: string;
+  group?: string;
 }
 
 export const sportTypeLabels: Record<SportType, string> = {
@@ -220,6 +313,9 @@ export interface Match {
   status_display: string;
   round_number: number;
   match_week: number;
+  match_type?: MatchType;
+  phase?: string | null;
+  group?: string | null;
   sport_type?: string;
   notes: string;
   posted_by: string;
@@ -250,6 +346,9 @@ export interface CreateMatchData {
   round_number?: number;
   match_week?: number;
   notes?: string;
+  phase?: string;
+  group?: string;
+  match_type?: MatchType;
 }
 
 
