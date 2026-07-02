@@ -16,8 +16,8 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
   const [mpReady, setMpReady] = useState(false);
 
   useEffect(() => {
-    const publicKey = mpConfig?.public_key || import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || 'YOUR_MP_PUBLIC_KEY';
-    if (publicKey && !publicKey.startsWith('YOUR_')) {
+    const publicKey = mpConfig?.public_key || import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || '';
+    if (publicKey) {
       initMercadoPago(publicKey, { locale: 'es-CO' });
       setMpReady(true);
     } else {

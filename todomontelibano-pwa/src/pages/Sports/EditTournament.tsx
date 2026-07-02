@@ -33,6 +33,8 @@ const EditTournament: React.FC = () => {
     logo: '',
     banner: '',
     status: 'upcoming',
+    rules_url: '',
+    lineup_size: 9,
   });
 
   const sports: { value: SportType; label: string }[] = [
@@ -70,6 +72,8 @@ const EditTournament: React.FC = () => {
         logo: tournament.logo || '',
         banner: tournament.banner || '',
         status: tournament.status,
+        rules_url: tournament.rules_url || '',
+        lineup_size: tournament.lineup_size || 9,
       });
     }
   }, [tournament, user, navigate]);
@@ -293,6 +297,47 @@ const EditTournament: React.FC = () => {
                   className="input-field"
                 />
               </div>
+            </div>
+
+            {formData.sport_type === 'softball' && (
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Titulares por partido
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size_edit"
+                      checked={formData.lineup_size === 9}
+                      onChange={() => handleChange('lineup_size', 9)}
+                    />
+                    <span className="text-sm">9 en campo</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size_edit"
+                      checked={formData.lineup_size === 10}
+                      onChange={() => handleChange('lineup_size', 10)}
+                    />
+                    <span className="text-sm">10 (9 + DH/EP)</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Enlace al reglamento
+              </label>
+              <input
+                type="url"
+                value={formData.rules_url}
+                onChange={(e) => handleChange('rules_url', e.target.value)}
+                className="input-field"
+                placeholder="https://..."
+              />
             </div>
           </div>
 

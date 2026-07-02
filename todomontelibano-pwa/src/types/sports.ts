@@ -28,6 +28,8 @@ export interface Tournament {
   structure_mode?: StructureMode;
   format_template?: string;
   scoring_config?: Record<string, unknown>;
+  rules_url?: string;
+  lineup_size?: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -55,6 +57,8 @@ export interface CreateTournamentData {
   format_template?: string;
   format_group_count?: number;
   scoring_config?: Record<string, unknown>;
+  rules_url?: string;
+  lineup_size?: number;
 }
 
 export interface FormatTemplate {

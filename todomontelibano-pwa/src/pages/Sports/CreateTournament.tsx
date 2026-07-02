@@ -35,6 +35,8 @@ const CreateTournament: React.FC = () => {
     max_players_per_team: 25,
     logo: '',
     banner: '',
+    rules_url: '',
+    lineup_size: 9,
   });
 
   const { data: formatTemplates } = useFormatTemplates(formData.sport_type);
@@ -45,7 +47,10 @@ const CreateTournament: React.FC = () => {
         ...prev,
         min_players_per_team: 9,
         max_players_per_team: 20,
+        lineup_size: prev.lineup_size === 10 ? 10 : 9,
       }));
+    } else {
+      setFormData((prev) => ({ ...prev, lineup_size: 9 }));
     }
   }, [formData.sport_type]);
 
@@ -350,6 +355,50 @@ const CreateTournament: React.FC = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.max_players_per_team}</p>
                 )}
               </div>
+            </div>
+
+            {formData.sport_type === 'softball' && (
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Titulares por partido
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size"
+                      checked={formData.lineup_size === 9}
+                      onChange={() => handleChange('lineup_size', 9)}
+                    />
+                    <span className="text-sm">9 en campo (sin bateador designado)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size"
+                      checked={formData.lineup_size === 10}
+                      onChange={() => handleChange('lineup_size', 10)}
+                    />
+                    <span className="text-sm">10 (9 en campo + DH/EP por el pitcher)</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Enlace al reglamento del torneo
+              </label>
+              <input
+                type="url"
+                value={formData.rules_url}
+                onChange={(e) => handleChange('rules_url', e.target.value)}
+                className="input-field"
+                placeholder="https://drive.google.com/... o PDF en la nube"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                URL pública al documento con reglas, formatos y sanciones del torneo.
+              </p>
             </div>
           </div>
 

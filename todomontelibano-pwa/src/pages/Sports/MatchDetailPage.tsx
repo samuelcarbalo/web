@@ -940,6 +940,7 @@ const MatchDetailPage: React.FC = () => {
         {sportType && (
           <MatchLineupSection 
             match={{ ...match, sport_type: sportType }} 
+            lineupSize={tournament?.lineup_size ?? 9}
             playerCards={playerCards}
             isPlayerSentOff={isPlayerSentOff}
             getPlayerYellowCards={getPlayerYellowCards}

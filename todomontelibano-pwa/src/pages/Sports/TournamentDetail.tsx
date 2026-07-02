@@ -307,6 +307,28 @@ const TournamentDetail: React.FC = () => {
                   ) : (
                     <p className="text-gray-400 italic">No hay descripción disponible para este torneo.</p>
                   )}
+                  {tournament.rules_url && (
+                    <p className="mt-4">
+                      <a
+                        href={tournament.rules_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-semibold hover:underline"
+                      >
+                        Ver reglamento oficial del torneo ↗
+                      </a>
+                    </p>
+                  )}
+                  {tournament.sport_type === 'softball' && (
+                    <p className="mt-3 text-sm text-gray-500">
+                      Alineación:{' '}
+                      <strong>
+                        {(tournament.lineup_size ?? 9) === 10
+                          ? '9 en campo + bateador designado (10 titulares)'
+                          : '9 jugadores en campo'}
+                      </strong>
+                    </p>
+                  )}
                 </div>
               </div>
 

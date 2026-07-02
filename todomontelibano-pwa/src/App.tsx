@@ -53,6 +53,7 @@ const MyEvents = lazy(() => import('./pages/Events/MyEvents'));
 // Hooks & Store
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
+import { hasValidSessionHint } from './lib/session';
 import {
   JobsLegacyRedirect,
   SportsLegacyRedirect,
@@ -79,19 +80,19 @@ const PageLoader: React.FC = () => (
 // AuthChecker NO bloqueante - solo actualiza el store en background
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
-  
+  const logout = useAuthStore((state) => state.logout);
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    // Si no hay token de sesión, apagar la pantalla de carga inicial inmediatamente.
-    // Si hay token, useMe() manejará el cambio de estado de carga al finalizar la consulta.
     if (!token) {
-      setLoading(false);
+      logout();
+    } else {
+      setLoading(true);
     }
-  }, [setLoading]);
+  }, [logout, setLoading]);
 
-  // Llama useMe para mantener el store sincronizado con el backend en segundo plano
   useMe();
-  
+
   return <>{children}</>;
 };
 
@@ -106,13 +107,14 @@ const ProtectedRoute: React.FC<{
   requireSuperuser,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
+  const sessionActive = isAuthenticated && hasValidSessionHint();
   
   // Mientras verifica auth, muestra loader
   if (isLoading) {
     return <PageLoader />;
   }
 
-  if (!isAuthenticated) {
+  if (!sessionActive) {
     return <Navigate to="/login" replace />;
   }
 

@@ -1,35 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
+import { clearSession, hasValidSessionHint } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
 
-
-
-// Hook para obtener el perfil completo
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const setLoading = useAuthStore((state) => state.setLoading);
-  
+  const logout = useAuthStore((state) => state.logout);
+  const tokens = useAuthStore((state) => state.tokens);
+
+  const sessionActive = hasValidSessionHint() || !!tokens?.access;
+
   return useQuery({
     queryKey: ['me'],
+    enabled: sessionActive,
     queryFn: async () => {
-      const token = localStorage.getItem('access_token');
+      const token = hasValidSessionHint();
       if (!token) {
+        logout();
         setLoading(false);
         return null;
       }
       try {
-        // Concurrente: perfil y datos de autenticación del usuario
         const [profileRes, userRes] = await Promise.all([
           api.get<Profile>('/profiles/me/'),
           api.get<any>('/auth/me/'),
         ]);
         const profile = profileRes.data;
         const user_res = userRes.data;
-        
-        // Convierte Profile y User a User para el store
+
         const user: User = {
           id: profile.user,
           email: profile.user_email,
@@ -39,7 +41,7 @@ export const useMe = () => {
           phone: profile.phone,
           organization: profile.organization,
           organization_name: profile.organization_name,
-          role: user_res.role as "user" | "manager" | "admin",
+          role: user_res.role as 'user' | 'manager' | 'admin',
           is_superuser: !!user_res.is_superuser,
           user_type: user_res.user_type || 'person',
           avatar: profile.avatar,
@@ -49,18 +51,17 @@ export const useMe = () => {
           completion_percentage: profile.completion_percentage,
           credits: user_res.credits,
         };
-        
-        // Actualiza store
-        setAuth(user, { 
-          access: token, 
-          refresh: localStorage.getItem('refresh_token') || '' 
+
+        setAuth(user, {
+          access: token,
+          refresh: localStorage.getItem('refresh_token') || '',
         });
-        
-        return profile; // Retorna el profile completo
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.log('Usuario no autenticado');
-          setLoading(false);
+
+        return profile;
+      } catch (error: unknown) {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 401) {
+          clearSession();
           return null;
         }
         console.error('Error en useMe:', error);
@@ -220,11 +221,12 @@ export const useLogout = () => {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   return () => {
+    clearSession();
     logout();
-    queryClient.clear(); // Limpia todo el caché
-    navigate('/login');
+    queryClient.clear();
+    navigate('/login', { replace: true });
   };
 };
 

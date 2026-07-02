@@ -17,6 +17,8 @@ import {
   useSubstitutePlayer,
   usePlayers,
 } from '../../hooks/useSports';
+import SoftballLineupBuilder from './SoftballLineupBuilder';
+import { getSoftballStarterCount, positionLabel } from '../../lib/softballLineup';
 import type { Player } from '../../types/sports';
 
 interface MatchLineupSectionProps {
@@ -30,6 +32,7 @@ interface MatchLineupSectionProps {
     away_team_detail?: { name: string; slug: string };
     posted_by?: string;
   };
+  lineupSize?: number;
   playerCards?: Record<string, { yellow: number; red: boolean }>;
   isPlayerSentOff?: (playerId: string) => boolean;
   getPlayerYellowCards?: (playerId: string) => number;
@@ -44,6 +47,8 @@ interface LineupPlayer {
   jersey_number?: number;
   position?: string;
   is_starter: boolean;
+  is_on_field?: boolean;
+  batting_order?: number | null;
   status: string;
   substitution_minute?: number | null;
   entry_number?: number;
@@ -51,6 +56,7 @@ interface LineupPlayer {
 
 const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   match,
+  lineupSize = 9,
   playerCards,
   matchTimer,
 }) => {
@@ -59,6 +65,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
   const isScheduled = match.status === 'scheduled';
   const isLive = match.status === 'live';
+  const isSoftball = match.sport_type === 'softball';
 
   // === APIS ===
   const { data: lineupData, isLoading: lineupLoading } = useMatchLineup(match.id);
@@ -89,7 +96,11 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const minStarters = match.sport_type === 'football' ? 6 : 1;
+  const minStarters = isSoftball
+    ? getSoftballStarterCount(lineupSize)
+    : match.sport_type === 'football'
+    ? 6
+    : 1;
 
   // Jugadores de la plantilla del equipo activo
   const activePlayers: Player[] = activeTeam === 'home'
@@ -110,9 +121,22 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   // =============================================================================
 
   // Jugadores actualmente EN CANCHA (titulares jugando + suplentes que entraron)
-  const onFieldPlayers = allLineup.filter(
-    (p) => p.status === 'playing' || p.status === 'entered'
-  );
+  const onFieldPlayers = isSoftball
+    ? allLineup.filter(
+        (p) =>
+          (p.status === 'playing' || p.status === 'entered') &&
+          p.is_on_field !== false &&
+          p.position !== 'designated_hitter'
+      )
+    : allLineup.filter((p) => p.status === 'playing' || p.status === 'entered');
+
+  const dhPlayers = isSoftball
+    ? allLineup.filter(
+        (p) =>
+          p.position === 'designated_hitter' &&
+          (p.status === 'playing' || p.status === 'entered')
+      )
+    : [];
 
   // Jugadores que SALIERON (sustituidos)
   const substitutedOut = allLineup.filter(
@@ -334,10 +358,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
           <div className="flex items-center gap-2">
             <Shirt className="w-5 h-5 text-green-600" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              En Cancha — {currentTeamName}
+              {isSoftball ? 'En campo' : 'En Cancha'} — {currentTeamName}
             </h3>
           </div>
-          <span className="text-sm text-gray-500">{onFieldPlayers.length} jugadores</span>
+          <span className="text-sm text-gray-500">
+            {onFieldPlayers.length} jugador{onFieldPlayers.length !== 1 ? 'es' : ''}
+            {isSoftball && dhPlayers.length > 0 ? ` + ${dhPlayers.length} DH` : ''}
+          </span>
         </div>
 
         {onFieldPlayers.length > 0 ? (
@@ -387,7 +414,9 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
                       {player.player_name || playerInfo?.full_name || 'Jugador'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {player.position || playerInfo?.position || 'Jugador'}
+                      {isSoftball
+                        ? positionLabel(player.position || playerInfo?.position)
+                        : player.position || playerInfo?.position || 'Jugador'}
                       {!player.is_starter && (
                         <span className="ml-1 text-violet-600 dark:text-violet-400 font-medium">(Ingresó)</span>
                       )}
@@ -416,10 +445,37 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
             <p className="text-gray-500 text-sm">No hay jugadores en cancha</p>
           </div>
         )}
+
+        {isSoftball && dhPlayers.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs font-semibold text-violet-600 uppercase mb-2">Bateador designado</p>
+            <div className="space-y-2">
+              {dhPlayers.map((player) => {
+                const playerInfo = getPlayerById(player.player);
+                return (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-3 p-3 rounded-3xl border border-violet-200 bg-violet-50 dark:bg-violet-950/20"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-bold text-sm">
+                      {player.batting_order || player.jersey_number || 'DH'}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {player.player_name || playerInfo?.full_name}
+                      </p>
+                      <p className="text-xs text-violet-600">DH/EP · orden {player.batting_order || '—'}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* PANEL DE SUSTITUCIÓN */}
-      {isLive && isOwner && (
+      {/* PANEL DE SUSTITUCIÓN — no aplica igual en softbol programado */}
+      {isLive && isOwner && !isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <ArrowRightLeft className="w-5 h-5 text-violet-600 dark:text-violet-400" />
@@ -537,7 +593,45 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       )}
 
       {/* CONFIGURACIÓN INICIAL DE ALINEACIÓN */}
-      {isOwner && isScheduled && (
+      {isOwner && isScheduled && isSoftball && (
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <SoftballLineupBuilder
+            teamName={currentTeamName || 'Equipo'}
+            players={activePlayers}
+            lineupSize={lineupSize}
+            existingStarters={[
+              ...(teamData?.starters || []),
+            ] as LineupPlayer[]}
+            existingBench={(teamData?.substitutes || []) as LineupPlayer[]}
+            isSaving={setLineupMutation.isPending}
+            onSave={(players) => {
+              setLineupMutation.mutate(
+                { id: match.id, data: { team: currentTeamId, players } },
+                {
+                  onSuccess: () => setSaveError(null),
+                  onError: (err: { response?: { data?: { error?: unknown; players?: string[] } } }) => {
+                    const apiErr = err?.response?.data;
+                    const msg = Array.isArray(apiErr?.players)
+                      ? apiErr.players.join(' ')
+                      : typeof apiErr?.error === 'string'
+                      ? apiErr.error
+                      : 'Error al guardar la alineación';
+                    setSaveError(msg);
+                  },
+                }
+              );
+            }}
+          />
+          {saveError && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2 text-sm text-red-700">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {saveError}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isOwner && isScheduled && !isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -681,7 +775,22 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       )}
 
       {/* VISTA SOLO LECTURA */}
-      {(!isOwner || (!isScheduled && !isLive)) && (
+      {(!isOwner || (!isScheduled && !isLive)) && isSoftball && (
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <SoftballLineupBuilder
+            teamName={currentTeamName || 'Equipo'}
+            players={activePlayers}
+            lineupSize={lineupSize}
+            existingStarters={(teamData?.starters || []) as LineupPlayer[]}
+            existingBench={(teamData?.substitutes || []) as LineupPlayer[]}
+            onSave={() => {}}
+            isSaving={false}
+            readOnly
+          />
+        </div>
+      )}
+
+      {(!isOwner || (!isScheduled && !isLive)) && !isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />

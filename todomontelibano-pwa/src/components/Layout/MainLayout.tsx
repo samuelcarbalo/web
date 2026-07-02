@@ -19,6 +19,7 @@ import UnreadBadge from "../Chat/UnreadBadge";
 import ThemeToggle from "../UI/ThemeToggle";
 import RouteSeo from "../SEO/RouteSeo";
 import CreditBalanceBadge from "../Credits/CreditBalanceBadge";
+import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
 
 const MainLayout: React.FC = () => {
@@ -26,8 +27,9 @@ const MainLayout: React.FC = () => {
   const [isServicesOpen, setIsServicesOpen] = React.useState(false);
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
+  const sessionActive = isAuthenticated && hasValidSessionHint();
   const logout = useLogout();
-  const { data: unreadData } = useUnreadCount(isAuthenticated);
+  const { data: unreadData } = useUnreadCount(sessionActive);
   const unreadCount = unreadData?.unread_count ?? 0;
 
   const services = [
@@ -156,7 +158,7 @@ const MainLayout: React.FC = () => {
 
               <ThemeToggle />
 
-              {isAuthenticated ? (
+              {sessionActive ? (
                 <div className="flex items-center space-x-3">
                   <CreditBalanceBadge />
                   <Link
@@ -171,7 +173,7 @@ const MainLayout: React.FC = () => {
                       </span>
                     )}
                   </Link>
-                  <NotificationPanel enabled={isAuthenticated} />
+                  <NotificationPanel enabled={sessionActive} />
                   <div className="relative group">
                     <button className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-3xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300">
                       <div className="w-9 h-9 bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/60 dark:to-indigo-900/60 rounded-3xl flex items-center justify-center">
@@ -276,7 +278,7 @@ const MainLayout: React.FC = () => {
                 ))}
               </div>
 
-              {isAuthenticated ? (
+              {sessionActive ? (
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
                   {user?.role === "manager" && (
                     <div className="px-4 py-3 text-sm font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-center gap-1.5 mb-3">
