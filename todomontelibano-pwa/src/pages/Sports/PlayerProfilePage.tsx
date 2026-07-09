@@ -19,12 +19,12 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { usePlayer, useTournament } from '../../hooks/useSports';
-import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 
 const PlayerProfilePage: React.FC = () => {
   const { playerId } = useParams<{ playerId: string }>();
-  const { user } = useAuthStore();
+  const { user, isOwner: checkIsOwner } = usePermissions();
 
   const { data: player, isLoading: loadingPlayer } = usePlayer(playerId || '');
   
@@ -37,20 +37,20 @@ const PlayerProfilePage: React.FC = () => {
   const isLoading = loadingPlayer || loadingTournament;
 
   // Verificar si el usuario puede editar (coach del equipo o owner del torneo)
-  const canEdit = user?.email === player?.team_name || user?.id === tournament?.posted_by;
+  const canEdit = user?.email === player?.team_name || checkIsOwner(tournament);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
       </div>
     );
   }
   if (!player) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Jugador no encontrado</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Jugador no encontrado</h2>
           <Link to="/sports" className="text-green-600 mt-4 inline-block">
             ← Ver todos los torneos
           </Link>
@@ -82,7 +82,7 @@ const PlayerProfilePage: React.FC = () => {
               sublabel="En contra"
             />
             <StatCard
-              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              icon={<TrendingUp className="w-5 h-5 text-violet-500 dark:text-violet-400" />}
               label="Avg. Strikes"
               value={player.average_strikes?.toFixed(3) || '0.000'}
               sublabel="Promedio"
@@ -100,7 +100,7 @@ const PlayerProfilePage: React.FC = () => {
               sublabel="En contra"
             />
             <StatCard
-              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              icon={<TrendingUp className="w-5 h-5 text-violet-500 dark:text-violet-400" />}
               label="Avg. Walks"
               value={player.average_walks?.toFixed(3) || '0.000'}
               sublabel="Promedio"
@@ -118,7 +118,7 @@ const PlayerProfilePage: React.FC = () => {
               sublabel="En contra"
             />
             <StatCard
-              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              icon={<TrendingUp className="w-5 h-5 text-violet-500 dark:text-violet-400" />}
               label="Avg. Home Runs"
               value={player.average_home_runs?.toFixed(3) || '0.000'}
               sublabel="Promedio"
@@ -148,7 +148,7 @@ const PlayerProfilePage: React.FC = () => {
               value={player.saves || 0}
             />
             <StatCard
-              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              icon={<TrendingUp className="w-5 h-5 text-violet-500 dark:text-violet-400" />}
               label="Avg. SO"
               value={player.average_strikes_out?.toFixed(3) || '0.000'}
               sublabel="Promedio"
@@ -163,23 +163,23 @@ const PlayerProfilePage: React.FC = () => {
           </div>
   
           {/* Resumen de bateo */}
-          <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <div className="mt-6 bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2 text-indigo-500" />
               Resumen de Bateo
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-indigo-50 rounded-lg">
+              <div className="text-center p-4 bg-indigo-50 rounded-3xl">
                 <p className="text-3xl font-bold text-indigo-600">{player.strikes || 0}</p>
-                <p className="text-xs text-gray-600 mt-1">Strikes</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Strikes</p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-center p-4 bg-green-50 rounded-3xl">
                 <p className="text-3xl font-bold text-green-600">{player.walks || 0}</p>
-                <p className="text-xs text-gray-600 mt-1">Walks</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Walks</p>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-center p-4 bg-purple-50 rounded-3xl">
                 <p className="text-3xl font-bold text-purple-600">{player.home_runs || 0}</p>
-                <p className="text-xs text-gray-600 mt-1">Home Runs</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Home Runs</p>
               </div>
             </div>
           </div>
@@ -198,7 +198,7 @@ const PlayerProfilePage: React.FC = () => {
               highlight={player.goals > 0}
             />
             <StatCard
-              icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
+              icon={<TrendingUp className="w-5 h-5 text-violet-500 dark:text-violet-400" />}
               label="Asistencias"
               value={player.assists || 0}
             />
@@ -235,21 +235,21 @@ const PlayerProfilePage: React.FC = () => {
   
           {/* Tarjetas acumuladas */}
           {(player.yellow_cards > 0 || player.red_cards > 0) && (
-            <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <div className="mt-6 bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                 <AlertTriangle className="w-5 h-5 mr-2 text-yellow-500" />
                 Disciplina
               </h3>
               <div className="flex gap-4">
                 {player.yellow_cards > 0 && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-lg">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-3xl">
                     <div className="w-4 h-6 bg-yellow-400 rounded-sm" />
                     <span className="font-bold text-yellow-700">{player.yellow_cards}</span>
                     <span className="text-sm text-yellow-600">amarillas</span>
                   </div>
                 )}
                 {player.red_cards > 0 && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-3xl">
                     <div className="w-4 h-6 bg-red-500 rounded-sm" />
                     <span className="font-bold text-red-700">{player.red_cards}</span>
                     <span className="text-sm text-red-600">rojas</span>
@@ -272,7 +272,7 @@ const PlayerProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <div className="relative h-56 bg-gray-900 overflow-hidden">
         <div 
@@ -281,14 +281,14 @@ const PlayerProfilePage: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="absolute bottom-0 left-0 right-0 page-container py-6">
           <Link 
-            to={player.team ? `/sports/tournaments/${player.tournament_slug}/teams/${player.team}` : '/sports'}
-            className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Volver al equipo
-          </Link>
+              to={player.team ? `/sports/tournaments/${player.tournament_slug}/teams/${player.team_slug}` : '/sports'}
+              className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Volver al equipo
+            </Link>
           <div className="flex items-center gap-4">
             {player.photo ? (
               <img 
@@ -327,55 +327,55 @@ const PlayerProfilePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Columna izquierda - Info personal */}
           <div className="space-y-6">
             
             {/* Info del jugador */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <User className="w-5 h-5 mr-2 text-blue-500" />
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <User className="w-5 h-5 mr-2 text-violet-500 dark:text-violet-400" />
                 Información
               </h2>
               
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Equipo</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Equipo</span>
                   <Link 
                     to={`/sports/tournaments/${player.tournament_slug}/teams/${player.team}`}
-                    className="font-medium text-gray-900 hover:text-green-600 transition-colors"
+                    className="font-medium text-gray-900 dark:text-white hover:text-green-600 transition-colors"
                   >
                     {player.team_name}
                   </Link>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Torneo</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Torneo</span>
                   <Link 
                     to={`/sports/tournaments/${player.tournament_slug}`}
-                    className="font-medium text-gray-900 hover:text-green-600 transition-colors text-right"
+                    className="font-medium text-gray-900 dark:text-white hover:text-green-600 transition-colors text-right"
                   >
                     {player.tournament_name}
                   </Link>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Posición</span>
-                  <span className="font-medium text-gray-900">{player.position_display || player.position}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Posición</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{player.position_display || player.position}</span>
                 </div>
                 {player.nickname && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Apodo</span>
-                    <span className="font-medium text-gray-900">"{player.nickname}"</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Apodo</span>
+                    <span className="font-medium text-gray-900 dark:text-white">"{player.nickname}"</span>
                   </div>
                 )}
                 {player.birth_date && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 flex items-center gap-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       Nacimiento
                     </span>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {new Date(player.birth_date).toLocaleDateString('es-CO', {
                         day: 'numeric',
                         month: 'long',
@@ -386,16 +386,16 @@ const PlayerProfilePage: React.FC = () => {
                 )}
                 {player.nationality && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 flex items-center gap-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
                       Nacionalidad
                     </span>
-                    <span className="font-medium text-gray-900">{player.nationality}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{player.nationality}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Estado</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${player.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Estado</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${player.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                     {player.is_active ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
@@ -403,20 +403,20 @@ const PlayerProfilePage: React.FC = () => {
             </div>
 
             {/* Deporte */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
                 Competición
               </h2>
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold"
+                  className="w-12 h-12 rounded-3xl flex items-center justify-center text-white font-bold"
                   style={{ backgroundColor: tournament?.sport_type && sportTypeColors[tournament.sport_type] || '#3B82F6' }}
                 >
                   {tournament?.sport_type && sportTypeLabels[tournament.sport_type]?.[0] || '?'}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{tournament?.sport_type && sportTypeLabels[tournament.sport_type] || 'Deporte'}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{tournament?.sport_type && sportTypeLabels[tournament.sport_type] || 'Deporte'}</p>
                   <p className="text-xs text-gray-500">{player.tournament_name}</p>
                 </div>
               </div>
@@ -426,7 +426,7 @@ const PlayerProfilePage: React.FC = () => {
             {canEdit && (
               <Link
                 to={`/sports/tournaments/${player.tournament_slug}/teams/${player.team}/roster`}
-                className="block w-full bg-blue-600 text-white text-center py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                className="block w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-center py-3 rounded-3xl font-medium hover:from-violet-500 hover:to-indigo-500 transition-colors shadow-sm"
               >
                 Editar jugador
               </Link>
@@ -437,12 +437,12 @@ const PlayerProfilePage: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Título de estadísticas */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                   <Activity className="w-5 h-5 mr-2 text-green-600" />
                   Estadísticas
-                  <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded-full">
                     {isSoftball ? 'Softbol' : 'Fútbol'}
                   </span>
                 </h2>
@@ -455,8 +455,8 @@ const PlayerProfilePage: React.FC = () => {
             </div>
 
             {/* Historial reciente (placeholder para futuro) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2 text-purple-500" />
                 Últimos partidos
               </h2>
@@ -481,12 +481,12 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sublabel, highlight }) => (
-  <div className={`p-4 rounded-xl border transition-colors ${highlight ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`}>
+  <div className={`p-4 rounded-3xl border transition-colors ${highlight ? 'bg-green-50 border-green-200' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 hover:bg-gray-100 dark:bg-gray-800'}`}>
     <div className="flex items-center gap-2 mb-2">
       {icon}
-      <span className="text-xs font-medium text-gray-600 uppercase">{label}</span>
+      <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">{label}</span>
     </div>
-    <p className={`text-2xl font-bold ${highlight ? 'text-green-700' : 'text-gray-900'}`}>{value}</p>
+    <p className={`text-2xl font-bold ${highlight ? 'text-green-700' : 'text-gray-900 dark:text-white'}`}>{value}</p>
     {sublabel && <p className="text-xs text-gray-500 mt-1">{sublabel}</p>}
   </div>
 );

@@ -1,23 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
+import { clearSession, hasValidSessionHint } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { TENANT_CONFIG } from '../config/tenant';
 
-// Hook para obtener el perfil completo
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const setLoading = useAuthStore((state) => state.setLoading);
-  
+  const logout = useAuthStore((state) => state.logout);
+  const tokens = useAuthStore((state) => state.tokens);
+
+  const sessionActive = hasValidSessionHint() || !!tokens?.access;
+
   return useQuery({
     queryKey: ['me'],
+    enabled: sessionActive,
     queryFn: async () => {
+      const token = hasValidSessionHint();
+      if (!token) {
+        logout();
+        setLoading(false);
+        return null;
+      }
       try {
-        // Llama a /auth/me/ que retorna el Profile completo
-        const response = await api.get<Profile>('/auth/me/');
-        const profile = response.data;
-        
-        // Convierte Profile a User para el store
+        const [profileRes, userRes] = await Promise.all([
+          api.get<Profile>('/profiles/me/'),
+          api.get<any>('/auth/me/'),
+        ]);
+        const profile = profileRes.data;
+        const user_res = userRes.data;
+
         const user: User = {
           id: profile.user,
           email: profile.user_email,
@@ -27,30 +41,27 @@ export const useMe = () => {
           phone: profile.phone,
           organization: profile.organization,
           organization_name: profile.organization_name,
-          role: profile.role as "user" | "manager" | "admin",
-          user_type: 'person', // Esto también
+          role: user_res.role as 'user' | 'manager' | 'admin',
+          is_superuser: !!user_res.is_superuser,
+          user_type: user_res.user_type || 'person',
           avatar: profile.avatar,
           bio: profile.bio || undefined,
           location: profile.location || undefined,
           job_title: profile.job_title || undefined,
           completion_percentage: profile.completion_percentage,
+          credits: user_res.credits,
         };
-        console.log(user.role)
-        
-        // Actualiza store solo si hay token
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          setAuth(user, { 
-            access: token, 
-            refresh: localStorage.getItem('refresh_token') || '' 
-          });
-        }
-        
-        return profile; // Retorna el profile completo
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.log('Usuario no autenticado');
-          setLoading(false);
+
+        setAuth(user, {
+          access: localStorage.getItem('access_token') || '',
+          refresh: localStorage.getItem('refresh_token') || '',
+        });
+
+        return profile;
+      } catch (error: unknown) {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 401) {
+          clearSession();
           return null;
         }
         console.error('Error en useMe:', error);
@@ -63,8 +74,6 @@ export const useMe = () => {
     staleTime: 5 * 60 * 1000,
   });
 };
-
-// Hook para obtener el perfil (alternativa más específica)
 export const useProfile = () => {
   return useQuery({
     queryKey: ['profile'],
@@ -103,8 +112,21 @@ export const useLogin = () => {
   
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      credentials.organization_slug = "conectando-empleo"
-      const response = await api.post('/auth/login/', credentials);
+      const payload: Record<string, string> = {
+        email: credentials.email,
+        password: credentials.password,
+      };
+
+      const orgSlug = credentials.organization_slug?.trim();
+      if (orgSlug) {
+        payload.organization_slug = orgSlug;
+      } else if (credentials.organization_slug === undefined) {
+        // Usuario tenant: slug por defecto del tenant configurado
+        payload.organization_slug = TENANT_CONFIG.slug;
+      }
+      // Si organization_slug es '' explícito → login superusuario (sin enviar el campo)
+
+      const response = await api.post('/auth/login/', payload);
       return response.data;
     },
     onSuccess: async (data) => {
@@ -126,12 +148,14 @@ export const useLogin = () => {
         organization: profile.organization,
         organization_name: profile.organization_name,
         role: user_res.role || 'user',
+        is_superuser: !!user_res.is_superuser,
         user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
         bio: profile.bio || undefined,
         location: profile.location || undefined,
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
+        credits: user_res.credits,
       };
       
       setAuth(user, { access: data.access, refresh: data.refresh });
@@ -148,17 +172,24 @@ export const useRegister = () => {
   
   return useMutation({
     mutationFn: async (data: RegisterData) => {
-      data.organization_name = "conectando-empleo"
+      data.organization_name = TENANT_CONFIG.name;
       const response = await api.post('/auth/register/', data);
       return response.data;
     },
     onSuccess: async (data) => {
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
+      const accessToken = data.tokens?.access || data.access;
+      const refreshToken = data.tokens?.refresh || data.refresh;
       
-      // Fetch perfil después de registro
-      const profileRes = await api.get<Profile>('/profiles/me/');
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
+      
+      // Fetch perfil y usuario después de registro
+      const [profileRes, userRes] = await Promise.all([
+        api.get<Profile>('/profiles/me/'),
+        api.get<any>('/auth/me/'),
+      ]);
       const profile = profileRes.data;
+      const user_res = userRes.data;
       
       const user: User = {
         id: profile.user,
@@ -168,13 +199,18 @@ export const useRegister = () => {
         name: profile.user_name,
         organization: profile.organization,
         organization_name: profile.organization_name,
-        role: 'user',
-        user_type: data.user.user_type || 'person',
+        role: user_res.role || 'user',
+        is_superuser: !!user_res.is_superuser,
+        user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
+        bio: profile.bio || undefined,
+        location: profile.location || undefined,
+        job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
+        credits: user_res.credits,
       };
       
-      setAuth(user, { access: data.access, refresh: data.refresh });
+      setAuth(user, { access: accessToken, refresh: refreshToken });
       queryClient.setQueryData(['me'], profile);
       navigate('/dashboard');
     },
@@ -185,11 +221,12 @@ export const useLogout = () => {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   return () => {
+    clearSession();
     logout();
-    queryClient.clear(); // Limpia todo el caché
-    navigate('/login');
+    queryClient.clear();
+    navigate('/login', { replace: true });
   };
 };
 
@@ -210,4 +247,9 @@ export const isUser = () => {
   const user = useAuthStore((state) => state.user);
   if (!user) return false;
   return user.role === 'user';
+}
+
+export const isSuperUser = () => {
+  const user = useAuthStore((state) => state.user);
+  return !!user?.is_superuser;
 }

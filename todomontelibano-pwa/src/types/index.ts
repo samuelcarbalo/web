@@ -30,6 +30,7 @@ export interface Profile {
   updated_at?: string;
   completion_percentage?: number;
   preferences?: Record<string, unknown>;
+  credits?: number;
 }
 
 // User básico (para auth simple)
@@ -43,12 +44,14 @@ export interface User {
   organization?: string;
   organization_name?: string;
   role: 'user' | 'manager' | 'admin';
+  is_superuser?: boolean;
   user_type: 'person' | 'company';
   avatar?: string;
   bio?: string;
   location?: string;
   job_title?: string;
   completion_percentage?: number;
+  credits?: number;
 }
 
 // Para login/register (respuesta simple)
@@ -106,6 +109,34 @@ export interface Job {
   logo?: string;
 }
 
+export interface RealEstateOffer {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  image?: string;
+  location: string;
+  category: 'sale' | 'rent';
+  property_type: 'house' | 'apartment' | 'lot' | 'commercial' | 'farm';
+  contact_name?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  posted_by: string | User;
+  posted_by_name?: string;
+  organization?: string | Organization;
+  organization_name?: string;
+  posted_at: string;
+  expires_at: string;
+  is_active: boolean;
+  is_featured: boolean;
+  views_count: number;
+  days_remaining?: number;
+  is_expired?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface JobApplication {
   id: number;
   job: Job;
@@ -155,13 +186,15 @@ export interface Application {
   applied_at: string;       // Timestamp en formato ISO
 }
 
-export interface PaginatedResponse<Application> {
-  links:{
+export interface PaginatedResponse<T = Application> {
+  links: {
     next: string | null;
     previous: string | null;
-  }
+  };
   count: number;
-  results: Application[];
+  total_pages?: number;
+  current_page?: number;
+  results: T[];
 }
 
 export interface LoginCredentials {

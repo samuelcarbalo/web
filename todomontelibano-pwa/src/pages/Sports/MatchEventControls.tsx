@@ -22,7 +22,6 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
   homeTeamId,
   awayTeamId,
   isOwner,
-  isLive,
 }) => {
   const { mutate: updatePlayer } = useUpdatePlayer();
   const updateScoreMutation = useUpdateScore();
@@ -85,12 +84,12 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
   if (!isOwner) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+    <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-lg text-gray-900">Panel de Control (En Vivo)</h3>
+        <h3 className="font-bold text-lg text-gray-900 dark:text-white">Panel de Control (En Vivo)</h3>
         <button
           onClick={handleFinish}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-bold"
+          className="px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700 text-sm font-bold"
         >
           Finalizar y Cerrar Planilla
         </button>
@@ -119,10 +118,10 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
  */
 const TeamActionList = ({ title, players, onEvent }: { title: string, players: any[], onEvent: (p: any, type: any) => void }) => (
   <div className="space-y-4">
-    <h4 className="font-semibold text-gray-700 border-b pb-2">{title}</h4>
+    <h4 className="font-semibold text-gray-700 dark:text-gray-200 border-b pb-2">{title}</h4>
     <div className="max-h-64 overflow-y-auto space-y-2">
       {players.map((player) => (
-        <div key={player.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-100 transition-all">
+        <div key={player.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-transparent hover:border-gray-100 transition-all">
           <span className="text-sm font-medium">{player.full_name}</span>
           <div className="flex gap-1">
             <button onClick={() => onEvent(player, 'goal')} className="p-1.5 bg-green-100 text-green-700 rounded text-xs font-bold hover:bg-green-200" title="Gol">+G</button>

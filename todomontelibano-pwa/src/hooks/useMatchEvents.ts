@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addMatchEvent, updateScore } from '../services/sportsApi';
-import type { MatchEvent } from '../types/sports';
+import { addMatchEvent, updateScore } from '../lib/sportsApi';
 
 export const useMatchEvents = (matchId: string) => {
   const queryClient = useQueryClient();

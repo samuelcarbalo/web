@@ -9,11 +9,16 @@ import {
   ChevronDown,
   Plus,
   Building2,
-  DollarSign
+  DollarSign,
+  Sparkles
 } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
+import JsonLd from '../../components/SEO/JsonLd';
+import { buildJobsCollectionSchema } from '../../components/SEO/schemas/seoSchemas';
+import { ROUTES } from '../../config/seo';
 import type { Job } from '../../types';
+
 interface JobsResponse {
   links: {
     next: string | null;
@@ -24,6 +29,7 @@ interface JobsResponse {
   current_page: number;
   results: Job[];
 }
+
 const JobsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -36,10 +42,9 @@ const JobsList: React.FC = () => {
     category: selectedCategory,
     job_type: selectedType,
     }, 
-    {} // ← El segundo argumento (opciones) que faltaba
+    {}
   );
   const jobsData = data as JobsResponse;
-  console.log(JSON.stringify(jobsData))
   
   const categories = [
     'Tecnología',
@@ -59,6 +64,23 @@ const JobsList: React.FC = () => {
     { value: 'freelance', label: 'Freelance' },
     { value: 'internship', label: 'Pasantía' },
   ];
+
+  const getJobTypeStyle = (type: string) => {
+    switch (type) {
+      case 'full_time':
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+      case 'part_time':
+        return 'bg-violet-50 dark:bg-violet-950/30 text-blue-700 border border-violet-200 dark:border-violet-800/80';
+      case 'contract':
+        return 'bg-amber-50 text-amber-700 border border-amber-200/80';
+      case 'freelance':
+        return 'bg-purple-50 text-purple-700 border border-purple-200/80';
+      case 'internship':
+        return 'bg-cyan-50 text-cyan-700 border border-cyan-200/80';
+      default:
+        return 'bg-slate-50 dark:bg-gray-900/50 text-slate-700 dark:text-gray-200 border border-slate-200/80';
+    }
+  };
 
   const formatSalary = (job: Job) => {
     if (!job.salary_min && !job.salary_max) return 'Salario a convenir';
@@ -83,66 +105,76 @@ const JobsList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="md:flex md:items-center md:justify-between">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950/50 pb-16">
+      <JsonLd data={buildJobsCollectionSchema(jobsData?.count)} />
+      {/* Header con gradiente sofisticado */}
+      <div className="bg-gradient-to-r from-violet-600/90 via-indigo-600/90 to-indigo-700 text-white shadow-md">
+        <div className="page-container py-10 sm:py-14">
+          <div className="md:flex md:items-center md:justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Empleos</h1>
-              <p className="mt-2 text-gray-600">
-                Encuentra tu próxima oportunidad laboral en Montelibano
+              <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-white/20 text-white rounded-full backdrop-blur-md">
+                Bolsa de Empleo
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white mt-3 tracking-tight">
+                Portal de Empleo
+              </h1>
+              <p className="mt-2 text-violet-100 text-base sm:text-lg max-w-2xl font-light">
+                Descubre tu próximo paso profesional en CordobaTech. Las mejores empresas de la región publican sus vacantes aquí.
               </p>
             </div>
             {isAuthenticated && user?.user_type === 'company' && (
-              <div className="mt-4 md:mt-0">
+              <div className="mt-6 md:mt-0 flex-shrink-0">
                 <Link
-                  to="/jobs/create"
-                  className="btn-primary flex items-center"
+                  to={ROUTES.empleosCreate}
+                  className="inline-flex items-center px-5 py-3 bg-white text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:bg-violet-950/30 font-bold rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:translate-y-0"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-5 h-5 mr-2 stroke-[2.5]" />
                   Publicar empleo
                 </Link>
               </div>
             )}
           </div>
 
-          {/* Search Bar */}
-          <div className="mt-8">
-            <div className="flex flex-col sm:flex-row gap-4">
+          {/* Buscador Integrado */}
+          <div className="mt-10 search-bar text-slate-800 dark:text-gray-100">
+            <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-violet-400" />
                 </div>
                 <input
                   type="text"
-                  placeholder="Buscar por título, empresa o palabra clave..."
+                  placeholder="Buscar por título de empleo, empresa, tecnología o palabras clave..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10 py-3"
+                  className="input-field pl-12"
                 />
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="btn-secondary flex items-center justify-center py-3 px-6"
+                className={`btn-secondary py-3.5 px-6 text-sm cursor-pointer ${
+                  showFilters
+                    ? 'bg-violet-50 dark:bg-violet-950/40 border-violet-300 dark:border-violet-700'
+                    : ''
+                }`}
               >
                 <Filter className="w-4 h-4 mr-2" />
                 Filtros
-                <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
               </button>
             </div>
 
-            {/* Filters */}
+            {/* Panel de Filtros Desplegable */}
             {showFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Categoría
+                  <label className="block text-xs font-bold text-slate-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    Categoría Profesional
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="input-field"
+                    className="w-full px-3.5 py-3 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white dark:focus:bg-gray-900 text-sm font-medium text-gray-900 dark:text-gray-100 transition-all"
                   >
                     <option value="">Todas las categorías</option>
                     {categories.map(cat => (
@@ -151,13 +183,13 @@ const JobsList: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de empleo
+                  <label className="block text-xs font-bold text-slate-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    Jornada Laboral
                   </label>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="input-field"
+                    className="w-full px-3.5 py-3 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white dark:focus:bg-gray-900 text-sm font-medium text-gray-900 dark:text-gray-100 transition-all"
                   >
                     <option value="">Todos los tipos</option>
                     {jobTypes.map(type => (
@@ -171,77 +203,110 @@ const JobsList: React.FC = () => {
         </div>
       </div>
 
-      {/* Jobs List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Listado de Empleos */}
+      <div className="page-container mt-10">
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="card animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              <div key={i} className="card animate-pulse border border-slate-200 dark:border-gray-800 p-6 rounded-3xl">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 bg-slate-200 rounded-3xl" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-200 rounded w-1/4" />
+                    <div className="h-6 bg-slate-200 rounded w-3/4" />
+                  </div>
+                </div>
+                <div className="h-4 bg-slate-200 rounded w-1/2 mb-2" />
+                <div className="h-3 bg-slate-200 rounded w-full mb-1" />
+                <div className="h-3 bg-slate-200 rounded w-5/6" />
               </div>
             ))}
           </div>
-        ) : jobsData?.results?.length === 0? (
-          <div className="text-center py-16">
-            <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">No se encontraron empleos</h3>
-            <p className="text-gray-600 mt-2">Intenta ajustar tus filtros de búsqueda</p>
+        ) : jobsData?.results?.length === 0 ? (
+          <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/80 dark:border-gray-800/80 shadow-sm max-w-xl mx-auto px-6 mt-6">
+            <div className="w-16 h-16 bg-violet-50 dark:bg-violet-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-violet-100 dark:border-violet-900">
+              <Briefcase className="w-8 h-8 text-violet-500 dark:text-violet-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-gray-100">No se encontraron empleos</h3>
+            <p className="text-slate-500 dark:text-gray-400 mt-2 text-sm max-w-sm mx-auto">
+              No encontramos ofertas que coincidan con tu búsqueda en este momento. Intenta ajustando los filtros o el término ingresado.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {jobsData?.results.map((job) => (
               <Link
                 key={job.id}
-                to={`/jobs/${job.id}`}
-                className="card hover:shadow-md transition-shadow block"
+                to={ROUTES.empleosDetail(String(job.id))}
+                className="group card border border-slate-200/85 dark:border-gray-800/85 hover:border-violet-400 dark:hover:border-violet-600 rounded-3xl p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 block"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+                <div className="flex flex-col sm:flex-row items-start gap-4">
+                  {/* Logo de la Empresa */}
+                  <div className="w-14 h-14 bg-slate-50 dark:bg-gray-900/50 border border-slate-100 rounded-3xl flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-[1.02] transition-transform duration-300">
+                    {job.logo ? (
+                      <img 
+                        src={job.logo} 
+                        alt={job.company_name} 
+                        className="w-full h-full object-cover rounded-3xl" 
+                      />
+                    ) : (
+                      <Building2 className="w-7 h-7 text-slate-400 group-hover:text-violet-500 dark:text-violet-400 transition-colors" />
+                    )}
+                  </div>
+
+                  {/* Detalles del Empleo */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                      <span className="px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-700 dark:text-gray-200 border border-slate-200/60 rounded-3xl">
                         {job.category}
                       </span>
-                      {job.is_active && (
-                        <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full flex items-center">
+                      {/* Corregido el bug: validar por job.is_featured en vez de job.is_active */}
+                      {job.is_featured && (
+                        <span className="px-2.5 py-1 text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60 rounded-3xl flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                           Destacado
                         </span>
                       )}
                     </div>
                     
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white group-hover:text-violet-600 dark:hover:text-violet-400 transition-colors tracking-tight mb-2">
+                      {job.title}
+                    </h3>
                     
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-                      <div className="flex items-center">
-                        <Building2 className="w-4 h-4 mr-1" />
-                        {job.company_name}
+                    {/* Fila de Metadatos */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-slate-600 dark:text-gray-400 font-medium mb-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-800 dark:text-gray-100">{job.company_name}</span>
                       </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {job.location}
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-rose-400" />
+                        <span>{job.location}</span>
                       </div>
-                      <div className="flex items-center">
-                        <Briefcase className="w-4 h-4 mr-1" />
-                        {jobTypes.find(t => t.value === job.job_type)?.label || job.job_type}
+                      <div className="flex items-center gap-1.5">
+                        <Briefcase className="w-4 h-4 text-violet-400" />
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getJobTypeStyle(job.job_type)}`}>
+                          {jobTypes.find(t => t.value === job.job_type)?.label || job.job_type}
+                        </span>
                       </div>
-                      <div className="flex items-center">
-                        <DollarSign className="w-4 h-4 mr-1" />
-                        {formatSalary(job)}
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="w-4 h-4 text-emerald-500" />
+                        <span className="text-slate-800 dark:text-gray-100 font-semibold">{formatSalary(job)}</span>
                       </div>
                     </div>
                     
-                    <p className="text-gray-600 line-clamp-2 mb-4">
+                    <p className="text-slate-500 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed mb-4">
                       {job.description}
                     </p>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Clock className="w-4 h-4 mr-1" />
+                    <div className="flex items-center justify-between border-t border-slate-100/80 pt-3.5">
+                      <div className="flex items-center text-xs text-slate-400">
+                        <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
                         {formatDate(job.posted_at)}
                       </div>
-                      <span className="text-primary-600 font-medium text-sm">
-                        Ver detalles →
+                      <span className="text-violet-600 dark:text-violet-400 group-hover:text-violet-700 dark:hover:text-violet-300 font-bold text-xs sm:text-sm inline-flex items-center gap-0.5 transition-colors">
+                        Ver detalles
+                        <span className="group-hover:translate-x-0.5 transition-transform duration-200">→</span>
                       </span>
                     </div>
                   </div>
@@ -251,21 +316,19 @@ const JobsList: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Paginación */}
         {jobsData && jobsData.count > 10 && (
-          <div className="mt-8 flex justify-center">
-            <nav className="flex items-center space-x-2">
+          <div className="mt-10 flex justify-center">
+            <nav className="flex items-center space-x-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-3xl border border-slate-200/80 dark:border-gray-800/80 shadow-sm">
               <button
-                // {/* Accedemos a links.previous */}
                 disabled={!jobsData.links.previous}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-slate-200 dark:border-gray-800 rounded-3xl text-xs font-bold text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:bg-gray-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Anterior
               </button>
               <button
-                // Accedemos a links.next
                 disabled={!jobsData.links.next}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-slate-200 dark:border-gray-800 rounded-3xl text-xs font-bold text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:bg-gray-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Siguiente
               </button>

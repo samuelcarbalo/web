@@ -52,20 +52,20 @@ const Profile: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
       </div>
     );
   }
 
   if (isError || !profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600">Error cargando el perfil</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 text-blue-600 hover:underline"
+            className="mt-4 text-violet-600 dark:text-violet-400 hover:underline"
           >
             Reintentar
           </button>
@@ -75,10 +75,10 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Mi Perfil</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Mi Perfil</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -93,22 +93,22 @@ const Profile: React.FC = () => {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-16 h-16 text-blue-600" />
+                  <div className="w-full h-full bg-violet-100 dark:bg-violet-950/40 rounded-full flex items-center justify-center">
+                    <User className="w-16 h-16 text-violet-600 dark:text-violet-400" />
                   </div>
                 )}
-                <button className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
+                <button className="absolute bottom-0 right-0 p-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full hover:from-violet-500 hover:to-indigo-500 transition-colors">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
               
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {profile.user_name}
               </h2>
-              <p className="text-gray-600 mb-2">{user?.email}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-2">{user?.email}</p>
               
               <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-violet-100 dark:bg-violet-950/40 text-blue-700 rounded-full text-sm font-medium">
                   {profile.organization_name}
                 </span>
               </div>
@@ -116,49 +116,49 @@ const Profile: React.FC = () => {
               {/* Barra de completitud */}
               <div className="mt-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Perfil completado</span>
-                  <span className="font-medium text-blue-600">{profile.completion_percentage}%</span>
+                  <span className="text-gray-600 dark:text-gray-400">Perfil completado</span>
+                  <span className="font-medium text-violet-600 dark:text-violet-400">{profile.completion_percentage}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${profile.completion_percentage}%` }}
                   ></div>
                 </div>
               </div>
 
               <div className="mt-6 text-left space-y-3 text-sm">
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span className="truncate">{profile.organization_name}</span>
                 </div>
                 {profile.location && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span>{profile.location}</span>
                   </div>
                 )}
                 {profile.job_title && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Briefcase className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span>{profile.job_title}</span>
                   </div>
                 )}
                 {profile.department && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span>{profile.department}</span>
                   </div>
                 )}
                 {profile.birth_date && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span>{new Date(profile.birth_date).toLocaleDateString('es-CO')}</span>
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                 <p className="text-xs text-gray-500 mt-1">
                   Última actualización: {new Date(profile.created_at || '').toLocaleDateString('es-CO')}
                 </p>
@@ -175,13 +175,13 @@ const Profile: React.FC = () => {
             {/* Información personal */}
             <div className="card">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <User className="w-5 h-5 mr-2 text-blue-600" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                  <User className="w-5 h-5 mr-2 text-violet-600 dark:text-violet-400" />
                   Información personal
                 </h3>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                  className="flex items-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium"
                 >
                   {isEditing ? (
                     'Cancelar'
@@ -196,7 +196,7 @@ const Profile: React.FC = () => {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Nombre completo
                   </label>
                   <input
@@ -204,13 +204,13 @@ const Profile: React.FC = () => {
                     disabled={!isEditing}
                     value={formData.user_name}
                     onChange={(e) => setFormData({...formData, user_name: e.target.value})}
-                    className="input-field disabled:bg-gray-50 disabled:text-gray-500"
+                    className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Cargo / Título profesional
                     </label>
                     <input
@@ -218,12 +218,12 @@ const Profile: React.FC = () => {
                       disabled={!isEditing}
                       value={formData.job_title}
                       onChange={(e) => setFormData({...formData, job_title: e.target.value})}
-                      className="input-field disabled:bg-gray-50 disabled:text-gray-500"
+                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
                       placeholder="Ej: Desarrollador Full Stack"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Departamento / Área
                     </label>
                     <input
@@ -231,7 +231,7 @@ const Profile: React.FC = () => {
                       disabled={!isEditing}
                       value={formData.department}
                       onChange={(e) => setFormData({...formData, department: e.target.value})}
-                      className="input-field disabled:bg-gray-50 disabled:text-gray-500"
+                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
                       placeholder="Ej: Tecnología"
                     />
                   </div>
@@ -239,7 +239,7 @@ const Profile: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Ubicación
                     </label>
                     <div className="relative">
@@ -249,13 +249,13 @@ const Profile: React.FC = () => {
                         disabled={!isEditing}
                         value={formData.location}
                         onChange={(e) => setFormData({...formData, location: e.target.value})}
-                        className="input-field pl-10 disabled:bg-gray-50 disabled:text-gray-500"
-                        placeholder="Ej: Montelibano, Córdoba"
+                        className="input-field pl-10 disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                        placeholder="Ej: CordobaTech, Córdoba"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Fecha de nacimiento
                     </label>
                     <input
@@ -263,13 +263,13 @@ const Profile: React.FC = () => {
                       disabled={!isEditing}
                       value={formData.birth_date}
                       onChange={(e) => setFormData({...formData, birth_date: e.target.value})}
-                      className="input-field disabled:bg-gray-50 disabled:text-gray-500"
+                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Biografía
                   </label>
                   <textarea
@@ -277,7 +277,7 @@ const Profile: React.FC = () => {
                     disabled={!isEditing}
                     value={formData.bio}
                     onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                    className="input-field disabled:bg-gray-50 disabled:text-gray-500 resize-none"
+                    className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 resize-none"
                     placeholder="Cuéntanos sobre ti, tu experiencia y habilidades..."
                   />
                   <p className="mt-1 text-xs text-gray-500">
@@ -318,19 +318,19 @@ const Profile: React.FC = () => {
 
             {/* Email (solo lectura) */}
             <div className="card">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <Mail className="w-5 h-5 mr-2 text-blue-600" />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Mail className="w-5 h-5 mr-2 text-violet-600 dark:text-violet-400" />
                 Información de contacto
               </h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Correo electrónico
                 </label>
                 <input
                   type="email"
                   disabled
                   value={user?.email}
-                  className="input-field disabled:bg-gray-50 text-gray-500"
+                  className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 text-gray-500"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   El email no se puede cambiar. Contacta soporte si necesitas actualizarlo.
@@ -341,8 +341,8 @@ const Profile: React.FC = () => {
             {/* Preferencias (si quieres expandir) */}
             {profile.preferences && Object.keys(profile.preferences).length > 0 && (
               <div className="card">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Preferencias</h3>
-                <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Preferencias</h3>
+                <pre className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-3xl text-sm overflow-auto">
                   {JSON.stringify(profile.preferences, null, 2)}
                 </pre>
               </div>
@@ -350,8 +350,8 @@ const Profile: React.FC = () => {
 
             {/* Cambiar contraseña */}
             <div className="card">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Seguridad</h3>
-              <button className="text-blue-600 hover:text-blue-700 font-medium">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Seguridad</h3>
+              <button className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium">
                 Cambiar contraseña →
               </button>
             </div>

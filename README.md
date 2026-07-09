@@ -11,8 +11,8 @@ npm run dev
 D:
 cd D:\app_multitenant_front\web
 git add .
-git commit -m "dashboard"
-git push origin main
+git commit -m "nuevo diseño"
+git push origin test
 
 # Crear proyecto con Vite
 

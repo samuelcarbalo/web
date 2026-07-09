@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
   Calendar, 
   Users, 
   ChevronLeft,
-  Upload,
-  X
+  Layers,
 } from 'lucide-react';
-import { useCreateTournament } from '../../hooks/useSports';
+import { useCreateTournament, useFormatTemplates } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
-import type { SportType, sportTypeLabels } from '../../types/sports';
+import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
+import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
+import type { SportType } from '../../types/sports';
 
 const CreateTournament: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const createMutation = useCreateTournament();
   
+  const userCredits = user?.credits ?? 0;
+  const hasEnoughCredits = userCredits >= CREDIT_COSTS.tournament;
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     sport_type: 'football' as SportType,
+    format_template: 'legacy_league',
+    format_group_count: 2,
     start_date: '',
     end_date: '',
     registration_deadline: '',
@@ -29,7 +35,33 @@ const CreateTournament: React.FC = () => {
     max_players_per_team: 25,
     logo: '',
     banner: '',
+    rules_url: '',
+    lineup_size: 9,
+    regulation_innings: 7,
+    mercy_rule_enabled: true,
   });
+
+  const { data: formatTemplates } = useFormatTemplates(formData.sport_type);
+
+  useEffect(() => {
+    if (formData.sport_type === 'softball') {
+      setFormData((prev) => ({
+        ...prev,
+        min_players_per_team: 9,
+        max_players_per_team: 20,
+        lineup_size: prev.lineup_size === 10 ? 10 : 9,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, lineup_size: 9 }));
+    }
+  }, [formData.sport_type]);
+
+  useEffect(() => {
+    const template = formatTemplates?.find((t) => t.id === formData.format_template);
+    if (template?.default_max_teams) {
+      setFormData((prev) => ({ ...prev, max_teams: template.default_max_teams! }));
+    }
+  }, [formData.format_template, formatTemplates]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,6 +105,10 @@ const CreateTournament: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasEnoughCredits) {
+      navigate(ROUTES_CREDITS.packages);
+      return;
+    }
     
     if (!validate()) return;
     
@@ -85,14 +121,16 @@ const CreateTournament: React.FC = () => {
       ...formData,
       slug: slug,
       organization: user?.organization || '',
+      format_template: formData.format_template,
+      format_group_count: formData.format_group_count,
     }, {
-      onSuccess: () => {
-        navigate('/sports');
+      onSuccess: (data) => {
+        navigate(`/deportes/tournaments/${data.slug}${formData.format_template !== 'legacy_league' ? '/structure' : ''}`);
       },
     });
   };
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -100,36 +138,42 @@ const CreateTournament: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white mb-4"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Volver
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center">
             <Trophy className="w-8 h-8 mr-3 text-green-600" />
             Crear nuevo torneo
           </h1>
-          <p className="mt-2 text-gray-600">
-            Organiza un torneo deportivo en Montelibano
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Organiza un torneo deportivo en CordobaTech
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <InsufficientCreditsAlert
+          required={CREDIT_COSTS.tournament}
+          available={userCredits}
+          actionLabel="creación de torneo"
+        />
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Información básica</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Información básica</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Nombre del torneo *
                 </label>
                 <input
@@ -143,7 +187,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Deporte *
                 </label>
                 <select
@@ -157,8 +201,45 @@ const CreateTournament: React.FC = () => {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <Layers className="w-4 h-4 inline mr-1" />
+                  Formato del torneo *
+                </label>
+                <select
+                  value={formData.format_template}
+                  onChange={(e) => handleChange('format_template', e.target.value)}
+                  className="input-field"
+                >
+                  {(formatTemplates ?? []).map((t) => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </select>
+                {formatTemplates?.find((t) => t.id === formData.format_template)?.description && (
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    {formatTemplates.find((t) => t.id === formData.format_template)?.description}
+                  </p>
+                )}
+              </div>
+
+              {formData.format_template === 'multi_quadrangular' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Cantidad de cuadrangulares
+                  </label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={8}
+                    value={formData.format_group_count}
+                    onChange={(e) => handleChange('format_group_count', parseInt(e.target.value) || 2)}
+                    className="input-field"
+                  />
+                </div>
+              )}
+
               {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Descripción *
                 </label>
                 <textarea
@@ -175,11 +256,11 @@ const CreateTournament: React.FC = () => {
 
           {/* Fechas */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Fechas importantes</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Fechas importantes</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Inicio del torneo *
                 </label>
@@ -193,7 +274,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Finalización *
                 </label>
@@ -207,7 +288,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Límite de inscripción *
                 </label>
@@ -226,11 +307,11 @@ const CreateTournament: React.FC = () => {
 
           {/* Configuración de equipos */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Configuración de equipos</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Configuración de equipos</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Users className="w-4 h-4 inline mr-1" />
                   Máximo de equipos *
                 </label>
@@ -246,7 +327,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Jugadores mínimos *
                 </label>
                 <input
@@ -262,7 +343,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Jugadores máximos *
                 </label>
                 <input
@@ -277,15 +358,89 @@ const CreateTournament: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {formData.sport_type === 'softball' && (
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Titulares por partido
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size"
+                      checked={formData.lineup_size === 9}
+                      onChange={() => handleChange('lineup_size', 9)}
+                    />
+                    <span className="text-sm">9 en campo (sin bateador designado)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="lineup_size"
+                      checked={formData.lineup_size === 10}
+                      onChange={() => handleChange('lineup_size', 10)}
+                    />
+                    <span className="text-sm">10 (9 en campo + DH/EP por el pitcher)</span>
+                  </label>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Entradas reglamentarias
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={15}
+                      value={formData.regulation_innings}
+                      onChange={(e) =>
+                        handleChange('regulation_innings', parseInt(e.target.value) || 7)
+                      }
+                      className="input-field"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Softbol estándar: 7 entradas.</p>
+                  </div>
+                  <label className="flex items-start gap-2 cursor-pointer pt-8">
+                    <input
+                      type="checkbox"
+                      checked={formData.mercy_rule_enabled}
+                      onChange={(e) => handleChange('mercy_rule_enabled', e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
+                      Aplicar nocaut por diferencia de carreras (mercy rule)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Enlace al reglamento del torneo
+              </label>
+              <input
+                type="url"
+                value={formData.rules_url}
+                onChange={(e) => handleChange('rules_url', e.target.value)}
+                className="input-field"
+                placeholder="https://drive.google.com/... o PDF en la nube"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                URL pública al documento con reglas, formatos y sanciones del torneo.
+              </p>
+            </div>
           </div>
 
           {/* Imágenes (opcional) */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Imágenes (opcional)</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Imágenes (opcional)</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   URL del logo
                 </label>
                 <input
@@ -298,7 +453,7 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   URL del banner
                 </label>
                 <input
@@ -314,7 +469,7 @@ const CreateTournament: React.FC = () => {
 
           {/* Error general */}
           {createMutation.isError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-3xl">
               <p className="text-sm text-red-600">
                 Error al crear el torneo. Verifica que tienes permisos de administrador.
               </p>
@@ -332,16 +487,18 @@ const CreateTournament: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 btn-primary py-3 disabled:opacity-50"
+              disabled={createMutation.isPending || !hasEnoughCredits}
+              className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createMutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Creando...
                 </span>
+              ) : !hasEnoughCredits ? (
+                'Créditos insuficientes (Cuesta 50 🪙)'
               ) : (
-                'Crear torneo'
+                'Crear torneo (Cuesta 50 🪙)'
               )}
             </button>
           </div>

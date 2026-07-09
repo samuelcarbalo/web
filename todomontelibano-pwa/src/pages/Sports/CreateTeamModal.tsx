@@ -206,7 +206,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
           
           {/* Modal content */}
           <div 
-            className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+            className="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             onClick={handleModalClick}
           >
             {/* Header */}
@@ -226,21 +226,21 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
             {/* Content */}
             <div className="px-4 py-5 sm:p-6 max-h-[70vh] overflow-y-auto">
-              <p className="text-sm text-gray-600 mb-4">
-                Torneo: <span className="font-medium text-gray-900">{tournamentName}</span>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Torneo: <span className="font-medium text-gray-900 dark:text-white">{tournamentName}</span>
               </p>
 
               <form id="create-team-form" onSubmit={handleSubmit} className="space-y-4">
                 {/* Nombre del equipo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Nombre del equipo *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.name ? 'border-red-500' : ''}`}
+                    className={`w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.name ? 'border-red-500' : ''}`}
                     placeholder="Ej: Los Halcones"
                   />
                   {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -248,7 +248,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
                 {/* Abreviatura */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Abreviatura * (máx. 5 caracteres)
                   </label>
                   <input
@@ -256,7 +256,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                     maxLength={5}
                     value={formData.abbreviation}
                     onChange={(e) => handleChange('abbreviation', e.target.value.toUpperCase())}
-                    className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.abbreviation ? 'border-red-500' : ''}`}
+                    className={`w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.abbreviation ? 'border-red-500' : ''}`}
                     placeholder="Ej: HAL"
                   />
                   {errors.abbreviation && <p className="mt-1 text-sm text-red-600">{errors.abbreviation}</p>}
@@ -264,21 +264,21 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
                 {/* Descripción */}
                 {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Descripción
                   </label>
                   <textarea
                     rows={2}
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}
-                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500"
                     placeholder="Historia del equipo, logros, etc."
                   />
                 </div> */}
 
                 {/* Logo - Subida de archivo o URL */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Logo del equipo
                   </label>
                   
@@ -297,7 +297,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                       <img 
                         src={previewImage || formData.logo} 
                         alt="Preview" 
-                        className="w-20 h-20 rounded-lg object-cover border-2 border-gray-200"
+                        className="w-20 h-20 rounded-3xl object-cover border-2 border-gray-200 dark:border-gray-800"
                       />
                       <button
                         type="button"
@@ -318,7 +318,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                       type="button"
                       onClick={triggerFileInput}
                       disabled={uploadingImage}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-3xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {uploadingImage ? (
                         <>
@@ -343,7 +343,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                         type="url"
                         value={formData.logo}
                         onChange={(e) => handleChange('logo', e.target.value)}
-                        className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
                         placeholder="https:ejemplo.com/logo.png"
                         disabled={uploadingImage}
                       />
@@ -359,8 +359,8 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
 
                 {/* Datos del entrenador */}
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                     <UserCircle className="w-4 h-4 mr-1" />
                     Información del entrenador
                   </h4>
@@ -370,21 +370,21 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                       type="text"
                       value={formData.coach_name}
                       onChange={(e) => handleChange('coach_name', e.target.value)}
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      className="w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500"
                       placeholder="Nombre del entrenador"
                     />
                     <input
                       type="email"
                       value={formData.coach_email}
                       onChange={(e) => handleChange('coach_email', e.target.value)}
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      className="w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500"
                       placeholder="Email del entrenador"
                     />
                     <input
                       type="tel"
                       value={formData.coach_phone}
                       onChange={(e) => handleChange('coach_phone', e.target.value)}
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      className="w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500"
                       placeholder="Teléfono del entrenador"
                     />
                   </div>
@@ -393,7 +393,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                 {/* Colores */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center">
                       <Palette className="w-4 h-4 mr-1" />
                       Color primario *
                     </label>
@@ -402,20 +402,20 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                         type="color"
                         value={formData.primary_color}
                         onChange={(e) => handleChange('primary_color', e.target.value)}
-                        className="h-10 w-16 rounded cursor-pointer border border-gray-300"
+                        className="h-10 w-16 rounded cursor-pointer border border-gray-300 dark:border-gray-700"
                       />
                       <input
                         type="text"
                         value={formData.primary_color}
                         onChange={(e) => handleChange('primary_color', e.target.value)}
-                        className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
                         placeholder="#3B82F6"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center">
                       <Palette className="w-4 h-4 mr-1" />
                       Color secundario
                     </label>
@@ -424,13 +424,13 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                         type="color"
                         value={formData.secondary_color}
                         onChange={(e) => handleChange('secondary_color', e.target.value)}
-                        className="h-10 w-16 rounded cursor-pointer border border-gray-300"
+                        className="h-10 w-16 rounded cursor-pointer border border-gray-300 dark:border-gray-700"
                       />
                       <input
                         type="text"
                         value={formData.secondary_color}
                         onChange={(e) => handleChange('secondary_color', e.target.value)}
-                        className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
                         placeholder="#FFFFFF"
                       />
                     </div>
@@ -439,7 +439,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
                 {/* Error general */}
                 {createMutation.isError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-3xl">
                     <p className="text-sm text-red-600">
                       Error al crear el equipo. Verifica los datos.
                     </p>
@@ -449,12 +449,12 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
+            <div className="bg-gray-50 dark:bg-gray-900/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-800">
               <button
                 type="submit"
                 form="create-team-form"
                 disabled={createMutation.isPending || uploadingImage}
-                className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {createMutation.isPending ? (
                   <>
@@ -469,7 +469,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={uploadingImage}
-                className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
+                className="mt-3 w-full inline-flex justify-center rounded-3xl border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
               >
                 Cancelar
               </button>

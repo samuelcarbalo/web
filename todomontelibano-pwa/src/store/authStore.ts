@@ -13,6 +13,17 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
 }
 
+const syncPersistedAuth = (state: AuthState | undefined) => {
+  if (!state) return;
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    state.user = null;
+    state.tokens = null;
+    state.isAuthenticated = false;
+    state.isLoading = false;
+  }
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -20,14 +31,15 @@ export const useAuthStore = create<AuthState>()(
       tokens: null,
       isAuthenticated: false,
       isLoading: true,
-      
-      setAuth: (user, tokens) => set({
-        user,
-        tokens,
-        isAuthenticated: true,
-        isLoading: false,
-      }),
-      
+
+      setAuth: (user, tokens) =>
+        set({
+          user,
+          tokens,
+          isAuthenticated: true,
+          isLoading: false,
+        }),
+
       logout: () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -38,16 +50,24 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         });
       },
-      
-      updateUser: (userData) => set((state) => ({
-        user: state.user ? { ...state.user, ...userData } : null,
-      })),
-      
+
+      updateUser: (userData) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...userData } : null,
+        })),
+
       setLoading: (loading) => set({ isLoading: loading }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, tokens: state.tokens, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({
+        user: state.user,
+        tokens: state.tokens,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        syncPersistedAuth(state);
+      },
     }
   )
 );

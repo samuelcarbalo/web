@@ -1,4 +1,7 @@
 export type SportType = 'football' | 'softball' | 'basketball' | 'volleyball';
+export type StructureMode = 'legacy' | 'structured';
+export type PhaseType = 'group_stage' | 'round_robin' | 'knockout' | 'placement';
+export type MatchType = 'group' | 'knockout' | 'friendly' | 'legacy';
 
 export interface Tournament {
   id: string;
@@ -16,12 +19,28 @@ export interface Tournament {
   max_players_per_team: number;
   logo?: string;
   banner?: string;
-  status: 'active' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status:
+    | 'draft'
+    | 'registration'
+    | 'active'
+    | 'upcoming'
+    | 'ongoing'
+    | 'finished'
+    | 'completed'
+    | 'cancelled';
   teams_count: number;
+  matches_count?: number;
   created_at: string;
   updated_at: string;
   is_registration_open: boolean;
   posted_by: string;
+  structure_mode?: StructureMode;
+  format_template?: string;
+  scoring_config?: Record<string, unknown>;
+  rules_url?: string;
+  lineup_size?: number;
+  regulation_innings?: number;
+  mercy_rule_enabled?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -45,6 +64,97 @@ export interface CreateTournamentData {
   slug: string;
   logo?: string;
   banner?: string;
+  structure_mode?: StructureMode;
+  format_template?: string;
+  format_group_count?: number;
+  scoring_config?: Record<string, unknown>;
+  rules_url?: string;
+  lineup_size?: number;
+  regulation_innings?: number;
+  mercy_rule_enabled?: boolean;
+}
+
+export interface FormatTemplate {
+  id: string;
+  label: string;
+  description: string;
+  sport_types: SportType[];
+  structure_mode: StructureMode;
+  default_max_teams?: number;
+}
+
+export interface GroupMembership {
+  id: string;
+  team: Team;
+  seed?: number;
+}
+
+export interface CompetitionGroup {
+  id: string;
+  name: string;
+  slug: string;
+  order: number;
+  max_teams: number;
+  teams_count?: number;
+  memberships: GroupMembership[];
+}
+
+export interface TournamentPhase {
+  id: string;
+  name: string;
+  slug: string;
+  phase_type: PhaseType;
+  phase_type_display?: string;
+  order: number;
+  status: 'pending' | 'active' | 'finished';
+  status_display?: string;
+  config: Record<string, unknown>;
+  advancement_rules: Record<string, unknown>;
+  groups: CompetitionGroup[];
+  bracket?: Bracket;
+}
+
+export interface TournamentStructure {
+  structure_mode: StructureMode;
+  format_template: string;
+  phases: TournamentPhase[];
+}
+
+export interface BracketNode {
+  id: string;
+  round: 'quarterfinal' | 'semifinal' | 'final' | 'third_place';
+  round_display: string;
+  position: number;
+  match: Match | null;
+  home_source: Record<string, unknown>;
+  away_source: Record<string, unknown>;
+  home_team: Team | null;
+  away_team: Team | null;
+  home_label: string;
+  away_label: string;
+}
+
+export interface Bracket {
+  id: string;
+  name: string;
+  nodes: BracketNode[];
+}
+
+export interface AdvancePhaseData {
+  from_phase: string;
+  match_date?: string;
+  venue?: string;
+}
+
+export interface AdvancePhaseResult {
+  from_phase: TournamentPhase;
+  next_phase: TournamentPhase;
+  matches_created: Match[];
+}
+
+export interface StandingsScope {
+  phase?: string;
+  group?: string;
 }
 
 export const sportTypeLabels: Record<SportType, string> = {
@@ -129,6 +239,7 @@ export interface Player {
   id_number: string;
   email: string;
   team_name: string;
+  team_slug: string;
   photo: string | null;
   birth_date: string | null;
   nationality: string | null;
@@ -219,7 +330,12 @@ export interface Match {
   status_display: string;
   round_number: number;
   match_week: number;
+  match_type?: MatchType;
+  phase?: string | null;
+  group?: string | null;
   sport_type?: string;
+  regulation_innings?: number;
+  line_score?: LineScore | null;
   notes: string;
   posted_by: string;
   events: MatchEvent[];
@@ -227,11 +343,75 @@ export interface Match {
   end_time?: string;
 }
 
+export interface LineScoreCell {
+  inning: number;
+  runs: number | null;
+  played: boolean;
+}
+
+export interface LineScoreSide {
+  line: LineScoreCell[];
+  runs: number;
+  hits: number;
+  errors: number;
+}
+
+export interface LineScore {
+  innings_count: number;
+  home: LineScoreSide;
+  away: LineScoreSide;
+}
+
+export interface RecordInningData {
+  number: number;
+  half: 'top' | 'bottom';
+  runs?: number;
+  hits?: number;
+  errors?: number;
+  is_complete?: boolean;
+  finish?: boolean;
+}
+
+export interface GameOverInfo {
+  over: boolean;
+  reason: string | null;
+  winner: 'home' | 'away' | null;
+}
+
+export type SoftballEventType =
+  | 'single'
+  | 'double'
+  | 'triple'
+  | 'home_run'
+  | 'walk'
+  | 'strikeout'
+  | 'run'
+  | 'rbi'
+  | 'error'
+  | 'out';
+
+export type MatchEventType =
+  | 'goal'
+  | 'own_goal'
+  | 'yellow_card'
+  | 'red_card'
+  | 'substitution_in'
+  | 'substitution_out'
+  | 'penalty_goal'
+  | 'penalty_missed'
+  | 'assist'
+  | 'expelled'
+  | 'other'
+  | SoftballEventType;
+
 export interface MatchEvent {
   id: string;
-  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'injury' | 'other';
+  event_type: MatchEventType;
   event_type_display: string;
-  minute: number;
+  minute: number | null;
+  inning_number?: number | null;
+  inning_half?: 'top' | 'bottom' | '';
+  rbi?: number;
   player: string;
   player_name: string;
   team: string;
@@ -249,6 +429,9 @@ export interface CreateMatchData {
   round_number?: number;
   match_week?: number;
   notes?: string;
+  phase?: string;
+  group?: string;
+  match_type?: MatchType;
 }
 
 

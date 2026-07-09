@@ -185,7 +185,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
           <div
-            className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+            className="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -209,7 +209,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                 
                 {/* Título */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                     <Type className="w-4 h-4 text-gray-400" />
                     Título del banner *
                   </label>
@@ -217,7 +217,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                     type="text"
                     value={formData.title}
                     onChange={(e) => handleChange('title', e.target.value)}
-                    className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.title ? 'border-red-500' : ''}`}
+                    className={`w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.title ? 'border-red-500' : ''}`}
                     placeholder="Ej: Patrocinador Oficial"
                   />
                   {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
@@ -225,7 +225,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
 
                 {/* Descripción */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-gray-400" />
                     Descripción
                   </label>
@@ -233,7 +233,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                     rows={2}
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}
-                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500"
                     placeholder="Breve descripción del anuncio..."
                   />
                 </div>
@@ -241,7 +241,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                 {/* Fechas de publicación */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       Fecha inicio *
                     </label>
@@ -249,13 +249,13 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                       type="date"
                       value={formData.start_date}
                       onChange={(e) => handleChange('start_date', e.target.value)}
-                      className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.start_date ? 'border-red-500' : ''}`}
+                      className={`w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.start_date ? 'border-red-500' : ''}`}
                     />
                     {errors.start_date && <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       Fecha fin <span className="text-gray-400 font-normal text-xs">(opcional)</span>
                     </label>
@@ -264,7 +264,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                       value={formData.end_date}
                       min={formData.start_date}
                       onChange={(e) => handleChange('end_date', e.target.value)}
-                      className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.end_date ? 'border-red-500' : ''}`}
+                      className={`w-full rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 ${errors.end_date ? 'border-red-500' : ''}`}
                     />
                     {errors.end_date && <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>}
                   </div>
@@ -272,7 +272,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
 
                 {/* Imagen del banner */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-gray-400" />
                     Imagen del banner *
                   </label>
@@ -291,7 +291,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                       <img
                         src={previewImage || formData.image}
                         alt="Preview"
-                        className="w-full h-32 rounded-lg object-cover border-2 border-gray-200"
+                        className="w-full h-32 rounded-3xl object-cover border-2 border-gray-200 dark:border-gray-800"
                       />
                       <button
                         type="button"
@@ -312,7 +312,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                       type="button"
                       onClick={triggerFileInput}
                       disabled={uploadingImage}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-3xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {uploadingImage ? (
                         <>
@@ -337,7 +337,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                         type="url"
                         value={formData.image}
                         onChange={(e) => handleChange('image', e.target.value)}
-                        className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
                         placeholder="https://ejemplo.com/banner.jpg"
                         disabled={uploadingImage}
                       />
@@ -352,7 +352,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
 
                 {/* Link URL */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
                     <Link2 className="w-4 h-4 text-gray-400" />
                     URL de destino <span className="text-gray-400 font-normal text-xs">(opcional)</span>
                   </label>
@@ -362,7 +362,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                       type="url"
                       value={formData.link_url}
                       onChange={(e) => handleChange('link_url', e.target.value)}
-                      className={`flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm ${errors.link_url ? 'border-red-500' : ''}`}
+                      className={`flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm ${errors.link_url ? 'border-red-500' : ''}`}
                       placeholder="https://ejemplo.com"
                     />
                   </div>
@@ -371,7 +371,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
 
                 {/* Error general del mutation */}
                 {createBannerMutation.isError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-3xl">
                     <p className="text-sm text-red-600">
                       Error al crear el banner. Verifica los datos.
                     </p>
@@ -381,12 +381,12 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
+            <div className="bg-gray-50 dark:bg-gray-900/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-800">
               <button
                 type="submit"
                 form="create-banner-form"
                 disabled={createBannerMutation.isPending || uploadingImage}
-                className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {createBannerMutation.isPending ? (
                   <>
@@ -401,7 +401,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={uploadingImage}
-                className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
+                className="mt-3 w-full inline-flex justify-center rounded-3xl border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
               >
                 Cancelar
               </button>
