@@ -6,7 +6,7 @@ import Sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const siteUrl = env.VITE_SITE_URL || 'https://cordobatech.com';
+  const siteUrl = env.VITE_SITE_URL || 'https://missigdigital.site';
 
   return {
     plugins: [
@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
         includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
           id: '/',
-          name: 'CordobaTech',
-          short_name: 'CordobaTech',
+          name: 'MissigDigital',
+          short_name: 'MissigDigital',
           description:
             'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Tu plataforma multi-servicios.',
           theme_color: '#7c3aed',

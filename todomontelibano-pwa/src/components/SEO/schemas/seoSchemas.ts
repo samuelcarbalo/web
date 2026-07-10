@@ -58,8 +58,8 @@ export const buildHomeSchema = () => {
 export const buildJobsCollectionSchema = (jobCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Bolsa de Empleo CordobaTech',
-  description: 'Listado de vacantes y ofertas laborales disponibles en CordobaTech.',
+  name: 'Bolsa de Empleo NissigDigital',
+  description: 'Listado de vacantes y ofertas laborales disponibles en NissigDigital.',
   url: absoluteUrl(ROUTES.empleos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -126,9 +126,9 @@ export const buildJobPostingSchema = (job: {
 export const buildEventsCollectionSchema = (eventCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Eventos publicitarios CordobaTech',
+  name: 'Eventos publicitarios NissigDigital',
   description:
-    'Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en CordobaTech.',
+    'Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en NissigDigital.',
   url: absoluteUrl(ROUTES.eventos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },

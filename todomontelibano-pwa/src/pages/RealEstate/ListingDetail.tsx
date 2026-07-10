@@ -33,7 +33,7 @@ const ListingDetail: React.FC = () => {
 
   React.useEffect(() => {
     if (listing) {
-      document.title = `${listing.title} | Bienes Raíces | CordobaTech`;
+      document.title = `${listing.title} | Bienes Raíces | NissigDigital`;
     }
   }, [listing]);
 

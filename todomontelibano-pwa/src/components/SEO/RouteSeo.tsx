@@ -16,7 +16,7 @@ const RouteSeo: React.FC = () => {
   if (exact) {
     return (
       <SeoHead
-        title={exact.title.replace(' | CordobaTech', '')}
+        title={exact.title.replace(' | NissigDigital', '')}
         description={exact.description}
         path={exact.path}
         ogType={exact.ogType}
@@ -37,7 +37,7 @@ const RouteSeo: React.FC = () => {
       const meta = SEO_PAGES[key];
       return (
         <SeoHead
-          title={meta.title.replace(' | CordobaTech', '')}
+          title={meta.title.replace(' | NissigDigital', '')}
           description={meta.description}
           path={prefix}
           ogType={meta.ogType}

@@ -149,7 +149,7 @@ const CreateJob: React.FC = () => {
           </button>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Publicar nueva oferta</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Completa los detalles de la vacante para encontrar al candidato ideal en CordobaTech
+            Completa los detalles de la vacante para encontrar al candidato ideal en NissigDigital
           </p>
         </div>
       </div>
@@ -240,7 +240,7 @@ const CreateJob: React.FC = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="input-field pl-10"
-                    placeholder="Ej: CordobaTech, Córdoba"
+                    placeholder="Ej: NissigDigital, Córdoba"
                   />
                 </div>
               </div>
@@ -268,7 +268,7 @@ const CreateJob: React.FC = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input-field"
-                  placeholder="Descubre oportunidades laborales en CordobaTech y zona bananera. Publica vacantes si eres empresa."
+                  placeholder="Descubre oportunidades laborales en NissigDigital y zona bananera. Publica vacantes si eres empresa."
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Sé claro y atractivo. Los mejores candidatos valoran la transparencia.
@@ -286,7 +286,7 @@ const CreateJob: React.FC = () => {
                   value={formData.requirements}
                   onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                   className="input-field"
-                  placeholder="Lista los requisitos para la comunidad de CordobaTech, ofreciendo una experiencia, estudios, habilidades técnicas..."
+                  placeholder="Lista los requisitos para la comunidad de NissigDigital, ofreciendo una experiencia, estudios, habilidades técnicas..."
                 />
               </div>
             </div>

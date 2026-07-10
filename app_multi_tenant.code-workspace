@@ -6,5 +6,8 @@
 		{
 			"path": ".."
 		}
-	]
+	],
+	"settings": {
+		"powershell.cwd": "app_multi_tenant"
+	}
 }

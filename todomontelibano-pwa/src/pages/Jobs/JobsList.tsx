@@ -119,7 +119,7 @@ const JobsList: React.FC = () => {
                 Portal de Empleo
               </h1>
               <p className="mt-2 text-violet-100 text-base sm:text-lg max-w-2xl font-light">
-                Descubre tu próximo paso profesional en CordobaTech. Las mejores empresas de la región publican sus vacantes aquí.
+                Descubre tu próximo paso profesional en NissigDigital. Las mejores empresas de la región publican sus vacantes aquí.
               </p>
             </div>
             {isAuthenticated && user?.user_type === 'company' && (
