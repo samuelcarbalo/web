@@ -17,6 +17,7 @@ const PUBLIC_ENDPOINTS = [
   '/advertising/campaigns/plans/',
   '/sports/banners/config/',
   '/contact/messages/',
+  '/auth/users-count/',
 ];
 
 export const api = axios.create({

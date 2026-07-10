@@ -104,7 +104,7 @@ const Register: React.FC = () => {
               <div className="space-y-6">
                 <div>
                   <label className="auth-label mb-4">
-                    ¿Cómo vas a usar CordobaTech?
+                    ¿Cómo vas a usar NissigDigital?
                   </label>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button

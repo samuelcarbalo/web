@@ -106,7 +106,7 @@ const EventDetail: React.FC = () => {
         title={event.title}
         description={
           event.description?.slice(0, 160) ||
-          `${event.title} — evento publicitario en CordobaTech. ${event.location || 'Agenda local'}.`
+          `${event.title} — evento publicitario en NissigDigital. ${event.location || 'Agenda local'}.`
         }
         path={ROUTES.eventosDetail(event.slug)}
         ogType="website"

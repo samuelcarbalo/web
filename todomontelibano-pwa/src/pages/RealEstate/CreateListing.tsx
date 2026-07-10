@@ -50,7 +50,7 @@ const CreateListing: React.FC = () => {
             <ChevronLeft className="w-4 h-4 mr-1" /> Volver
           </button>
           <h1 className="text-2xl font-bold">Publicar propiedad</h1>
-          <p className="text-gray-500 mt-1">Publica tu inmueble en el portal de CordobaTech</p>
+          <p className="text-gray-500 mt-1">Publica tu inmueble en el portal de NissigDigital</p>
         </div>
       </div>
 

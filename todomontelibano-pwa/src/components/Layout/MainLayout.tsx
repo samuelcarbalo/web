@@ -21,6 +21,7 @@ import RouteSeo from "../SEO/RouteSeo";
 import CreditBalanceBadge from "../Credits/CreditBalanceBadge";
 import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
+import nissigLogo from "../../assets/Nissig-Digital.svg";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -81,15 +82,13 @@ const MainLayout: React.FC = () => {
         <div className="page-container">
           <div className="flex justify-between items-center h-16 md:h-20">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-11 h-11 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-violet-500/30 transition-transform duration-300 group-hover:scale-[1.02]">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
+              <img src={nissigLogo} alt="Nissig Digital" className="h-11 w-11 rounded-3xl object-contain shadow-lg shadow-violet-500/20 transition-transform duration-300 group-hover:scale-[1.02]" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                  CordobaTech
+                  Nissig-Digital
                 </h1>
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  Tu plataforma todo en uno
+                  Plataforma deportiva y comunitaria
                 </p>
               </div>
             </Link>
@@ -322,13 +321,11 @@ const MainLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-violet-500/25">
-                  <span className="text-white font-bold">T</span>
-                </div>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">CordobaTech</span>
+                <img src={nissigLogo} alt="Nissig Digital" className="h-10 w-10 rounded-3xl object-contain shadow-lg shadow-violet-500/20" />
+                <span className="text-lg font-bold text-gray-900 dark:text-white">Nissig-Digital</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md">
-                La plataforma integral para CordobaTech. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
+                La plataforma integral para NissigDigital. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
               </p>
             </div>
 
@@ -357,7 +354,7 @@ const MainLayout: React.FC = () => {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 text-center text-sm font-medium text-gray-500 dark:text-gray-500">
-            © 2024 CordobaTech. Todos los derechos reservados.
+            © 2024 Nissig-Digital. Todos los derechos reservados.
           </div>
         </div>
       </footer>

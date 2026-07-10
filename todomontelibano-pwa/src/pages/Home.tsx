@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Briefcase,
@@ -13,21 +13,55 @@ import {
   Zap,
   Shield,
   Bell,
+  Download,
+  X,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import JsonLd from "../components/SEO/JsonLd";
 import { buildHomeSchema } from "../components/SEO/schemas/seoSchemas";
 import { ROUTES } from "../config/seo";
+import { api } from "../lib/api";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
+  const [activeUsers, setActiveUsers] = useState<string>("—");
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("pwa-install-banner-dismissed");
+    if (dismissed === "true") return;
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferredPrompt(event as BeforeInstallPromptEvent);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
+
+  useEffect(() => {
+    const loadUserStats = async () => {
+      try {
+        const response = await api.get("/auth/users-count/");
+        const count = response.data?.active_users;
+        setActiveUsers(typeof count === "number" ? count.toLocaleString() : "—");
+      } catch {
+        setActiveUsers("—");
+      }
+    };
+
+    loadUserStats();
+  }, []);
 
   const services = [
     {
       icon: Briefcase,
       title: "Empleos",
       description:
-        "Encuentra oportunidades laborales en CordobaTech y zona bananera. Publica vacantes si eres empresa.",
+        "Encuentra oportunidades laborales en NissigDigital y zona bananera. Publica vacantes si eres empresa.",
       gradient: "from-violet-500 to-indigo-600",
       active: true,
       path: ROUTES.empleos,
@@ -57,7 +91,7 @@ const Home: React.FC = () => {
       icon: House,
       title: "Bienes Raíces",
       description:
-        "Casas, apartamentos, locales y terrenos en venta y arriendo en CordobaTech.",
+        "Casas, apartamentos, locales y terrenos en venta y arriendo en NissigDigital.",
       gradient: "from-orange-500 to-rose-600",
       active: true,
       comingSoon: false,
@@ -76,11 +110,25 @@ const Home: React.FC = () => {
   ];
 
   const stats = [
-    { icon: Users, value: "500+", label: "Usuarios activos" },
+    { icon: Users, value: activeUsers, label: "Usuarios activos" },
     { icon: Building2, value: "50+", label: "Empresas" },
     { icon: Briefcase, value: "100+", label: "Empleos activos" },
     { icon: Star, value: "4.8", label: "Calificación" },
   ];
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
+
+  const dismissInstallBanner = () => {
+    localStorage.setItem("pwa-install-banner-dismissed", "true");
+    setShowInstallBanner(false);
+  };
 
   return (
     <div className="bg-white dark:bg-gray-950 transition-colors duration-300">
@@ -103,7 +151,7 @@ const Home: React.FC = () => {
             <div className="inline-flex items-center px-5 py-2.5 rounded-full glass mb-10">
               <span className="flex h-2 w-2 rounded-full bg-emerald-400 mr-2.5 animate-pulse" />
               <span className="text-sm font-bold text-white/90">
-                Plataforma activa en CordobaTech
+                Plataforma activa en NissigDigital
               </span>
             </div>
 
@@ -169,6 +217,44 @@ const Home: React.FC = () => {
         </div>
       </div>
 
+      {showInstallBanner && (
+        <div className="fixed bottom-4 right-4 z-50 w-[min(92vw,24rem)] rounded-3xl border border-violet-200/70 bg-white/95 p-4 shadow-2xl backdrop-blur-xl dark:border-violet-900/50 dark:bg-gray-950/95">
+          <button
+            type="button"
+            onClick={dismissInstallBanner}
+            className="absolute right-3 top-3 rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            aria-label="Cerrar sugerencia de instalación"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="pr-8">
+            <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
+              <Download className="h-4 w-4" />
+              <span className="text-sm font-semibold">Instala Nissig-Digital</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Guarda acceso rápido a la plataforma y disfruta una experiencia más fluida desde tu dispositivo.
+            </p>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={dismissInstallBanner}
+              className="rounded-2xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Ahora no
+            </button>
+            <button
+              type="button"
+              onClick={handleInstall}
+              className="rounded-2xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
+            >
+              Instalar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Services */}
       <div className="page-section bg-gray-50 dark:bg-gray-950">
         <div className="page-container">
@@ -178,7 +264,7 @@ const Home: React.FC = () => {
               Nuestros Servicios
             </h2>
             <p className="mt-6 text-lg font-medium text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              CordobaTech conecta a la comunidad con múltiples servicios en una sola plataforma
+              NissigDigital conecta a la comunidad con múltiples servicios en una sola plataforma
             </p>
           </div>
 
@@ -240,11 +326,11 @@ const Home: React.FC = () => {
             <div>
               <span className="badge text-xs uppercase tracking-widest">Características</span>
               <h2 className="mt-4 text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-6">
-                ¿Por qué elegir CordobaTech?
+                ¿Por qué elegir NissigDigital?
               </h2>
               <p className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
                 Nuestra plataforma está diseñada pensando en las necesidades de la comunidad de
-                CordobaTech, ofreciendo una experiencia unificada para todos los servicios.
+                NissigDigital, ofreciendo una experiencia unificada para todos los servicios.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -281,7 +367,7 @@ const Home: React.FC = () => {
                         <span className="text-white font-bold text-lg">T</span>
                       </div>
                       <div>
-                        <p className="text-white font-bold">CordobaTech</p>
+                        <p className="text-white font-bold">NissigDigital</p>
                         <p className="text-violet-200/70 text-xs font-medium">App Móvil</p>
                       </div>
                     </div>
@@ -321,7 +407,7 @@ const Home: React.FC = () => {
               ¿Listo para comenzar?
             </h2>
             <p className="text-violet-100 text-lg font-medium mb-10">
-              Únete a la comunidad de CordobaTech y descubre todas las oportunidades que tenemos para ti.
+              Únete a la comunidad de NissigDigital y descubre todas las oportunidades que tenemos para ti.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link

@@ -154,7 +154,7 @@ const CreateTournament: React.FC = () => {
             Crear nuevo torneo
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Organiza un torneo deportivo en CordobaTech
+            Organiza un torneo deportivo en NissigDigital
           </p>
         </div>
       </div>

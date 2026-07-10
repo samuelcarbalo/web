@@ -1,6 +1,6 @@
 /** URL base del sitio (producción). Configurar en .env: VITE_SITE_URL */
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://cordobatech.com';
-export const SITE_NAME = 'CordobaTech';
+export const SITE_NAME = 'NissigDigital';
 export const SITE_LOCALE = 'es_CO';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon-512x512.png`;
 
@@ -47,67 +47,67 @@ export interface SeoMeta {
 
 export const SEO_PAGES: Record<string, SeoMeta> = {
   '/': {
-    title: 'CordobaTech | Empleos, Deportes, Bienes Raíces y Eventos en Córdoba',
+    title: 'NissigDigital | Empleos, Deportes, Bienes Raíces y Eventos en Córdoba',
     description:
-      'Plataforma integral de CordobaTech: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios. Publica ferias, conciertos y activaciones de marca con visibilidad local.',
+      'Plataforma integral de NissigDigital: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios. Publica ferias, conciertos y activaciones de marca con visibilidad local.',
     path: '/',
     ogType: 'website',
   },
   [ROUTES.empleos]: {
-    title: 'Bolsa de Empleo | Vacantes y Trabajo | CordobaTech',
+    title: 'Bolsa de Empleo | Vacantes y Trabajo | NissigDigital',
     description:
-      'Explora ofertas laborales en CordobaTech. Postula a vacantes de empresas locales o publica empleos si eres reclutador.',
+      'Explora ofertas laborales en NissigDigital. Postula a vacantes de empresas locales o publica empleos si eres reclutador.',
     path: ROUTES.empleos,
     ogType: 'website',
   },
   [ROUTES.deportes]: {
-    title: 'Deportes y Torneos Locales | CordobaTech',
+    title: 'Deportes y Torneos Locales | NissigDigital',
     description:
       'Consulta torneos de fútbol, softbol y más. Organiza ligas, equipos y calendarios deportivos en tu región.',
     path: ROUTES.deportes,
     ogType: 'website',
   },
   [ROUTES.bienesRaices]: {
-    title: 'Bienes Raíces | Propiedades en Venta y Alquiler | CordobaTech',
+    title: 'Bienes Raíces | Propiedades en Venta y Alquiler | NissigDigital',
     description:
-      'Encuentra casas, apartamentos y locales comerciales. Publica o contacta propietarios en el portal inmobiliario de CordobaTech.',
+      'Encuentra casas, apartamentos y locales comerciales. Publica o contacta propietarios en el portal inmobiliario de NissigDigital.',
     path: ROUTES.bienesRaices,
     ogType: 'website',
   },
   [ROUTES.eventos]: {
-    title: 'Eventos Publicitarios | Ferias, Conciertos y Agenda Local | CordobaTech',
+    title: 'Eventos Publicitarios | Ferias, Conciertos y Agenda Local | NissigDigital',
     description:
-      'Descubre y publica eventos publicitarios: ferias, conciertos, activaciones de marca, networking y agenda cultural. Aumenta la visibilidad de tu evento con campañas en CordobaTech.',
+      'Descubre y publica eventos publicitarios: ferias, conciertos, activaciones de marca, networking y agenda cultural. Aumenta la visibilidad de tu evento con campañas en NissigDigital.',
     path: ROUTES.eventos,
     ogType: 'website',
   },
   [ROUTES.eventosPublicar]: {
-    title: 'Publicar Evento Publicitario | CordobaTech',
-    description: 'Publica tu feria, concierto o activación de marca en la agenda de CordobaTech.',
+    title: 'Publicar Evento Publicitario | NissigDigital',
+    description: 'Publica tu feria, concierto o activación de marca en la agenda de NissigDigital.',
     path: ROUTES.eventosPublicar,
     noindex: true,
   },
   [ROUTES.eventosMisEventos]: {
-    title: 'Mis Eventos | CordobaTech',
-    description: 'Gestiona tus eventos publicados en CordobaTech.',
+    title: 'Mis Eventos | NissigDigital',
+    description: 'Gestiona tus eventos publicados en NissigDigital.',
     path: ROUTES.eventosMisEventos,
     noindex: true,
   },
   [ROUTES.contact]: {
-    title: 'Contacto | CordobaTech',
-    description: 'Escríbenos con dudas, sugerencias o reportes sobre CordobaTech.',
+    title: 'Contacto | NissigDigital',
+    description: 'Escríbenos con dudas, sugerencias o reportes sobre NissigDigital.',
     path: ROUTES.contact,
     ogType: 'website',
   },
   [ROUTES.login]: {
-    title: 'Iniciar Sesión | CordobaTech',
-    description: 'Accede a tu cuenta de CordobaTech.',
+    title: 'Iniciar Sesión | NissigDigital',
+    description: 'Accede a tu cuenta de NissigDigital.',
     path: ROUTES.login,
     noindex: true,
   },
   [ROUTES.register]: {
-    title: 'Crear Cuenta | CordobaTech',
-    description: 'Regístrate gratis en CordobaTech.',
+    title: 'Crear Cuenta | NissigDigital',
+    description: 'Regístrate gratis en NissigDigital.',
     path: ROUTES.register,
     noindex: true,
   },
