@@ -18,6 +18,7 @@ const PUBLIC_ENDPOINTS = [
   '/sports/banners/config/',
   '/contact/messages/',
   '/auth/users-count/',
+  '/sports/player-suspensions/',
 ];
 
 export const api = axios.create({

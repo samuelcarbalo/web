@@ -1,6 +1,6 @@
 import { api } from './api';
 import { getViewerHash } from './viewerHash';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -72,9 +72,36 @@ export const deleteTeam = async (slug: string) => {
 
 // --- Funciones para jugadores ---
 
-export const getPlayers = async (teamId?: string) => {
-  const params = teamId ? { team: teamId } : {};
+export const getPlayers = async (params?: { team?: string; tournament?: string }) => {
   const response = await api.get<PaginatedResponse<Player>>('/sports/players/', { params });
+  return response.data;
+};
+
+// ============ SANCIONES DE JUGADORES ============
+
+export const getPlayerSuspensions = async (params?: {
+  tournament?: string;
+  player?: string;
+}) => {
+  const response = await api.get<PlayerSuspension[]>('/sports/player-suspensions/', { params });
+  return response.data;
+};
+
+export const createPlayerSuspension = async (data: CreatePlayerSuspensionData) => {
+  const response = await api.post<PlayerSuspension>('/sports/player-suspensions/', data);
+  return response.data;
+};
+
+export const updatePlayerSuspension = async (
+  id: string,
+  data: Partial<CreatePlayerSuspensionData> & { is_active?: boolean; matches_count?: number }
+) => {
+  const response = await api.patch<PlayerSuspension>(`/sports/player-suspensions/${id}/`, data);
+  return response.data;
+};
+
+export const revokePlayerSuspension = async (id: string) => {
+  const response = await api.post<PlayerSuspension>(`/sports/player-suspensions/${id}/revoke/`);
   return response.data;
 };
 

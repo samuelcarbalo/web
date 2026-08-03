@@ -285,6 +285,39 @@ export interface Player {
   on_base_percentage: number | null;
 }
 
+export type SuspensionReason = 'direct_red' | 'double_yellow' | 'manual';
+
+export interface PlayerSuspension {
+  id: string;
+  player: string;
+  player_name: string;
+  tournament: string;
+  tournament_name: string;
+  match: string | null;
+  suspended_until_match: string | null;
+  reason: SuspensionReason;
+  matches_count: number;
+  matches_served: number;
+  matches_remaining: number;
+  is_active: boolean;
+  notes: string;
+  created_by: string | null;
+  created_by_name: string | null;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePlayerSuspensionData {
+  player: string;
+  tournament: string;
+  match?: string | null;
+  reason?: SuspensionReason;
+  matches_count: number;
+  notes?: string;
+}
+
 export interface CreatePlayerData {
   first_name: string;
   last_name: string;

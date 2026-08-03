@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import SeoHead from './SeoHead';
-import { ROUTES, SEO_PAGES } from '../../config/seo';
+import { ROUTES, SEO_PAGES, stripSiteSuffix } from '../../config/seo';
 
 /** Aplica metadatos según la ruta actual (rutas principales) */
 const RouteSeo: React.FC = () => {
@@ -16,7 +16,7 @@ const RouteSeo: React.FC = () => {
   if (exact) {
     return (
       <SeoHead
-        title={exact.title.replace(' | NissigDigital', '')}
+        title={stripSiteSuffix(exact.title)}
         description={exact.description}
         path={exact.path}
         ogType={exact.ogType}
@@ -37,7 +37,7 @@ const RouteSeo: React.FC = () => {
       const meta = SEO_PAGES[key];
       return (
         <SeoHead
-          title={meta.title.replace(' | NissigDigital', '')}
+          title={stripSiteSuffix(meta.title)}
           description={meta.description}
           path={prefix}
           ogType={meta.ogType}

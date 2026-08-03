@@ -47,8 +47,13 @@ import {
   getBannersByPosition,
   trackBannerClick,
   createBanner,
+  getPlayerSuspensions,
+  createPlayerSuspension,
+  updatePlayerSuspension,
+  revokePlayerSuspension,
+  getTeamPlayers,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
@@ -173,11 +178,13 @@ export const useDeleteTeam = () => {
 
 // ==================== JUGADORES ====================
 
-export const usePlayers = (teamId?: string) => {
+const SUSPENSIONS_KEY = 'player-suspensions';
+
+export const usePlayers = (teamId?: string, tournamentSlug?: string) => {
   return useQuery({
-    queryKey: [PLAYERS_KEY, { team: teamId }],
-    queryFn: () => getPlayers(teamId),
-    enabled: !!teamId,
+    queryKey: [PLAYERS_KEY, { team: teamId, tournament: tournamentSlug }],
+    queryFn: () => getPlayers({ team: teamId, tournament: tournamentSlug }),
+    enabled: !!(teamId || tournamentSlug),
   });
 };
 
@@ -195,7 +202,49 @@ export const useCreatePlayer = () => {
   return useMutation({
     mutationFn: createPlayer,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY, { team: variables.team }] });
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+      if (variables.team) {
+        queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY, { team: variables.team }] });
+      }
+    },
+  });
+};
+
+export const usePlayerSuspensions = (tournamentId?: string, playerId?: string) => {
+  return useQuery({
+    queryKey: [SUSPENSIONS_KEY, tournamentId, playerId],
+    queryFn: () => getPlayerSuspensions({ tournament: tournamentId, player: playerId }),
+    enabled: !!tournamentId,
+  });
+};
+
+export const useCreatePlayerSuspension = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createPlayerSuspension,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SUSPENSIONS_KEY] });
+    },
+  });
+};
+
+export const useUpdatePlayerSuspension = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreatePlayerSuspensionData> & { is_active?: boolean } }) =>
+      updatePlayerSuspension(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SUSPENSIONS_KEY] });
+    },
+  });
+};
+
+export const useRevokePlayerSuspension = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: revokePlayerSuspension,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SUSPENSIONS_KEY] });
     },
   });
 };
@@ -203,7 +252,7 @@ export const useCreatePlayer = () => {
 export const useTeamPlayers = (slug?: string) => {
   return useQuery({
     queryKey: [PLAYERS_KEY, 'team-players', slug],
-    queryFn: () => getPlayers(slug || ''),
+    queryFn: () => getTeamPlayers(slug || ''),
     enabled: !!slug,
   });
 };

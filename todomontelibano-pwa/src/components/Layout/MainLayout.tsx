@@ -21,7 +21,9 @@ import RouteSeo from "../SEO/RouteSeo";
 import CreditBalanceBadge from "../Credits/CreditBalanceBadge";
 import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
+import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
 import nissigLogo from "../../assets/Nissig-Digital.svg";
+import PwaInstallBanner from "../PWA/PwaInstallBanner";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -82,13 +84,13 @@ const MainLayout: React.FC = () => {
         <div className="page-container">
           <div className="flex justify-between items-center h-16 md:h-20">
             <Link to="/" className="flex items-center space-x-3 group">
-              <img src={nissigLogo} alt="Nissig Digital" className="h-11 w-11 rounded-3xl object-contain shadow-lg shadow-violet-500/20 transition-transform duration-300 group-hover:scale-[1.02]" />
+              <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-11 w-11 rounded-3xl object-contain shadow-lg shadow-violet-500/20 transition-transform duration-300 group-hover:scale-[1.02]" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                  Nissig-Digital
+                  {BRAND_DISPLAY_NAME}
                 </h1>
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  Plataforma deportiva y comunitaria
+                  {BRAND_TAGLINE}
                 </p>
               </div>
             </Link>
@@ -321,11 +323,11 @@ const MainLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <img src={nissigLogo} alt="Nissig Digital" className="h-10 w-10 rounded-3xl object-contain shadow-lg shadow-violet-500/20" />
-                <span className="text-lg font-bold text-gray-900 dark:text-white">Nissig-Digital</span>
+                <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-10 w-10 rounded-3xl object-contain shadow-lg shadow-violet-500/20" />
+                <span className="text-lg font-bold text-gray-900 dark:text-white">{BRAND_DISPLAY_NAME}</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md">
-                La plataforma integral para NissigDigital. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
+                La plataforma integral {BRAND_DISPLAY_NAME}. Encuentra empleos, eventos, deportes y bienes raíces en un solo lugar.
               </p>
             </div>
 
@@ -354,10 +356,12 @@ const MainLayout: React.FC = () => {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 text-center text-sm font-medium text-gray-500 dark:text-gray-500">
-            © 2024 Nissig-Digital. Todos los derechos reservados.
+            © {new Date().getFullYear()} {BRAND_DISPLAY_NAME}. Todos los derechos reservados.
           </div>
         </div>
       </footer>
+
+      <PwaInstallBanner />
     </div>
   );
 };

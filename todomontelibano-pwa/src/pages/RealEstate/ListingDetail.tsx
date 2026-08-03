@@ -11,6 +11,8 @@ import ContactOwnerButton from '../../components/RealEstate/ContactOwnerButton';
 import ReportPublicationButton from '../../components/Moderation/ReportPublicationButton';
 import AdVisibilityUpsell from '../../components/Advertising/AdVisibilityUpsell';
 import ClassifiedAdSlot from '../../components/Advertising/ClassifiedAdSlot';
+import SeoEntityPage from '../../components/SEO/SeoEntityPage';
+import { ROUTES } from '../../config/seo';
 
 const CATEGORY_LABELS: Record<string, string> = { sale: 'En venta', rent: 'En alquiler' };
 const PROPERTY_LABELS: Record<string, string> = {
@@ -31,11 +33,7 @@ const ListingDetail: React.FC = () => {
 
   const isOwner = checkIsOwner(listing);
 
-  React.useEffect(() => {
-    if (listing) {
-      document.title = `${listing.title} | Bienes Raíces | NissigDigital`;
-    }
-  }, [listing]);
+  const listingPath = ROUTES.bienesRaicesDetail(listingId);
 
   const handleDelete = () => {
     if (confirm('¿Eliminar esta publicación?')) {
@@ -51,24 +49,64 @@ const ListingDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600" />
-      </div>
+      <>
+        <SeoEntityPage
+          title=""
+          description=""
+          path={listingPath}
+          isLoading
+          fallbackTitle="Propiedad | Bienes Raíces"
+          fallbackDescription="Cargando detalle de propiedad inmobiliaria en Córdoba."
+        />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600" />
+        </div>
+      </>
     );
   }
 
   if (!listing) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center">
+      <>
+        <SeoEntityPage
+          title="Propiedad no encontrada"
+          description="La publicación no está disponible."
+          path={listingPath}
+          isError
+        />
+        <div className="min-h-screen flex items-center justify-center text-center">
         <div>
           <h2 className="text-2xl font-bold">Propiedad no encontrada</h2>
           <Link to="/real-estate" className="text-rose-600 mt-2 inline-block">← Volver</Link>
         </div>
       </div>
+      </>
     );
   }
 
   return (
+    <>
+      <SeoEntityPage
+        title={listing.title}
+        description={
+          listing.description?.slice(0, 160) ||
+          `${listing.title} — ${PROPERTY_LABELS[listing.property_type] || 'Inmueble'} en Córdoba.`
+        }
+        path={listingPath}
+        ogType="product"
+        ogImage={getMediaUrl(listing.image)}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: listing.title,
+          description: listing.description,
+          offers: {
+            '@type': 'Offer',
+            price: listing.price,
+            priceCurrency: 'COP',
+          },
+        }}
+      />
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950/50 pb-20">
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 py-6">
@@ -225,6 +263,7 @@ const ListingDetail: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

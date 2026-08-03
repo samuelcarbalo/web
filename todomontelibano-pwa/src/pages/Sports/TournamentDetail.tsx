@@ -34,6 +34,7 @@ import CreateTeamModal from './CreateTeamModal';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import PurchaseSponsorshipModal from '../../components/Advertising/PurchaseSponsorshipModal';
+import PlayerSuspensionsPanel from './PlayerSuspensionsPanel';
 import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -652,6 +653,12 @@ const TournamentDetail: React.FC = () => {
 
               {/* Gestión (solo owner) */}
               {isOwner && (
+                <>
+                  <PlayerSuspensionsPanel
+                    tournamentId={tournament.id}
+                    tournamentSlug={tournament.slug}
+                  />
+
                 <div className="card">
                   <h3 className="font-bold text-gray-900 dark:text-white mb-4">Gestión del torneo</h3>
                   <div className="space-y-2.5">
@@ -676,6 +683,7 @@ const TournamentDetail: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                </>
               )}
 
               {/* Compartir */}
