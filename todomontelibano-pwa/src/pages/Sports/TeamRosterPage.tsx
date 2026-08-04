@@ -32,8 +32,7 @@ import {
   useTeams,
 } from '../../hooks/useSports';
 import type { Player, CreatePlayerData } from '../../types/sports';
-
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || '';
+import { uploadImageToImgBB as uploadToImgBB } from '../../lib/imgbb';
 
 /* ═══════════════════════════════════════════
    POSITIONS CONFIG
@@ -219,19 +218,7 @@ const TeamRosterPage: React.FC = () => {
 
   /* ── Photo upload ── */
   const uploadImageToImgBB = async (file: File): Promise<string> => {
-    const formDataUpload = new FormData();
-    formDataUpload.append('image', file);
-    formDataUpload.append('key', IMGBB_API_KEY);
-
-    const response = await fetch('https://api.imgbb.com/1/upload', {
-      method: 'POST',
-      body: formDataUpload,
-    });
-
-    if (!response.ok) throw new Error('Error al subir imagen');
-    const data = await response.json();
-    if (data.success) return data.data.url;
-    throw new Error(data.error?.message || 'Error al subir imagen');
+    return uploadToImgBB(file);
   };
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

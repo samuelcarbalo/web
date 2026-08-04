@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, ImageIcon, Upload, Loader2, Link2, Type, FileText, ExternalLink, Calendar } from 'lucide-react';
 import { useCreateBanner } from '../hooks/useSports';
+import { uploadImageToImgBB } from '../lib/imgbb';
 
 interface CreateBannerModalProps {
   isOpen: boolean;
@@ -9,8 +10,6 @@ interface CreateBannerModalProps {
   tournamentId?: string; 
   onSuccess?: () => void;
 }
-
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 // Helper para obtener fecha de hoy en formato YYYY-MM-DD
 const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -73,29 +72,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const uploadImageToImgBB = async (file: File): Promise<string> => {
-    const data = new FormData();
-    data.append('image', file);
-    data.append('key', IMGBB_API_KEY);
-
-    const response = await fetch('https://api.imgbb.com/1/upload', {
-      method: 'POST',
-      body: data,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
-    }
-
-    const result = await response.json();
-    if (result.success && result.data?.url) {
-      return result.data.url;
-    }
-    
-    throw new Error(result.error?.message || 'Error desconocido al subir imagen');
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
