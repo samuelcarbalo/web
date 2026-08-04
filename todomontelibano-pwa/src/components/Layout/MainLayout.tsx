@@ -84,7 +84,7 @@ const MainLayout: React.FC = () => {
         <div className="page-container">
           <div className="flex justify-between items-center h-16 md:h-20">
             <Link to="/" className="flex items-center space-x-3 group">
-              <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-11 w-11 rounded-3xl object-contain shadow-lg shadow-violet-500/20 transition-transform duration-300 group-hover:scale-[1.02]" />
+              <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-11 w-11 rounded-3xl object-contain shadow-lg shadow-violet-500/20 transition-all duration-300 group-hover:scale-[1.02] dark:invert" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
                   {BRAND_DISPLAY_NAME}
@@ -323,7 +323,7 @@ const MainLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-10 w-10 rounded-3xl object-contain shadow-lg shadow-violet-500/20" />
+                <img src={nissigLogo} alt={BRAND_DISPLAY_NAME} className="h-10 w-10 rounded-3xl object-contain shadow-lg shadow-violet-500/20 dark:invert" />
                 <span className="text-lg font-bold text-gray-900 dark:text-white">{BRAND_DISPLAY_NAME}</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md">

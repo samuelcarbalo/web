@@ -120,14 +120,9 @@ const Home: React.FC = () => {
             </p>
 
             <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <Link to="/dashboard" className="btn-primary px-10 py-4 text-lg">
                   Ir al Dashboard
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-              ) : (
-                <Link to="/register" className="btn-primary px-10 py-4 text-lg">
-                  Comenzar gratis
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               )}
