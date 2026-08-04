@@ -9,4 +9,9 @@ declare global {
       platform: string;
     }>;
   }
+
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent;
+    appinstalled: Event;
+  }
 }

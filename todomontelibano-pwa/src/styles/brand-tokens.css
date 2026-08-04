@@ -1,0 +1,124 @@
+/**
+ * CAPISJ DIGITAL — Brand CSS Variables
+ * Source of truth: CAPISJ_DIGITAL_logo_principal.svg
+ *
+ * Primary   #021433  Navy wordmark
+ * Secondary #0BAD9A  Teal DIGITAL
+ * Accent    #F7AE51  Amber mascot
+ * Info      #0495DE  Sky blue accent
+ */
+
+:root {
+  /* —— Exact logo anchors —— */
+  --logo-navy: #021433;
+  --logo-navy-deep: #001332;
+  --logo-teal: #0bad9a;
+  --logo-teal-bright: #04ae9d;
+  --logo-sky: #0495de;
+  --logo-amber: #f7ae51;
+  --logo-brown: #a55f29;
+  --logo-ink: #0c0a07;
+  --logo-canvas: #f9f9f9;
+
+  /* —— Primary (Navy) —— */
+  --color-primary-50: #f5f7fa;
+  --color-primary-100: #e6ebf2;
+  --color-primary-200: #c7d0de;
+  --color-primary-300: #9aabc0;
+  --color-primary-400: #5c7190;
+  --color-primary-500: #334866;
+  --color-primary-600: #1e3250;
+  --color-primary-700: #12243c;
+  --color-primary-800: #0a182c;
+  --color-primary-900: #001332;
+  --color-primary-950: #021433;
+  --color-primary: #021433;
+
+  /* —— Secondary (Teal) —— */
+  --color-secondary-50: #f0faf8;
+  --color-secondary-100: #d5f3ee;
+  --color-secondary-200: #a8e5db;
+  --color-secondary-300: #6dd1c2;
+  --color-secondary-400: #2fb8a7;
+  --color-secondary-500: #0bad9a;
+  --color-secondary-600: #049a89;
+  --color-secondary-700: #037a6d;
+  --color-secondary-800: #055c53;
+  --color-secondary-900: #064a43;
+  --color-secondary-950: #042f2b;
+  --color-secondary: #0bad9a;
+
+  /* —— Accent (Amber) —— */
+  --color-accent-50: #fff9f0;
+  --color-accent-100: #feefdb;
+  --color-accent-200: #fcd9a8;
+  --color-accent-300: #fac574;
+  --color-accent-400: #f8b85c;
+  --color-accent-500: #f7ae51;
+  --color-accent-600: #e8942a;
+  --color-accent-700: #c97418;
+  --color-accent-800: #a05a14;
+  --color-accent-900: #744212;
+  --color-accent-950: #4a2a0c;
+  --color-accent: #f7ae51;
+
+  /* —— Info (Sky) —— */
+  --color-info-50: #f0f8fc;
+  --color-info-100: #d6ecf8;
+  --color-info-200: #a8d7f0;
+  --color-info-300: #5cb8e8;
+  --color-info-400: #1a9fe0;
+  --color-info-500: #0495de;
+  --color-info-600: #0378b3;
+  --color-info-700: #025d8c;
+  --color-info-800: #024566;
+  --color-info-900: #032f45;
+  --color-info-950: #021c29;
+  --color-info: #0495de;
+
+  /* —— Semantic —— */
+  --color-success: #0bad9a;
+  --color-success-soft: #d5f3ee;
+  --color-success-strong: #037a6d;
+  --color-warning: #f7ae51;
+  --color-warning-soft: #feefdb;
+  --color-warning-strong: #c97418;
+  --color-error: #c44a2a;
+  --color-error-soft: #fce8e3;
+  --color-error-strong: #8f2f18;
+
+  /* —— Surfaces (light) —— */
+  --color-background: #f9f9f9;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #fefdfe;
+  --color-border: #e2e4e9;
+  --color-border-strong: #d4d4d4;
+  --color-text: #0c0a07;
+  --color-text-muted: #5c7190;
+  --color-text-inverse: #fefdfe;
+
+  /* —— PWA chrome —— */
+  --color-theme: #021433;
+}
+
+.dark {
+  --color-primary: #0bad9a;
+  --color-secondary: #2fb8a7;
+  --color-accent: #f8b85c;
+  --color-info: #1a9fe0;
+
+  --color-background: #021433;
+  --color-surface: #0a182c;
+  --color-surface-elevated: #12243c;
+  --color-border: #1e3250;
+  --color-border-strong: #334866;
+  --color-text: #f5f7fa;
+  --color-text-muted: #9aabc0;
+  --color-text-inverse: #021433;
+
+  --color-success-soft: #042f2b;
+  --color-warning-soft: #4a2a0c;
+  --color-error-soft: #3a1510;
+
+  --color-theme: #021433;
+}
