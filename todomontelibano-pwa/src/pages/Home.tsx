@@ -19,6 +19,7 @@ import JsonLd from "../components/SEO/JsonLd";
 import { buildHomeSchema } from "../components/SEO/schemas/seoSchemas";
 import { ROUTES } from "../config/seo";
 import { useActiveUsersCount } from "../hooks/useActiveUsersCount";
+import PwaInstallButton from "../components/PWA/PwaInstallButton";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
@@ -140,6 +141,7 @@ const Home: React.FC = () => {
                 <Briefcase className="mr-2 w-5 h-5" />
                 Ver empleos
               </Link>
+              <PwaInstallButton variant="hero" />
             </div>
 
             <div className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-4">
@@ -342,6 +344,7 @@ const Home: React.FC = () => {
                 <Briefcase className="mr-2 w-4 h-4" />
                 Ver empleos
               </Link>
+              <PwaInstallButton variant="cta" />
             </div>
           </div>
         </div>

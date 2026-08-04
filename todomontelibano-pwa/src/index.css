@@ -1,138 +1,172 @@
 @import "tailwindcss";
+@import "./styles/brand-tokens.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary-50: #f5f3ff;
-  --color-primary-100: #ede9fe;
-  --color-primary-200: #ddd6fe;
-  --color-primary-300: #c4b5fd;
-  --color-primary-400: #a78bfa;
-  --color-primary-500: #8b5cf6;
-  --color-primary-600: #7c3aed;
-  --color-primary-700: #6d28d9;
-  --color-primary-800: #5b21b6;
-  --color-primary-900: #4c1d95;
-  --color-primary-950: #2e1065;
+  /* Primary — Navy #021433 */
+  --color-primary-50: #f5f7fa;
+  --color-primary-100: #e6ebf2;
+  --color-primary-200: #c7d0de;
+  --color-primary-300: #9aabc0;
+  --color-primary-400: #5c7190;
+  --color-primary-500: #334866;
+  --color-primary-600: #1e3250;
+  --color-primary-700: #12243c;
+  --color-primary-800: #0a182c;
+  --color-primary-900: #001332;
+  --color-primary-950: #021433;
+
+  /* Secondary — Teal #0BAD9A */
+  --color-secondary-50: #f0faf8;
+  --color-secondary-100: #d5f3ee;
+  --color-secondary-200: #a8e5db;
+  --color-secondary-300: #6dd1c2;
+  --color-secondary-400: #2fb8a7;
+  --color-secondary-500: #0bad9a;
+  --color-secondary-600: #049a89;
+  --color-secondary-700: #037a6d;
+  --color-secondary-800: #055c53;
+  --color-secondary-900: #064a43;
+  --color-secondary-950: #042f2b;
+
+  /* Accent — Amber #F7AE51 */
+  --color-accent-50: #fff9f0;
+  --color-accent-100: #feefdb;
+  --color-accent-200: #fcd9a8;
+  --color-accent-300: #fac574;
+  --color-accent-400: #f8b85c;
+  --color-accent-500: #f7ae51;
+  --color-accent-600: #e8942a;
+  --color-accent-700: #c97418;
+  --color-accent-800: #a05a14;
+  --color-accent-900: #744212;
+  --color-accent-950: #4a2a0c;
+
+  /* Info — Sky #0495DE */
+  --color-info-50: #f0f8fc;
+  --color-info-100: #d6ecf8;
+  --color-info-200: #a8d7f0;
+  --color-info-300: #5cb8e8;
+  --color-info-400: #1a9fe0;
+  --color-info-500: #0495de;
+  --color-info-600: #0378b3;
+  --color-info-700: #025d8c;
+  --color-info-800: #024566;
+  --color-info-900: #032f45;
+  --color-info-950: #021c29;
 }
 
 @layer base {
-  :root {
-    --color-primary: #7c3aed;
-    --color-background: #fafafa;
-    --color-surface: #ffffff;
-    --color-text: #0f172a;
-    --color-border: rgba(226, 232, 240, 0.8);
-  }
-
-  .dark {
-    --color-primary: #a78bfa;
-    --color-background: #030712;
-    --color-surface: #111827;
-    --color-text: #f9fafb;
-    --color-border: rgba(31, 41, 55, 0.8);
-  }
-
   html {
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased transition-colors duration-300;
-    @apply dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-[var(--color-background)] text-[var(--color-text)] antialiased transition-colors duration-300;
   }
 }
 
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center px-6 py-3 font-bold text-white rounded-3xl
-           bg-gradient-to-r from-violet-600 to-indigo-600
-           shadow-lg shadow-violet-500/25
+           bg-secondary-500
+           shadow-lg shadow-secondary-500/25
            transition-all duration-300 ease-out
-           hover:from-violet-500 hover:to-indigo-500
-           hover:shadow-2xl hover:shadow-violet-500/30 hover:scale-[1.02]
+           hover:bg-secondary-400
+           hover:shadow-2xl hover:shadow-secondary-500/30 hover:scale-[1.02]
            active:scale-[0.98]
-           focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2
-           dark:focus:ring-offset-gray-950;
+           focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2
+           dark:focus:ring-offset-primary-950;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center px-6 py-3 font-bold rounded-3xl
+           bg-accent-500 text-primary-950
+           shadow-lg shadow-accent-500/30
+           transition-all duration-300 ease-out
+           hover:bg-accent-400
+           hover:shadow-2xl hover:scale-[1.02]
+           active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center px-6 py-3 font-bold rounded-3xl
-           bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl
-           text-gray-700 dark:text-gray-200
-           border border-gray-200/80 dark:border-gray-700/80
+           bg-white/80 dark:bg-primary-800/80 backdrop-blur-xl
+           text-primary-700 dark:text-primary-100
+           border border-[var(--color-border)]
            shadow-sm transition-all duration-300 ease-out
-           hover:bg-white dark:hover:bg-gray-800
+           hover:bg-white dark:hover:bg-primary-700
            hover:shadow-2xl hover:scale-[1.02]
            active:scale-[0.98]
-           focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2
-           dark:focus:ring-offset-gray-950;
+           focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2
+           dark:focus:ring-offset-primary-950;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center px-6 py-3 font-bold rounded-3xl
-           text-violet-600 dark:text-violet-400
-           border-2 border-violet-200/60 dark:border-violet-500/30
+           text-secondary-600 dark:text-secondary-400
+           border-2 border-secondary-200/60 dark:border-secondary-500/30
            bg-white/10 backdrop-blur-sm
            transition-all duration-300 ease-out
-           hover:bg-violet-50 dark:hover:bg-violet-950/40
+           hover:bg-secondary-50 dark:hover:bg-secondary-950/40
            hover:shadow-2xl hover:scale-[1.02]
            active:scale-[0.98];
   }
 
   .card {
-    @apply bg-white dark:bg-gray-900/80 rounded-3xl shadow-sm
-           border border-gray-200/80 dark:border-gray-800/80
-           text-gray-900 dark:text-gray-100
+    @apply bg-[var(--color-surface)] rounded-3xl shadow-sm
+           border border-[var(--color-border)]
+           text-[var(--color-text)]
            p-6 md:p-8
            transition-all duration-300 ease-out
            hover:shadow-2xl hover:scale-[1.02];
   }
 
   .card-static {
-    @apply bg-white dark:bg-gray-900/80 rounded-3xl shadow-sm
-           border border-gray-200/80 dark:border-gray-800/80
-           text-gray-900 dark:text-gray-100
+    @apply bg-[var(--color-surface)] rounded-3xl shadow-sm
+           border border-[var(--color-border)]
+           text-[var(--color-text)]
            p-6 md:p-8;
   }
 
   .input-field {
     @apply w-full px-5 py-3.5 rounded-3xl
-           bg-white dark:bg-gray-900/60
-           border border-gray-200/80 dark:border-gray-700/80
-           text-gray-900 dark:text-gray-100
-           placeholder:text-gray-400 dark:placeholder:text-gray-500
+           bg-[var(--color-surface)]
+           border border-[var(--color-border)]
+           text-[var(--color-text)]
+           placeholder:text-[var(--color-text-muted)]
            transition-all duration-300
-           focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500
-           dark:focus:ring-violet-400/30;
+           focus:outline-none focus:ring-2 focus:ring-secondary-500/50 focus:border-secondary-500;
   }
 
   .glass {
-    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl
-           border border-white/20 dark:border-gray-700/50
+    @apply bg-white/70 dark:bg-primary-900/70 backdrop-blur-xl
+           border border-white/20 dark:border-primary-700/50
            shadow-xl;
   }
 
   .glass-card {
-    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl
-           border border-white/20 dark:border-gray-700/50
+    @apply bg-white/70 dark:bg-primary-900/70 backdrop-blur-xl
+           border border-white/20 dark:border-primary-700/50
            shadow-xl rounded-3xl p-6 md:p-8
            transition-all duration-300 ease-out
            hover:shadow-2xl hover:scale-[1.02];
   }
 
   .search-bar {
-    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl
-           border border-white/20 dark:border-gray-700/50
+    @apply bg-white/70 dark:bg-primary-900/70 backdrop-blur-xl
+           border border-white/20 dark:border-primary-700/50
            shadow-xl rounded-3xl p-4 md:p-5
            transition-all duration-300
            hover:shadow-2xl;
   }
 
   .hero-gradient {
-    @apply bg-gradient-to-br from-violet-900 via-indigo-800 to-violet-700
-           dark:from-violet-950 dark:via-indigo-950 dark:to-violet-900;
+    @apply bg-gradient-to-br from-primary-950 via-primary-800 to-secondary-700
+           dark:from-primary-950 dark:via-primary-900 dark:to-primary-800;
   }
 
   .page-container {
@@ -144,7 +178,7 @@
   }
 
   .text-gradient {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400;
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-info-500;
   }
 
   .hover-lift {
@@ -153,99 +187,100 @@
 
   .nav-link {
     @apply text-sm font-bold transition-colors duration-200
-           text-gray-600 dark:text-gray-300
-           hover:text-violet-600 dark:hover:text-violet-400
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 rounded-lg px-1;
+           text-[var(--color-text-muted)]
+           hover:text-secondary-600 dark:hover:text-secondary-400
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2 rounded-lg px-1;
   }
 
   .nav-link-active {
-    @apply text-violet-600 dark:text-violet-400;
+    @apply text-secondary-600 dark:text-secondary-400;
   }
 
   .skip-link {
     @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100]
-           focus:px-4 focus:py-2 focus:rounded-xl focus:bg-violet-600 focus:text-white
-           focus:font-bold focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-600;
+           focus:px-4 focus:py-2 focus:rounded-xl focus:bg-secondary-500 focus:text-white
+           focus:font-bold focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-secondary-500;
   }
 
   .badge {
     @apply inline-flex items-center px-3 py-1 text-xs font-bold rounded-full
-           bg-violet-50 dark:bg-violet-950/50
-           text-violet-700 dark:text-violet-300
-           border border-violet-200/60 dark:border-violet-800/60;
+           bg-secondary-50 dark:bg-secondary-950/50
+           text-secondary-700 dark:text-secondary-300
+           border border-secondary-200/60 dark:border-secondary-800/60;
   }
 
   .pwa-header {
     @apply sticky top-0 z-50
-           bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl
-           border-b border-gray-200/60 dark:border-gray-800/60
+           bg-white/80 dark:bg-primary-950/80 backdrop-blur-xl
+           border-b border-[var(--color-border)]
            shadow-sm;
   }
 
   /* Auth pages */
   .auth-page {
-    @apply min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col justify-center
+    @apply min-h-screen bg-[var(--color-background)] flex flex-col justify-center
            py-16 sm:px-6 lg:px-8 transition-colors duration-300 relative overflow-hidden;
   }
 
   .auth-card {
-    @apply bg-white dark:bg-gray-900/95 backdrop-blur-xl
-           border border-gray-200/80 dark:border-gray-700/80
+    @apply bg-[var(--color-surface)] backdrop-blur-xl
+           border border-[var(--color-border)]
            shadow-xl rounded-3xl px-6 py-10 sm:px-10;
   }
 
   .auth-label {
-    @apply block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2;
+    @apply block text-sm font-bold text-[var(--color-text)] mb-2;
   }
 
   .auth-hint {
-    @apply mt-1 text-xs text-gray-500 dark:text-gray-400;
+    @apply mt-1 text-xs text-[var(--color-text-muted)];
   }
 
   .auth-icon {
-    @apply text-gray-400 dark:text-gray-500;
+    @apply text-[var(--color-text-muted)];
   }
 
   .auth-icon-btn {
-    @apply text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors;
+    @apply text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors;
   }
 
   .auth-checkbox {
-    @apply h-4 w-4 rounded border-gray-300 dark:border-gray-600
-           dark:bg-gray-800 text-violet-600 focus:ring-violet-500 dark:focus:ring-violet-400;
+    @apply h-4 w-4 rounded border-[var(--color-border-strong)]
+           text-secondary-600 focus:ring-secondary-500;
   }
 
   .auth-checkbox-label {
-    @apply ml-2 text-sm font-medium text-gray-900 dark:text-gray-200;
+    @apply ml-2 text-sm font-medium text-[var(--color-text)];
   }
 
   .auth-error {
-    @apply mt-4 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-3xl
-           text-sm font-medium text-red-600 dark:text-red-400;
+    @apply mt-4 p-4 rounded-3xl text-sm font-medium
+           bg-[var(--color-error-soft)] border border-[var(--color-error)]/30
+           text-[var(--color-error)];
   }
 
   .auth-step-active {
-    @apply bg-gradient-to-r from-violet-600 to-indigo-600 text-white;
+    @apply bg-secondary-500 text-white;
   }
 
   .auth-step-inactive {
-    @apply bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400;
+    @apply bg-primary-100 dark:bg-primary-800 text-[var(--color-text-muted)];
   }
 
   .auth-step-line-active {
-    @apply bg-gradient-to-r from-violet-600 to-indigo-600;
+    @apply bg-secondary-500;
   }
 
   .auth-step-line-inactive {
-    @apply bg-gray-200 dark:bg-gray-700;
+    @apply bg-primary-200 dark:bg-primary-700;
   }
 
   .auth-type-card {
     @apply relative rounded-3xl border-2 p-4 focus:outline-none transition-colors
-           border-gray-200 dark:border-gray-700 hover:border-violet-400 dark:hover:border-violet-500;
+           border-[var(--color-border)] hover:border-secondary-400;
   }
 
   .auth-type-card-selected {
-    @apply border-violet-600 dark:border-violet-500 bg-violet-50 dark:bg-violet-950/40;
+    @apply border-secondary-600 bg-secondary-50 dark:bg-secondary-950/40;
   }
 }

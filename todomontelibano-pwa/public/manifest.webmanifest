@@ -1,0 +1,65 @@
+{
+  "id": "/",
+  "name": "CAPISJ DIGITAL",
+  "short_name": "CAPISJ",
+  "description": "Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios CAPISJ DIGITAL.",
+  "lang": "es",
+  "dir": "ltr",
+  "scope": "/",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#021433",
+  "background_color": "#F9F9F9",
+  "categories": ["business", "productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Empleos",
+      "short_name": "Empleos",
+      "description": "Bolsa de trabajo y vacantes",
+      "url": "/empleos",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Deportes",
+      "short_name": "Deportes",
+      "description": "Torneos y ligas locales",
+      "url": "/deportes",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Bienes Raíces",
+      "short_name": "Inmuebles",
+      "description": "Propiedades en venta y alquiler",
+      "url": "/bienes-raices",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Eventos",
+      "short_name": "Eventos",
+      "description": "Eventos publicitarios y agenda local",
+      "url": "/eventos",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

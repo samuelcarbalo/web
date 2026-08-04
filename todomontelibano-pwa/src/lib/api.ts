@@ -1,8 +1,7 @@
-import axios from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { TENANT_CONFIG } from '../config/tenant';
 import { clearSession, getAccessToken } from './session';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+import { getApiBaseUrl, getApiOrigin, subscribeApiBaseUrl } from '../api/config';
 
 const PUBLIC_ENDPOINTS = [
   '/sports/matches/',
@@ -21,14 +20,22 @@ const PUBLIC_ENDPOINTS = [
   '/sports/player-suspensions/',
 ];
 
+/** Axios instance — `baseURL` follows `src/api/config.ts` (env + optional DEV switch). */
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+subscribeApiBaseUrl((baseUrl) => {
+  api.defaults.baseURL = baseUrl;
+});
+
 api.interceptors.request.use((config) => {
+  // Keep in sync if LocalStorage switch changed without reload.
+  config.baseURL = getApiBaseUrl();
+
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -58,7 +65,7 @@ async function refreshAccessToken(): Promise<string> {
   }
 
   refreshPromise = axios
-    .post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken })
+    .post(`${getApiBaseUrl()}/auth/refresh/`, { refresh: refreshToken })
     .then((response) => {
       const { access } = response.data;
       localStorage.setItem('access_token', access);
@@ -71,10 +78,12 @@ async function refreshAccessToken(): Promise<string> {
   return refreshPromise;
 }
 
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetriableConfig | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -86,7 +95,6 @@ api.interceptors.response.use(
       } catch {
         clearSession();
 
-        // Solo redirigir en rutas protegidas; en públicas basta con limpiar sesión.
         const isAuthRoute =
           window.location.pathname === '/login' ||
           window.location.pathname === '/register';
@@ -109,9 +117,6 @@ api.interceptors.response.use(
 export const getMediaUrl = (path?: string | null): string | undefined => {
   if (!path) return undefined;
   if (path.startsWith('http')) return path;
-  const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(
-    '/api/v1',
-    ''
-  );
+  const base = getApiOrigin();
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 };

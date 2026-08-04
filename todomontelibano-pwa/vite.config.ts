@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'auto',
         includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
           id: '/',
@@ -21,8 +22,8 @@ export default defineConfig(({ mode }) => {
           short_name: 'CAPISJ',
           description:
             'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios CAPISJ DIGITAL.',
-          theme_color: '#7c3aed',
-          background_color: '#fafafa',
+          theme_color: '#021433',
+          background_color: '#F9F9F9',
           lang: 'es',
           dir: 'ltr',
           scope: '/',
@@ -85,6 +86,9 @@ export default defineConfig(({ mode }) => {
               },
             },
           ],
+        },
+        devOptions: {
+          enabled: false,
         },
       }),
       Sitemap({
