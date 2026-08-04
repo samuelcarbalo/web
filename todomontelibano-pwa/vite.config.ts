@@ -6,7 +6,7 @@ import Sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const siteUrl = env.VITE_SITE_URL || 'https://missigdigital.site';
+  const siteUrl = env.VITE_SITE_URL || 'https://capisjdigital.site';
 
   return {
     plugins: [
@@ -17,10 +17,10 @@ export default defineConfig(({ mode }) => {
         includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
           id: '/',
-          name: 'MissigDigital',
-          short_name: 'MissigDigital',
+          name: 'CAPISJ DIGITAL',
+          short_name: 'CAPISJ',
           description:
-            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Tu plataforma multi-servicios.',
+            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios CAPISJ DIGITAL.',
           theme_color: '#7c3aed',
           background_color: '#fafafa',
           lang: 'es',
@@ -68,6 +68,21 @@ export default defineConfig(({ mode }) => {
               description: 'Eventos publicitarios y agenda local',
               url: '/eventos',
               icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+            },
+          ],
+        },
+        workbox: {
+          navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.mode === 'navigate',
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'html-pages',
+                networkTimeoutSeconds: 5,
+                expiration: { maxEntries: 32, maxAgeSeconds: 86400 },
+              },
             },
           ],
         },

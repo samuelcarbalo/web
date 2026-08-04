@@ -1,6 +1,8 @@
+import { BRAND_DISPLAY_NAME } from './brand';
+
 /** URL base del sitio (producción). Configurar en .env: VITE_SITE_URL */
-export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://cordobatech.com';
-export const SITE_NAME = 'NissigDigital';
+export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://capisjdigital.site';
+export const SITE_NAME = BRAND_DISPLAY_NAME;
 export const SITE_LOCALE = 'es_CO';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon-512x512.png`;
 
@@ -45,69 +47,71 @@ export interface SeoMeta {
   noindex?: boolean;
 }
 
+const brand = BRAND_DISPLAY_NAME;
+
 export const SEO_PAGES: Record<string, SeoMeta> = {
   '/': {
-    title: 'NissigDigital | Empleos, Deportes, Bienes Raíces y Eventos en Córdoba',
+    title: `${brand} | Empleos, Deportes, Bienes Raíces y Eventos en Córdoba`,
     description:
-      'Plataforma integral de NissigDigital: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios. Publica ferias, conciertos y activaciones de marca con visibilidad local.',
+      `Plataforma integral ${brand}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba. Publica ferias, conciertos y activaciones de marca con visibilidad local.`,
     path: '/',
     ogType: 'website',
   },
   [ROUTES.empleos]: {
-    title: 'Bolsa de Empleo | Vacantes y Trabajo | NissigDigital',
+    title: `Bolsa de Empleo | Vacantes y Trabajo | ${brand}`,
     description:
-      'Explora ofertas laborales en NissigDigital. Postula a vacantes de empresas locales o publica empleos si eres reclutador.',
+      `Explora ofertas laborales en ${brand}. Postula a vacantes de empresas locales o publica empleos si eres reclutador.`,
     path: ROUTES.empleos,
     ogType: 'website',
   },
   [ROUTES.deportes]: {
-    title: 'Deportes y Torneos Locales | NissigDigital',
+    title: `Deportes y Torneos Locales | ${brand}`,
     description:
-      'Consulta torneos de fútbol, softbol y más. Organiza ligas, equipos y calendarios deportivos en tu región.',
+      'Consulta torneos de fútbol, softbol y más. Organiza ligas, equipos y calendarios deportivos en Córdoba.',
     path: ROUTES.deportes,
     ogType: 'website',
   },
   [ROUTES.bienesRaices]: {
-    title: 'Bienes Raíces | Propiedades en Venta y Alquiler | NissigDigital',
+    title: `Bienes Raíces | Propiedades en Venta y Alquiler | ${brand}`,
     description:
-      'Encuentra casas, apartamentos y locales comerciales. Publica o contacta propietarios en el portal inmobiliario de NissigDigital.',
+      `Encuentra casas, apartamentos y locales comerciales. Publica o contacta propietarios en el portal inmobiliario de ${brand}.`,
     path: ROUTES.bienesRaices,
     ogType: 'website',
   },
   [ROUTES.eventos]: {
-    title: 'Eventos Publicitarios | Ferias, Conciertos y Agenda Local | NissigDigital',
+    title: `Eventos Publicitarios | Ferias, Conciertos y Agenda Local | ${brand}`,
     description:
-      'Descubre y publica eventos publicitarios: ferias, conciertos, activaciones de marca, networking y agenda cultural. Aumenta la visibilidad de tu evento con campañas en NissigDigital.',
+      `Descubre y publica eventos publicitarios en Córdoba: ferias, conciertos, activaciones de marca y networking con ${brand}.`,
     path: ROUTES.eventos,
     ogType: 'website',
   },
   [ROUTES.eventosPublicar]: {
-    title: 'Publicar Evento Publicitario | NissigDigital',
-    description: 'Publica tu feria, concierto o activación de marca en la agenda de NissigDigital.',
+    title: `Publicar Evento Publicitario | ${brand}`,
+    description: `Publica tu feria, concierto o activación de marca en la agenda de ${brand}.`,
     path: ROUTES.eventosPublicar,
     noindex: true,
   },
   [ROUTES.eventosMisEventos]: {
-    title: 'Mis Eventos | NissigDigital',
-    description: 'Gestiona tus eventos publicados en NissigDigital.',
+    title: `Mis Eventos | ${brand}`,
+    description: `Gestiona tus eventos publicados en ${brand}.`,
     path: ROUTES.eventosMisEventos,
     noindex: true,
   },
   [ROUTES.contact]: {
-    title: 'Contacto | NissigDigital',
-    description: 'Escríbenos con dudas, sugerencias o reportes sobre NissigDigital.',
+    title: `Contacto | ${brand}`,
+    description: `Escríbenos con dudas, sugerencias o reportes sobre ${brand}.`,
     path: ROUTES.contact,
     ogType: 'website',
   },
   [ROUTES.login]: {
-    title: 'Iniciar Sesión | NissigDigital',
-    description: 'Accede a tu cuenta de NissigDigital.',
+    title: `Iniciar Sesión | ${brand}`,
+    description: `Accede a tu cuenta de ${brand}.`,
     path: ROUTES.login,
     noindex: true,
   },
   [ROUTES.register]: {
-    title: 'Crear Cuenta | NissigDigital',
-    description: 'Regístrate gratis en NissigDigital.',
+    title: `Crear Cuenta | ${brand}`,
+    description: `Regístrate gratis en ${brand}.`,
     path: ROUTES.register,
     noindex: true,
   },
@@ -127,3 +131,7 @@ export const SITEMAP_ROUTES = [
 
 export const absoluteUrl = (path: string) =>
   `${SITE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+
+/** Quita sufijo " | MARCA" para pasar title base a SeoHead. */
+export const stripSiteSuffix = (title: string) =>
+  title.replace(new RegExp(` \\| ${SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '');

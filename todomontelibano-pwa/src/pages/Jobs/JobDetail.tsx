@@ -268,7 +268,7 @@ const JobDetail: React.FC = () => {
                     {job.company_name}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mt-1">
-                    {"Empresa certificada y registrada en NissigDigital"}
+                    {"Empresa certificada y registrada en CAPISJ DIGITAL"}
                   </p>
                 </div>
               </div>

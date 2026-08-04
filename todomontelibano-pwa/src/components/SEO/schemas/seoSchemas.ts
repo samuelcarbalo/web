@@ -58,8 +58,8 @@ export const buildHomeSchema = () => {
 export const buildJobsCollectionSchema = (jobCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Bolsa de Empleo NissigDigital',
-  description: 'Listado de vacantes y ofertas laborales disponibles en NissigDigital.',
+  name: 'Bolsa de Empleo CAPISJ DIGITAL',
+  description: 'Listado de vacantes y ofertas laborales disponibles en CAPISJ DIGITAL.',
   url: absoluteUrl(ROUTES.empleos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -126,9 +126,9 @@ export const buildJobPostingSchema = (job: {
 export const buildEventsCollectionSchema = (eventCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Eventos publicitarios NissigDigital',
+  name: 'Eventos publicitarios CAPISJ DIGITAL',
   description:
-    'Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en NissigDigital.',
+    'Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en CAPISJ DIGITAL.',
   url: absoluteUrl(ROUTES.eventos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },
