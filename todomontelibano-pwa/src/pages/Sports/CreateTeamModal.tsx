@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Users, Palette, UserCircle, Upload, Loader2, ImageIcon } from 'lucide-react';
 import { useCreateTeam } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
+import { uploadImageToImgBB as uploadToImgBB } from '../../lib/imgbb';
 
 interface CreateTeamModalProps {
   isOpen: boolean;
@@ -10,10 +11,6 @@ interface CreateTeamModalProps {
   tournamentName: string;
   onSuccess?: () => void;  // ← agrega esto
 }
-
-// ImgBB API Key - Obtén una gratis en https://api.imgbb.com/
-// O usa variables de entorno: import.meta.env.VITE_IMGBB_API_KEY
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY; // Reemplaza con tu API key
 
 const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ 
   isOpen, 
@@ -76,26 +73,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   };
 
   const uploadImageToImgBB = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('key', IMGBB_API_KEY);
-    console.log(IMGBB_API_KEY);
-    const response = await fetch('https://api.imgbb.com/1/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al subir imagen');
-    }
-
-    const data = await response.json();
-    
-    if (data.success) {
-      return data.data.url;
-    } else {
-      throw new Error(data.error?.message || 'Error al subir imagen');
-    }
+    return uploadToImgBB(file);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

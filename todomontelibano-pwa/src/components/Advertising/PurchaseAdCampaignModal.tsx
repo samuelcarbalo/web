@@ -10,6 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 import { FALLBACK_CLASSIFIED_AD_PLANS } from '../../config/credits';
 import InsufficientCreditsAlert from '../Credits/InsufficientCreditsAlert';
 import type { PurchaseCampaignData } from '../../lib/advertisingApi';
+import { uploadImageToImgBB } from '../../lib/imgbb';
 
 interface Props {
   isOpen: boolean;
@@ -21,8 +22,6 @@ interface Props {
   defaultLinkUrl?: string;
   onSuccess?: () => void;
 }
-
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 const PurchaseAdCampaignModal: React.FC<Props> = ({
   isOpen,
@@ -82,15 +81,7 @@ const PurchaseAdCampaignModal: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
-  const uploadImage = async (file: File) => {
-    const data = new FormData();
-    data.append('image', file);
-    data.append('key', IMGBB_API_KEY);
-    const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: data });
-    const json = await res.json();
-    if (json.success && json.data?.url) return json.data.url as string;
-    throw new Error('No se pudo subir la imagen');
-  };
+  const uploadImage = async (file: File) => uploadImageToImgBB(file);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
