@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useRegister } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/UI/ThemeToggle";
+import BrandLogo from "../../components/Brand/BrandLogo";
 
 const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,9 +54,7 @@ const Register: React.FC = () => {
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         <div className="flex justify-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">T</span>
-          </div>
+          <BrandLogo className="h-14 w-auto max-w-[220px]" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Crea tu cuenta
@@ -64,7 +63,7 @@ const Register: React.FC = () => {
           ¿Ya tienes cuenta?{" "}
           <Link
             to="/login"
-            className="font-medium text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:text-violet-400"
+            className="inline font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 decoration-secondary-500/50 hover:text-secondary-500 dark:hover:text-secondary-300 hover:decoration-secondary-400 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2 rounded-sm"
           >
             Inicia sesión
           </Link>
