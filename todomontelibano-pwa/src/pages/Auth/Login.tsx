@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useLogin } from '../../hooks/useAuth';
 import ThemeToggle from '../../components/UI/ThemeToggle';
+import BrandLogo from '../../components/Brand/BrandLogo';
 import { TENANT_CONFIG } from '../../config/tenant';
 
 const Login: React.FC = () => {
@@ -23,16 +24,17 @@ const Login: React.FC = () => {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative">
         <div className="flex justify-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <span className="text-white font-bold text-2xl">T</span>
-          </div>
+          <BrandLogo className="h-14 w-auto max-w-[220px]" />
         </div>
         <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           Bienvenido de vuelta
         </h2>
         <p className="mt-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors">
+          <Link
+            to="/register"
+            className="inline font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 decoration-secondary-500/50 hover:text-secondary-500 dark:hover:text-secondary-300 hover:decoration-secondary-400 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2 rounded-sm"
+          >
             Regístrate gratis
           </Link>
         </p>
