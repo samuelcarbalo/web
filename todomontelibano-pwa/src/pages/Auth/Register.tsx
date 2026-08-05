@@ -47,30 +47,37 @@ const Register: React.FC = () => {
 
   return (
     <div className="auth-page">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-      <div className="absolute top-6 right-6">
+      <div
+        className="pointer-events-none absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"
+        aria-hidden
+      />
+      <div className="absolute top-6 right-6 z-20">
         <ThemeToggle />
       </div>
-      <div className="sm:mx-auto sm:w-full sm:max-w-lg">
+
+      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-lg px-4">
         <div className="flex justify-center">
           <BrandLogo className="h-14 w-auto max-w-[220px]" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Crea tu cuenta
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-400">
           ¿Ya tienes cuenta?{" "}
           <Link
             to="/login"
-            className="inline font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 decoration-secondary-500/50 hover:text-secondary-500 dark:hover:text-secondary-300 hover:decoration-secondary-400 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2 rounded-sm"
+            className="relative z-10 inline-flex items-center font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 hover:text-secondary-500 dark:hover:text-secondary-300 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 rounded-sm px-0.5"
           >
             Inicia sesión
           </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg relative">
+      <div className="relative z-10 mt-8 sm:mx-auto sm:w-full sm:max-w-lg px-4">
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
