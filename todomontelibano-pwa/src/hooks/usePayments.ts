@@ -61,5 +61,7 @@ export const useRefreshCreditsAfterPayment = () => {
   return () => {
     queryClient.invalidateQueries({ queryKey: ['me'] });
     queryClient.invalidateQueries({ queryKey: ['payment-orders'] });
+    // El webhook crea Notification(payment_*); refrescar campana/historial
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
   };
 };

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, CreditCard, MessageSquare, Briefcase } from 'lucide-react';
 import {
   useNotifications,
   useNotificationUnreadCount,
@@ -23,6 +23,19 @@ const formatTime = (dateStr: string) => {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h`;
   return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+};
+
+const TypeIcon: React.FC<{ type: Notification['type'] }> = ({ type }) => {
+  if (type.startsWith('payment_')) {
+    return <CreditCard className="w-4 h-4 text-secondary-600 dark:text-secondary-400 shrink-0 mt-0.5" />;
+  }
+  if (type === 'chat_message') {
+    return <MessageSquare className="w-4 h-4 text-info-500 shrink-0 mt-0.5" />;
+  }
+  if (type === 'job_status_change') {
+    return <Briefcase className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />;
+  }
+  return <Bell className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />;
 };
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ enabled = true }) => {
@@ -97,8 +110,13 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ enabled = true })
                     !n.is_read ? 'bg-violet-50/50 dark:bg-violet-950/20' : ''
                   }`}
                 >
-                  <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">{n.message}</p>
-                  <p className="text-xs text-gray-400 mt-1">{formatTime(n.created_at)}</p>
+                  <div className="flex gap-2">
+                    <TypeIcon type={n.type} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">{n.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{formatTime(n.created_at)}</p>
+                    </div>
+                  </div>
                 </button>
               ))
             )}
