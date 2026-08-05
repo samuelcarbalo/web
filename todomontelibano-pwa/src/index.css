@@ -222,6 +222,10 @@
            py-16 sm:px-6 lg:px-8 transition-colors duration-300 relative overflow-hidden;
   }
 
+  .auth-page > [aria-hidden] {
+    pointer-events: none;
+  }
+
   .auth-card {
     @apply bg-[var(--color-surface)] backdrop-blur-xl
            border border-[var(--color-border)]

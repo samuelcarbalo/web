@@ -4,7 +4,21 @@ import { BRAND_DISPLAY_NAME } from './brand';
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://capisjdigital.site';
 export const SITE_NAME = BRAND_DISPLAY_NAME;
 export const SITE_LOCALE = 'es_CO';
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon-512x512.png`;
+
+/**
+ * Imagen OG/Twitter (ideal 1200×630, HTTPS, URL directa al archivo).
+ * Evitar enlaces tipo ibb.co/xxx (página HTML); usar i.ibb.co/.../archivo.jpg
+ */
+export const DEFAULT_OG_IMAGE =
+  import.meta.env.VITE_OG_IMAGE ||
+  'https://i.ibb.co/wZNxrY8t/CAPISJ-DIGITAL-logo-principal.jpg';
+export const DEFAULT_OG_IMAGE_WIDTH = 1200;
+export const DEFAULT_OG_IMAGE_HEIGHT = 630;
+export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — Empleos, deportes, bienes raíces y eventos en Córdoba`;
+
+export const DEFAULT_SEO_DESCRIPTION =
+  `Plataforma integral ${SITE_NAME}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia.`;
+
 
 /** Rutas canónicas SEO (español) */
 export const ROUTES = {
