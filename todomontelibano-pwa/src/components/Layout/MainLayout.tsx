@@ -15,6 +15,7 @@ import NotificationPanel from "../Notifications/NotificationPanel";
 import { useAuthStore } from "../../store/authStore";
 import { useLogout } from "../../hooks/useAuth";
 import { useUnreadCount } from "../../hooks/useChat";
+import { useNotificationSocket } from "../../hooks/useNotificationSocket";
 import UnreadBadge from "../Chat/UnreadBadge";
 import ThemeToggle from "../UI/ThemeToggle";
 import RouteSeo from "../SEO/RouteSeo";
@@ -34,6 +35,7 @@ const MainLayout: React.FC = () => {
   const logout = useLogout();
   const { data: unreadData } = useUnreadCount(sessionActive);
   const unreadCount = unreadData?.unread_count ?? 0;
+  useNotificationSocket(sessionActive);
 
   const services = [
     {

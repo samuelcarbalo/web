@@ -51,6 +51,27 @@ export const useCreatePreference = () =>
     mutationFn: (packageId: string) => paymentsApi.createPreference(packageId).then((r) => r.data),
   });
 
+export interface PaymentOrderRow {
+  id: string;
+  package_id: string;
+  credits_amount: number;
+  amount_cop: string | number;
+  status: string;
+  credits_applied: boolean;
+  created_at: string;
+}
+
+export const useMyPaymentOrders = (enabled = true) =>
+  useQuery({
+    queryKey: ['payment-orders'],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getMyOrders();
+      return (Array.isArray(data) ? data : []) as PaymentOrderRow[];
+    },
+    enabled,
+    staleTime: 15000,
+  });
+
 export const useReportPublication = () =>
   useMutation({
     mutationFn: moderationApi.reportPublication,

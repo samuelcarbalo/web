@@ -25,6 +25,25 @@ const formatTime = (dateStr: string) => {
   return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
 };
 
+const formatCop = (amount?: number | null) => {
+  if (amount == null || Number.isNaN(Number(amount))) return null;
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(Number(amount));
+};
+
+const titleFor = (n: Notification) => {
+  if (n.extra_data?.title) return n.extra_data.title;
+  if (n.type === 'payment_success') return '¡Pago aprobado!';
+  if (n.type === 'payment_failed') return 'Pago rechazado';
+  if (n.type === 'payment_pending') return 'Pago pendiente';
+  if (n.type === 'chat_message') return 'Mensaje';
+  if (n.type === 'job_status_change') return 'Postulación';
+  return 'Notificación';
+};
+
 const TypeIcon: React.FC<{ type: Notification['type'] }> = ({ type }) => {
   if (type.startsWith('payment_')) {
     return <CreditCard className="w-4 h-4 text-secondary-600 dark:text-secondary-400 shrink-0 mt-0.5" />;
@@ -62,7 +81,8 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ enabled = true })
   const handleClick = (n: Notification) => {
     if (!n.is_read) markRead.mutate(n.id);
     setOpen(false);
-    if (n.extra_data?.link) navigate(n.extra_data.link);
+    const link = n.extra_data?.link || (n.type.startsWith('payment_') ? '/creditos?tab=historial' : null);
+    if (link) navigate(link);
   };
 
   return (
@@ -101,24 +121,40 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ enabled = true })
                 Sin notificaciones
               </p>
             ) : (
-              items.map((n) => (
-                <button
-                  key={n.id}
-                  type="button"
-                  onClick={() => handleClick(n)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors ${
-                    !n.is_read ? 'bg-violet-50/50 dark:bg-violet-950/20' : ''
-                  }`}
-                >
-                  <div className="flex gap-2">
-                    <TypeIcon type={n.type} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">{n.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{formatTime(n.created_at)}</p>
+              items.map((n) => {
+                const amount = formatCop(n.extra_data?.amount);
+                const credits = n.extra_data?.credits_added ?? n.extra_data?.credits;
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => handleClick(n)}
+                    className={`w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors ${
+                      !n.is_read ? 'bg-violet-50/50 dark:bg-violet-950/20' : ''
+                    }`}
+                  >
+                    <div className="flex gap-2">
+                      <TypeIcon type={n.type} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {titleFor(n)}
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mt-0.5">
+                          {n.message}
+                        </p>
+                        {n.type.startsWith('payment_') && (credits != null || amount) && (
+                          <p className="text-xs text-secondary-700 dark:text-secondary-300 mt-1">
+                            {credits != null ? `+${credits} créditos` : null}
+                            {credits != null && amount ? ' · ' : null}
+                            {amount}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">{formatTime(n.created_at)}</p>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
