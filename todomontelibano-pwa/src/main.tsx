@@ -5,10 +5,11 @@ import './index.css'
 import { initTheme } from './hooks/useTheme'
 import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary'
-import { clearChunkReloadFlag } from './lib/lazyWithRetry'
+import { setupBlankScreenRecovery, setupPwaUpdates } from './lib/pwa'
 
 initTheme()
-clearChunkReloadFlag()
+setupPwaUpdates()
+setupBlankScreenRecovery()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

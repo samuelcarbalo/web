@@ -9,6 +9,7 @@ import { consumeAuthRedirect } from '../lib/authRedirect';
 
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
+  const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
   const tokens = useAuthStore((state) => state.tokens);
 
@@ -18,12 +19,13 @@ export const useMe = () => {
     queryKey: ['me'],
     enabled: sessionActive,
     queryFn: async () => {
-      const token = hasValidSessionHint();
-      if (!token) {
-        logout();
-        return null;
-      }
       try {
+        const token = hasValidSessionHint();
+        if (!token) {
+          logout();
+          return null;
+        }
+
         const [profileRes, userRes] = await Promise.all([
           api.get<Profile>('/profiles/me/'),
           api.get<any>('/auth/me/'),
@@ -64,8 +66,11 @@ export const useMe = () => {
           clearSession();
           return null;
         }
+        // 500 / CORS / red: no tumbar sesión persistida; solo liberar loading en finally
         console.error('Error en useMe:', error);
-        throw error;
+        return null;
+      } finally {
+        setLoading(false);
       }
     },
     retry: false,
