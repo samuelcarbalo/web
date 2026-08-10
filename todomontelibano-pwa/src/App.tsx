@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, lazy } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -10,50 +10,52 @@ import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Dashboard from './pages/Dashboard';
+import NotFoundPage from './pages/NotFoundPage';
+import { lazyWithRetry } from './lib/lazyWithRetry';
 
 // Pages (Carga Perezosa / Lazy Loading)
-const JobsList = lazy(() => import('./pages/Jobs/JobsList'));
-const JobDetail = lazy(() => import('./pages/Jobs/JobDetail'));
-const CreateJob = lazy(() => import('./pages/Jobs/CreateJob'));
-const EditJob = lazy(() => import('./pages/Jobs/EditJob'));
-const Profile = lazy(() => import('./pages/Profile'));
-const MyApplications = lazy(() => import('./pages/Applications/MyApplications'));
-const ReceivedApplications = lazy(() => import('./pages/Applications/ReceivedApplications'));
-const MyOffers = lazy(() => import('./pages/Jobs/MyOffers'));
-const TournamentsList = lazy(() => import('./pages/Sports/TournamentsList'));
-const TournamentDetail = lazy(() => import('./pages/Sports/TournamentDetail'));
-const CreateTournament = lazy(() => import('./pages/Sports/CreateTournament'));
-const EditTournament = lazy(() => import('./pages/Sports/EditTournament'));
-const TeamRosterPage = lazy(() => import('./pages/Sports/TeamRosterPage'));
-const TeamDetailPage = lazy(() => import('./pages/Sports/TeamDetailPage'));
-const PlayerProfilePage = lazy(() => import('./pages/Sports/PlayerProfilePage'));
-const TournamentSchedulePage = lazy(() => import('./pages/Sports/TournamentSchedulePage'));
-const MatchDetailPage = lazy(() => import('./pages/Sports/MatchDetailPage'));
-const TournamentStandingsPage = lazy(() => import('./pages/Sports/TournamentStandingsPage'));
-const TournamentStructurePage = lazy(() => import('./pages/Sports/TournamentStructurePage'));
-const PlayerStatsPage = lazy(() => import('./pages/Sports/PlayerStatsPage'));
-const TournamentPlayerStatsPage = lazy(() => import('./pages/Sports/TournamentPlayerStatsPage'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfService = lazy(() => import('./pages/TermsOfService'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const ContactMessagesPage = lazy(() => import('./pages/ContactMessagesPage'));
-const MessagesPage = lazy(() => import('./pages/Messages/MessagesPage'));
-const ListingsList = lazy(() => import('./pages/RealEstate/ListingsList'));
-const ListingDetail = lazy(() => import('./pages/RealEstate/ListingDetail'));
-const CreateListing = lazy(() => import('./pages/RealEstate/CreateListing'));
-const EditListing = lazy(() => import('./pages/RealEstate/EditListing'));
-const MyListings = lazy(() => import('./pages/RealEstate/MyListings'));
-const CreditPackagesPage = lazy(() => import('./pages/Credits/CreditPackagesPage'));
-const PaymentResultPage = lazy(() => import('./pages/Credits/PaymentResultPage'));
-const ShopList = lazy(() => import('./pages/Shop/ShopList'));
-const ProductDetail = lazy(() => import('./pages/Shop/ProductDetail'));
-const CartPage = lazy(() => import('./pages/Shop/CartPage'));
-const CheckoutPage = lazy(() => import('./pages/Shop/CheckoutPage'));
-const ShopPaymentResultPage = lazy(() => import('./pages/Shop/ShopPaymentResultPage'));
-const EventsList = lazy(() => import('./pages/Events/EventsList'));
-const EventDetail = lazy(() => import('./pages/Events/EventDetail'));
-const CreateEvent = lazy(() => import('./pages/Events/CreateEvent'));
-const MyEvents = lazy(() => import('./pages/Events/MyEvents'));
+const JobsList = lazyWithRetry(() => import('./pages/Jobs/JobsList'));
+const JobDetail = lazyWithRetry(() => import('./pages/Jobs/JobDetail'));
+const CreateJob = lazyWithRetry(() => import('./pages/Jobs/CreateJob'));
+const EditJob = lazyWithRetry(() => import('./pages/Jobs/EditJob'));
+const Profile = lazyWithRetry(() => import('./pages/Profile'));
+const MyApplications = lazyWithRetry(() => import('./pages/Applications/MyApplications'));
+const ReceivedApplications = lazyWithRetry(() => import('./pages/Applications/ReceivedApplications'));
+const MyOffers = lazyWithRetry(() => import('./pages/Jobs/MyOffers'));
+const TournamentsList = lazyWithRetry(() => import('./pages/Sports/TournamentsList'));
+const TournamentDetail = lazyWithRetry(() => import('./pages/Sports/TournamentDetail'));
+const CreateTournament = lazyWithRetry(() => import('./pages/Sports/CreateTournament'));
+const EditTournament = lazyWithRetry(() => import('./pages/Sports/EditTournament'));
+const TeamRosterPage = lazyWithRetry(() => import('./pages/Sports/TeamRosterPage'));
+const TeamDetailPage = lazyWithRetry(() => import('./pages/Sports/TeamDetailPage'));
+const PlayerProfilePage = lazyWithRetry(() => import('./pages/Sports/PlayerProfilePage'));
+const TournamentSchedulePage = lazyWithRetry(() => import('./pages/Sports/TournamentSchedulePage'));
+const MatchDetailPage = lazyWithRetry(() => import('./pages/Sports/MatchDetailPage'));
+const TournamentStandingsPage = lazyWithRetry(() => import('./pages/Sports/TournamentStandingsPage'));
+const TournamentStructurePage = lazyWithRetry(() => import('./pages/Sports/TournamentStructurePage'));
+const PlayerStatsPage = lazyWithRetry(() => import('./pages/Sports/PlayerStatsPage'));
+const TournamentPlayerStatsPage = lazyWithRetry(() => import('./pages/Sports/TournamentPlayerStatsPage'));
+const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'));
+const ContactPage = lazyWithRetry(() => import('./pages/ContactPage'));
+const ContactMessagesPage = lazyWithRetry(() => import('./pages/ContactMessagesPage'));
+const MessagesPage = lazyWithRetry(() => import('./pages/Messages/MessagesPage'));
+const ListingsList = lazyWithRetry(() => import('./pages/RealEstate/ListingsList'));
+const ListingDetail = lazyWithRetry(() => import('./pages/RealEstate/ListingDetail'));
+const CreateListing = lazyWithRetry(() => import('./pages/RealEstate/CreateListing'));
+const EditListing = lazyWithRetry(() => import('./pages/RealEstate/EditListing'));
+const MyListings = lazyWithRetry(() => import('./pages/RealEstate/MyListings'));
+const CreditPackagesPage = lazyWithRetry(() => import('./pages/Credits/CreditPackagesPage'));
+const PaymentResultPage = lazyWithRetry(() => import('./pages/Credits/PaymentResultPage'));
+const ShopList = lazyWithRetry(() => import('./pages/Shop/ShopList'));
+const ProductDetail = lazyWithRetry(() => import('./pages/Shop/ProductDetail'));
+const CartPage = lazyWithRetry(() => import('./pages/Shop/CartPage'));
+const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
+const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
+const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
+const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
+const CreateEvent = lazyWithRetry(() => import('./pages/Events/CreateEvent'));
+const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 
 // Hooks & Store
 import { useMe } from './hooks/useAuth';
@@ -75,33 +77,51 @@ const queryClient = new QueryClient({
   },
 });
 
-// Componente de carga simple
 const PageLoader: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600" />
   </div>
 );
 
-// AuthChecker NO bloqueante - solo actualiza el store en background
+/** Hidrata sesión sin bloquear rutas públicas; siempre libera isLoading. */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
+  const meQuery = useMe();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!hasValidSessionHint()) {
       logout();
-    } else {
-      setLoading(true);
+      setLoading(false);
     }
   }, [logout, setLoading]);
 
-  useMe();
+  useEffect(() => {
+    if (!hasValidSessionHint()) {
+      setLoading(false);
+      return;
+    }
+    // Query terminó (éxito o error) o quedó idle sin fetch pendiente
+    if (meQuery.fetchStatus === 'idle' && (meQuery.isSuccess || meQuery.isError || meQuery.isFetched)) {
+      setLoading(false);
+    }
+  }, [
+    meQuery.fetchStatus,
+    meQuery.isSuccess,
+    meQuery.isError,
+    meQuery.isFetched,
+    setLoading,
+  ]);
+
+  // Red de seguridad: nunca dejar ProtectedRoute colgado > 10s
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [setLoading]);
 
   return <>{children}</>;
 };
 
-// Wrapper para rutas protegidas (estas sí esperan auth)
 const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles?: string[];
@@ -114,8 +134,7 @@ const ProtectedRoute: React.FC<{
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
   const sessionActive = isAuthenticated && hasValidSessionHint();
-  
-  // Mientras verifica auth, muestra loader
+
   if (isLoading) {
     return <PageLoader />;
   }
@@ -250,73 +269,71 @@ const App: React.FC = () => {
                 <Route path="tienda/checkout" element={<CheckoutPage />} />
                 <Route path="tienda/resultado" element={<ShopPaymentResultPage />} />
                 <Route path="tienda/:slug" element={<ProductDetail />} />
-                
+
                 {/* Rutas protegidas adicionales */}
-                <Route 
-                  path="dashboard" 
+                <Route
+                  path="dashboard"
                   element={
                     <ProtectedRoute>
                       <Dashboard />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                <Route 
-                  path="dashboard/contacto" 
+                <Route
+                  path="dashboard/contacto"
                   element={
                     <ProtectedRoute requireSuperuser>
                       <ContactMessagesPage />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                <Route 
-                  path="profile" 
+                <Route
+                  path="profile"
                   element={
                     <ProtectedRoute>
                       <Profile />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                {/* ✅ NUEVA RUTA - Mis Aplicaciones (protegida) */}
-                  <Route 
-                    path="applications" 
-                    element={
-                      <ProtectedRoute>
-                        <MyApplications />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="applications/received" 
-                    element={
-                      <ProtectedRoute allowedRoles={['manager', 'admin']}>
-                        <ReceivedApplications />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="messages" 
-                    element={
-                      <ProtectedRoute>
-                        <MessagesPage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="messages/:conversationId" 
-                    element={
-                      <ProtectedRoute>
-                        <MessagesPage />
-                      </ProtectedRoute>
-                    } 
-                  />
+                <Route
+                  path="applications"
+                  element={
+                    <ProtectedRoute>
+                      <MyApplications />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="applications/received"
+                  element={
+                    <ProtectedRoute allowedRoles={['manager', 'admin']}>
+                      <ReceivedApplications />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="messages"
+                  element={
+                    <ProtectedRoute>
+                      <MessagesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="messages/:conversationId"
+                  element={
+                    <ProtectedRoute>
+                      <MessagesPage />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
 
               {/* Auth routes - públicas */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              
-              {/* 404 */}
-              <Route path="*" element={<div className="page-container page-section text-center"><div className="card-static max-w-lg mx-auto"><h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">404</h2><p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Página no encontrada 🔍</p></div></div>} />
+
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </AuthInitializer>
