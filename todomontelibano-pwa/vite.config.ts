@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: 'auto',
+        // Registro manual en src/lib/pwa.ts (controllerchange + update on focus)
+        injectRegister: false,
         includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
           id: '/',
@@ -75,18 +76,22 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          // Crítico: el SW nuevo debe tomar control al instante (evita blank en F5 post-deploy)
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
           importScripts: ['/notification-sw.js'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
-          // Evitar servir index.html obsoleto tras deploy (chunks con hash viejo → blank)
+          // Navegación siempre red primero; no cachear HTML largo (rompe chunks hasheados)
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === 'navigate',
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'html-pages',
-                networkTimeoutSeconds: 3,
-                expiration: { maxEntries: 16, maxAgeSeconds: 3600 },
+                networkTimeoutSeconds: 2,
+                expiration: { maxEntries: 8, maxAgeSeconds: 60 },
               },
             },
           ],

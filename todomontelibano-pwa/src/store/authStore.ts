@@ -30,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       tokens: null,
       isAuthenticated: false,
+      // true solo hasta hidratar / validar; AuthInitializer SIEMPRE lo baja
       isLoading: true,
 
       setAuth: (user, tokens) =>
@@ -67,14 +68,15 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          useAuthStore.setState({ isLoading: false });
+          useAuthStore.setState({ isLoading: false, isAuthenticated: false, user: null, tokens: null });
           return;
         }
         syncPersistedAuth(state);
-        // Si no hay token, ya quedó isLoading=false en sync; si hay token, useMe lo cerrará
-        if (!localStorage.getItem('access_token')) {
+        const hasToken = !!localStorage.getItem('access_token');
+        if (!hasToken) {
           useAuthStore.setState({ isLoading: false });
         }
+        // Con token: useMe / AuthInitializer liberan isLoading (también con finally + timeout)
       },
     }
   )

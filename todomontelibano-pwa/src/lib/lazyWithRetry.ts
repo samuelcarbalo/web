@@ -1,35 +1,57 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
+const CHUNK_RELOAD_KEY = 'chunk_reload_v1';
+
 /**
- * React.lazy con reintento ante chunks 404 tras un nuevo deploy (hash distinto).
- * Si falla de nuevo, recarga la página una sola vez.
+ * React.lazy con un único reintento de reload ante chunks 404 (post-deploy).
+ * NO limpiar la marca al boot de main.tsx: eso provocaba bucle infinito de F5
+ * (clear → fail → reload → clear → …) y pantalla blanca en la misma pestaña.
  */
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ): LazyExoticComponent<T> {
   return lazy(async () => {
-    const key = 'chunk_reload_v1';
     try {
-      return await factory();
+      const mod = await factory();
+      try {
+        sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      } catch {
+        /* ignore */
+      }
+      return mod;
     } catch (error) {
-      const alreadyReloaded = sessionStorage.getItem(key) === '1';
+      let alreadyReloaded = false;
+      try {
+        alreadyReloaded = sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1';
+      } catch {
+        alreadyReloaded = false;
+      }
+
       if (!alreadyReloaded) {
-        sessionStorage.setItem(key, '1');
+        try {
+          sessionStorage.setItem(CHUNK_RELOAD_KEY, '1');
+        } catch {
+          /* ignore */
+        }
+        // Intentar soltar caches del SW antes del reload
+        try {
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+        } catch {
+          /* ignore */
+        }
         window.location.reload();
-        // Nunca resuelve: la recarga corta el ciclo
         return new Promise(() => undefined) as Promise<{ default: T }>;
       }
-      sessionStorage.removeItem(key);
+
+      try {
+        sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      } catch {
+        /* ignore */
+      }
       throw error;
     }
   });
-}
-
-/** Limpia la marca tras una carga exitosa de la app. */
-export function clearChunkReloadFlag() {
-  try {
-    sessionStorage.removeItem('chunk_reload_v1');
-  } catch {
-    /* ignore */
-  }
 }

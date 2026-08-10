@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -83,17 +83,28 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-/** Hidrata sesión sin bloquear rutas públicas; siempre libera isLoading. */
+/** Hidrata sesión; libera isLoading siempre (finally + timeout). No bloquea rutas públicas. */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
   const meQuery = useMe();
 
   useEffect(() => {
-    if (!hasValidSessionHint()) {
-      logout();
-      setLoading(false);
+    const finishHydration = () => {
+      setHydrated(true);
+      if (!hasValidSessionHint()) {
+        logout();
+        setLoading(false);
+      }
+    };
+
+    if (useAuthStore.persist.hasHydrated()) {
+      finishHydration();
+      return;
     }
+
+    return useAuthStore.persist.onFinishHydration(finishHydration);
   }, [logout, setLoading]);
 
   useEffect(() => {
@@ -101,23 +112,21 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
       setLoading(false);
       return;
     }
-    // Query terminó (éxito o error) o quedó idle sin fetch pendiente
-    if (meQuery.fetchStatus === 'idle' && (meQuery.isSuccess || meQuery.isError || meQuery.isFetched)) {
+    // Cuando deja de fetchear (éxito, error o cancelado), soltar loader
+    if (!meQuery.isFetching) {
       setLoading(false);
     }
-  }, [
-    meQuery.fetchStatus,
-    meQuery.isSuccess,
-    meQuery.isError,
-    meQuery.isFetched,
-    setLoading,
-  ]);
+  }, [meQuery.isFetching, meQuery.fetchStatus, setLoading]);
 
-  // Red de seguridad: nunca dejar ProtectedRoute colgado > 10s
+  // Seguridad: nunca bloquear ProtectedRoute más de 3s en F5
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 10_000);
+    const timer = window.setTimeout(() => setLoading(false), 3_000);
     return () => window.clearTimeout(timer);
   }, [setLoading]);
+
+  if (!hydrated) {
+    return <PageLoader />;
+  }
 
   return <>{children}</>;
 };
@@ -133,12 +142,15 @@ const ProtectedRoute: React.FC<{
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
-  const sessionActive = isAuthenticated && hasValidSessionHint();
+  const hasToken = hasValidSessionHint();
+  const sessionActive = isAuthenticated && hasToken;
 
-  if (isLoading) {
+  // Spinner visible (nunca null) mientras valida sesión tras F5
+  if (isLoading && hasToken) {
     return <PageLoader />;
   }
 
+  // Sin token o sesión inválida → login (no quedarse en blanco)
   if (!sessionActive) {
     const next = `${location.pathname}${location.search}`;
     const to =
