@@ -5,6 +5,7 @@ import { clearSession, hasValidSessionHint } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
+import { consumeAuthRedirect } from '../lib/authRedirect';
 
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -160,7 +161,7 @@ export const useLogin = () => {
       
       setAuth(user, { access: data.access, refresh: data.refresh });
       queryClient.setQueryData(['me'], profile);
-      navigate('/dashboard');
+      navigate(consumeAuthRedirect('/dashboard'), { replace: true });
     },
   });
 };
@@ -212,7 +213,7 @@ export const useRegister = () => {
       
       setAuth(user, { access: accessToken, refresh: refreshToken });
       queryClient.setQueryData(['me'], profile);
-      navigate('/dashboard');
+      navigate(consumeAuthRedirect('/dashboard'), { replace: true });
     },
   });
 };

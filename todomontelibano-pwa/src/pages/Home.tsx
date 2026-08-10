@@ -13,6 +13,7 @@ import {
   Zap,
   Shield,
   Bell,
+  Coins,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import JsonLd from "../components/SEO/JsonLd";
@@ -299,6 +300,65 @@ const Home: React.FC = () => {
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-violet-400/30 rounded-full blur-3xl" />
               <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-indigo-400/20 rounded-full blur-3xl" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Planes / créditos */}
+      <div className="page-section bg-gray-50 dark:bg-gray-950">
+        <div className="page-container">
+          <div className="max-w-3xl mx-auto text-center mb-10">
+            <span className="badge text-xs uppercase tracking-widest mb-4">Créditos</span>
+            <h2 className="mt-4 text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              Planes de pago flexibles
+            </h2>
+            <p className="mt-6 text-lg font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
+              Los créditos CAPISJ DIGITAL te permiten publicar empleos, inmuebles, eventos y torneos.
+              Elige el paquete que se ajuste a tu necesidad — desde pruebas rápidas hasta patrocinios —
+              y paga de forma segura con Mercado Pago.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-10">
+            {[
+              {
+                title: 'Publica sin fricción',
+                text: 'Usa créditos para empleos, propiedades y torneos cuando lo necesites.',
+              },
+              {
+                title: 'Ahorra con paquetes',
+                text: 'Planes desde lo básico hasta Diamante, con descuentos por volumen.',
+              },
+              {
+                title: 'Pago seguro',
+                text: 'Checkout con Mercado Pago y acreditación automática en tu cuenta.',
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="card-static text-center hover:border-violet-300 dark:hover:border-violet-700 transition-colors"
+              >
+                <div className="w-12 h-12 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                  <Coins className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{item.text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link to={ROUTES.creditos} className="btn-primary px-10 py-4 text-lg">
+              Ver planes
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+            <Link
+              to={ROUTES.creditos}
+              className="inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-violet-700 dark:text-violet-300 border-2 border-violet-300 dark:border-violet-700 rounded-3xl hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-all"
+            >
+              <Coins className="mr-2 w-5 h-5" />
+              Obtener créditos
+            </Link>
           </div>
         </div>
       </div>

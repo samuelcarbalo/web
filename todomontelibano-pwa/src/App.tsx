@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Layout
@@ -45,6 +45,11 @@ const EditListing = lazy(() => import('./pages/RealEstate/EditListing'));
 const MyListings = lazy(() => import('./pages/RealEstate/MyListings'));
 const CreditPackagesPage = lazy(() => import('./pages/Credits/CreditPackagesPage'));
 const PaymentResultPage = lazy(() => import('./pages/Credits/PaymentResultPage'));
+const ShopList = lazy(() => import('./pages/Shop/ShopList'));
+const ProductDetail = lazy(() => import('./pages/Shop/ProductDetail'));
+const CartPage = lazy(() => import('./pages/Shop/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/Shop/CheckoutPage'));
+const ShopPaymentResultPage = lazy(() => import('./pages/Shop/ShopPaymentResultPage'));
 const EventsList = lazy(() => import('./pages/Events/EventsList'));
 const EventDetail = lazy(() => import('./pages/Events/EventDetail'));
 const CreateEvent = lazy(() => import('./pages/Events/CreateEvent'));
@@ -107,6 +112,7 @@ const ProtectedRoute: React.FC<{
   requireSuperuser,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
+  const location = useLocation();
   const sessionActive = isAuthenticated && hasValidSessionHint();
   
   // Mientras verifica auth, muestra loader
@@ -115,7 +121,12 @@ const ProtectedRoute: React.FC<{
   }
 
   if (!sessionActive) {
-    return <Navigate to="/login" replace />;
+    const next = `${location.pathname}${location.search}`;
+    const to =
+      next && next !== '/login' && next !== '/register'
+        ? `/login?next=${encodeURIComponent(next)}`
+        : '/login';
+    return <Navigate to={to} replace />;
   }
 
   if (requireSuperuser && !user?.is_superuser) {
@@ -233,6 +244,12 @@ const App: React.FC = () => {
 
                 <Route path="creditos" element={<CreditPackagesPage />} />
                 <Route path="creditos/resultado" element={<PaymentResultPage />} />
+
+                <Route path="tienda" element={<ShopList />} />
+                <Route path="tienda/carrito" element={<CartPage />} />
+                <Route path="tienda/checkout" element={<CheckoutPage />} />
+                <Route path="tienda/resultado" element={<ShopPaymentResultPage />} />
+                <Route path="tienda/:slug" element={<ProductDetail />} />
                 
                 {/* Rutas protegidas adicionales */}
                 <Route 

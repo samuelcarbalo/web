@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Coins, Target, History } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
 import CreditBalanceBadge from '../../components/Credits/CreditBalanceBadge';
+import BuyCreditsButton from '../../components/Credits/BuyCreditsButton';
 import { FALLBACK_PACKAGES } from '../../config/credits';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -11,6 +12,10 @@ import {
   useCreditPackages,
   useMyPaymentOrders,
 } from '../../hooks/usePayments';
+import {
+  buildCreditsIntentPath,
+  buildLoginUrl,
+} from '../../lib/authRedirect';
 
 const statusLabel: Record<string, string> = {
   approved: 'Aprobado',
@@ -21,11 +26,13 @@ const statusLabel: Record<string, string> = {
 };
 
 const CreditPackagesPage: React.FC = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   const { data: packages, isError, isFetching } = useCreditPackages();
   const createPreference = useCreatePreference();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get('tab') === 'historial' ? 'historial' : 'comprar';
+  const packageIntent = searchParams.get('package');
   const { data: orders = [], isLoading: ordersLoading } = useMyPaymentOrders(
     isAuthenticated && tab === 'historial',
   );
@@ -35,6 +42,7 @@ const CreditPackagesPage: React.FC = () => {
   const [initPoint, setInitPoint] = useState<string | null>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
+  const resumedPackageRef = useRef<string | null>(null);
 
   const displayPackages = packages ?? FALLBACK_PACKAGES;
 
@@ -55,24 +63,17 @@ const CreditPackagesPage: React.FC = () => {
 
   useEffect(() => {
     if (tab === 'historial') {
+      if (!isAuthenticated) {
+        navigate(buildLoginUrl('/creditos?tab=historial'), { replace: true });
+        return;
+      }
       requestAnimationFrame(() => {
         historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
-  }, [tab]);
+  }, [tab, isAuthenticated, navigate]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const setTab = (next: 'comprar' | 'historial') => {
-    const params = new URLSearchParams(searchParams);
-    if (next === 'historial') params.set('tab', 'historial');
-    else params.delete('tab');
-    setSearchParams(params, { replace: true });
-  };
-
-  const handleSelect = async (packageId: string) => {
+  const startCheckout = async (packageId: string) => {
     setSelectedId(packageId);
     setPreferenceId(null);
     setInitPoint(null);
@@ -88,6 +89,39 @@ const CreditPackagesPage: React.FC = () => {
     }
   };
 
+  const handleSelect = (packageId: string) => {
+    if (!isAuthenticated) {
+      navigate(buildLoginUrl(buildCreditsIntentPath(packageId)));
+      return;
+    }
+    void startCheckout(packageId);
+  };
+
+  // Tras login/registro, reanudar el paquete elegido
+  useEffect(() => {
+    if (!isAuthenticated || !packageIntent) return;
+    if (resumedPackageRef.current === packageIntent) return;
+    const exists = displayPackages.some((p) => p.id === packageIntent);
+    if (!exists) return;
+    resumedPackageRef.current = packageIntent;
+    void startCheckout(packageIntent);
+    const params = new URLSearchParams(searchParams);
+    params.delete('package');
+    setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only resume once per package intent
+  }, [isAuthenticated, packageIntent, displayPackages]);
+
+  const setTab = (next: 'comprar' | 'historial') => {
+    if (next === 'historial' && !isAuthenticated) {
+      navigate(buildLoginUrl('/creditos?tab=historial'));
+      return;
+    }
+    const params = new URLSearchParams(searchParams);
+    if (next === 'historial') params.set('tab', 'historial');
+    else params.delete('tab');
+    setSearchParams(params, { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-indigo-800 text-white">
@@ -99,14 +133,33 @@ const CreditPackagesPage: React.FC = () => {
                 Cartera interna
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                Compra créditos CAPISJ DIGITAL
+                Planes de créditos CAPISJ DIGITAL
               </h1>
               <p className="mt-3 text-violet-100 max-w-xl text-lg">
                 Publica empleos, propiedades y torneos con nuestra moneda interna.
                 Cada crédito equivale a <strong>$1.000 COP</strong>.
+                {!isAuthenticated && (
+                  <span className="block mt-2 text-violet-100/90 text-base">
+                    Explora los planes libremente. Para comprar, inicia sesión o crea tu cuenta.
+                  </span>
+                )}
               </p>
             </div>
-            <CreditBalanceBadge className="self-start bg-white/10 border-white/20 text-white hover:bg-white/20" />
+            {isAuthenticated ? (
+              <div className="flex flex-col sm:items-end gap-3 self-start">
+                <CreditBalanceBadge className="bg-white/10 border-white/20 text-white hover:bg-white/20" />
+                <BuyCreditsButton
+                  compact
+                  label="Obtener más créditos"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-900 bg-white hover:bg-violet-50 px-4 py-2 rounded-3xl transition-colors"
+                />
+              </div>
+            ) : (
+              <BuyCreditsButton
+                label="Ver planes"
+                className="self-start inline-flex items-center gap-1.5 text-sm font-bold text-indigo-900 bg-white hover:bg-violet-50 px-4 py-2 rounded-3xl transition-colors"
+              />
+            )}
           </div>
 
           <div className="mt-8 inline-flex rounded-2xl bg-white/10 p-1">
@@ -117,7 +170,7 @@ const CreditPackagesPage: React.FC = () => {
                 tab === 'comprar' ? 'bg-white text-indigo-800' : 'text-white/85 hover:bg-white/10'
               }`}
             >
-              Comprar
+              Planes
             </button>
             <button
               type="button"
@@ -134,7 +187,7 @@ const CreditPackagesPage: React.FC = () => {
       </div>
 
       <div className="page-container -mt-8 relative z-10">
-        {tab === 'historial' ? (
+        {tab === 'historial' && isAuthenticated ? (
           <div ref={historyRef} className="card-static">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               Historial de compras
@@ -180,7 +233,7 @@ const CreditPackagesPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {missing > 0 && (
+            {isAuthenticated && missing > 0 && (
               <div className="mb-6 flex items-start gap-3 rounded-2xl border-2 border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-950/40 px-5 py-4">
                 <Target className="w-6 h-6 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
                 <div className="min-w-0">
@@ -214,40 +267,49 @@ const CreditPackagesPage: React.FC = () => {
               ))}
             </div>
 
-            <div ref={checkoutRef} className="mt-10 card-static max-w-lg mx-auto">
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__large.png"
-                  alt="Mercado Pago"
-                  className="h-8 object-contain"
-                  width={120}
-                  height={32}
+            {isAuthenticated ? (
+              <div ref={checkoutRef} className="mt-10 card-static max-w-lg mx-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__large.png"
+                    alt="Mercado Pago"
+                    className="h-8 object-contain"
+                    width={120}
+                    height={32}
+                  />
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Pago seguro con Checkout Pro
+                  </span>
+                </div>
+
+                {createPreference.isError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                    No se pudo iniciar el pago. Verifica las credenciales de Mercado Pago en el servidor.
+                  </p>
+                )}
+
+                <MercadoPagoCheckout
+                  preferenceId={preferenceId}
+                  initPoint={initPoint}
+                  isLoading={createPreference.isPending}
                 />
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Pago seguro con Checkout Pro
-                </span>
+
+                <div className="mt-4 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <Shield className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p>
+                    Los pagos son procesados por Mercado Pago. Al aprobarse, los créditos se acreditan
+                    automáticamente en tu cuenta.
+                  </p>
+                </div>
               </div>
-
-              {createPreference.isError && (
-                <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                  No se pudo iniciar el pago. Verifica las credenciales de Mercado Pago en el servidor.
-                </p>
-              )}
-
-              <MercadoPagoCheckout
-                preferenceId={preferenceId}
-                initPoint={initPoint}
-                isLoading={createPreference.isPending}
-              />
-
-              <div className="mt-4 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <Shield className="w-4 h-4 shrink-0 mt-0.5" />
-                <p>
-                  Los pagos son procesados por Mercado Pago. Al aprobarse, los créditos se acreditan
-                  automáticamente en tu cuenta.
+            ) : (
+              <div className="mt-10 card-static max-w-lg mx-auto text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Elige un plan para continuar. Te pediremos iniciar sesión o registrarte antes de
+                  pagar con Mercado Pago.
                 </p>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>

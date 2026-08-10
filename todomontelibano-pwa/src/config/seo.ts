@@ -36,6 +36,12 @@ export const ROUTES = {
   eventosMisEventos: '/eventos/mis-eventos',
   login: '/login',
   register: '/register',
+  creditos: '/creditos',
+  tienda: '/tienda',
+  tiendaProducto: (slug: string) => `/tienda/${slug}`,
+  tiendaCarrito: '/tienda/carrito',
+  tiendaCheckout: '/tienda/checkout',
+  tiendaResultado: '/tienda/resultado',
   privacy: '/privacy',
   terms: '/terms',
   contact: '/contact',
@@ -45,6 +51,7 @@ export const ROUTES = {
 export const MAIN_NAV_ITEMS = [
   { name: 'Empleos', path: ROUTES.empleos, description: 'Bolsa de trabajo y vacantes' },
   { name: 'Deportes', path: ROUTES.deportes, description: 'Torneos y ligas locales' },
+  { name: 'Tienda', path: ROUTES.tienda, description: 'Catálogo y compras locales' },
   { name: 'Bienes Raíces', path: ROUTES.bienesRaices, description: 'Propiedades en venta y alquiler' },
   {
     name: 'Eventos publicitarios',
