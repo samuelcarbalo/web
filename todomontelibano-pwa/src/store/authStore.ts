@@ -65,8 +65,16 @@ export const useAuthStore = create<AuthState>()(
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          useAuthStore.setState({ isLoading: false });
+          return;
+        }
         syncPersistedAuth(state);
+        // Si no hay token, ya quedó isLoading=false en sync; si hay token, useMe lo cerrará
+        if (!localStorage.getItem('access_token')) {
+          useAuthStore.setState({ isLoading: false });
+        }
       },
     }
   )

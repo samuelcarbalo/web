@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
   const siteUrl = env.VITE_SITE_URL || 'https://capisjdigital.site';
 
   return {
+    // Rutas anidadas (/dashboard, /tienda/x) deben resolver assets desde la raíz
+    base: '/',
     plugins: [
       react(),
       tailwindcss(),
@@ -76,14 +78,15 @@ export default defineConfig(({ mode }) => {
           importScripts: ['/notification-sw.js'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
+          // Evitar servir index.html obsoleto tras deploy (chunks con hash viejo → blank)
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === 'navigate',
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'html-pages',
-                networkTimeoutSeconds: 5,
-                expiration: { maxEntries: 32, maxAgeSeconds: 86400 },
+                networkTimeoutSeconds: 3,
+                expiration: { maxEntries: 16, maxAgeSeconds: 3600 },
               },
             },
           ],

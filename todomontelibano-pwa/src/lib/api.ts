@@ -10,6 +10,7 @@ const PUBLIC_ENDPOINTS = [
   '/real-estate/',
   '/payments/packages/',
   '/payments/config/',
+  '/ecommerce/',
   '/events/',
   '/advertising/sponsorships/plans/',
   '/advertising/sponsorships/availability/',

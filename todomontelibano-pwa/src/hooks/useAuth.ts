@@ -9,7 +9,6 @@ import { consumeAuthRedirect } from '../lib/authRedirect';
 
 export const useMe = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
-  const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
   const tokens = useAuthStore((state) => state.tokens);
 
@@ -22,7 +21,6 @@ export const useMe = () => {
       const token = hasValidSessionHint();
       if (!token) {
         logout();
-        setLoading(false);
         return null;
       }
       try {
@@ -32,13 +30,14 @@ export const useMe = () => {
         ]);
         const profile = profileRes.data;
         const user_res = userRes.data;
+        const fullName = profile.user_name || '';
 
         const user: User = {
           id: profile.user,
           email: profile.user_email,
-          first_name: profile.user_name.split(' ')[0] || '',
-          last_name: profile.user_name.split(' ').slice(1).join(' ') || '',
-          name: profile.user_name,
+          first_name: fullName.split(' ')[0] || '',
+          last_name: fullName.split(' ').slice(1).join(' ') || '',
+          name: fullName,
           phone: profile.phone,
           organization: profile.organization,
           organization_name: profile.organization_name,
@@ -66,7 +65,6 @@ export const useMe = () => {
           return null;
         }
         console.error('Error en useMe:', error);
-        setLoading(false);
         throw error;
       }
     },
