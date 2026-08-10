@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -13,11 +13,20 @@ import {
 import { useRegister } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/UI/ThemeToggle";
 import BrandLogo from "../../components/Brand/BrandLogo";
+import { buildLoginUrl, isSafeInternalPath, setAuthRedirect } from "../../lib/authRedirect";
 
 const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<"person" | "company">("person");
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const loginHref = isSafeInternalPath(nextParam) ? buildLoginUrl(nextParam) : "/login";
+
+  React.useEffect(() => {
+    if (isSafeInternalPath(nextParam)) setAuthRedirect(nextParam);
+  }, [nextParam]);
+
   const [formData, setFormData] = useState({
     username: "",
     last_name: "",
@@ -69,7 +78,7 @@ const Register: React.FC = () => {
         <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-400">
           ¿Ya tienes cuenta?{" "}
           <Link
-            to="/login"
+            to={loginHref}
             className="relative z-10 inline-flex items-center font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 hover:text-secondary-500 dark:hover:text-secondary-300 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 rounded-sm px-0.5"
           >
             Inicia sesión

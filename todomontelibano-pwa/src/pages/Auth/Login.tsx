@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useLogin } from '../../hooks/useAuth';
 import ThemeToggle from '../../components/UI/ThemeToggle';
 import BrandLogo from '../../components/Brand/BrandLogo';
 import { TENANT_CONFIG } from '../../config/tenant';
+import { buildRegisterUrl, isSafeInternalPath, setAuthRedirect } from '../../lib/authRedirect';
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get('next');
+  const registerHref = isSafeInternalPath(nextParam)
+    ? buildRegisterUrl(nextParam)
+    : '/register';
+
+  React.useEffect(() => {
+    if (isSafeInternalPath(nextParam)) setAuthRedirect(nextParam);
+  }, [nextParam]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -40,7 +51,7 @@ const Login: React.FC = () => {
         <p className="mt-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
           ¿No tienes cuenta?{' '}
           <Link
-            to="/register"
+            to={registerHref}
             className="relative z-10 inline-flex items-center font-bold text-secondary-600 dark:text-secondary-400 underline underline-offset-2 hover:text-secondary-500 dark:hover:text-secondary-300 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 rounded-sm px-0.5"
           >
             Regístrate gratis

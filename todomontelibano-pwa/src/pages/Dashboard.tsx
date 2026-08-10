@@ -13,11 +13,14 @@ import {
   Calendar,
   House,
   Mail,
+  Coins,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
 import { useTournaments } from '../hooks/useSports';
 import { useContactMessages } from '../hooks/useContact';
+import CreditBalanceBadge from '../components/Credits/CreditBalanceBadge';
+import BuyCreditsButton from '../components/Credits/BuyCreditsButton';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -139,15 +142,41 @@ const Dashboard: React.FC = () => {
       <div className="page-container">
         
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            ¡Hola, {user?.first_name}! 👋
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {isCompany 
-              ? 'Gestiona tus publicaciones, torneos y encuentra candidatos' 
-              : 'Encuentra empleos, torneos deportivos y más oportunidades'}
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              ¡Hola, {user?.first_name}! 👋
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              {isCompany 
+                ? 'Gestiona tus publicaciones, torneos y encuentra candidatos' 
+                : 'Encuentra empleos, torneos deportivos y más oportunidades'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <CreditBalanceBadge />
+            <BuyCreditsButton label="Obtener más créditos" />
+          </div>
+        </div>
+
+        <div className="mb-8 card-static border border-violet-200 dark:border-violet-800/50 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-3 rounded-3xl bg-violet-600 text-white shrink-0">
+                <Coins className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-violet-700 dark:text-violet-300">Cartera</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  ¿Necesitas más créditos?
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                  Recarga cuando quieras para seguir publicando empleos, inmuebles o torneos.
+                </p>
+              </div>
+            </div>
+            <BuyCreditsButton label="Comprar créditos" />
+          </div>
         </div>
 
         {isSuperUser && (

@@ -10,6 +10,7 @@ import {
   Trophy,
   House,
   MessageSquare,
+  ShoppingBag,
 } from "lucide-react";
 import NotificationPanel from "../Notifications/NotificationPanel";
 import { useAuthStore } from "../../store/authStore";
@@ -20,6 +21,7 @@ import UnreadBadge from "../Chat/UnreadBadge";
 import ThemeToggle from "../UI/ThemeToggle";
 import RouteSeo from "../SEO/RouteSeo";
 import CreditBalanceBadge from "../Credits/CreditBalanceBadge";
+import BuyCreditsButton from "../Credits/BuyCreditsButton";
 import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
 import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
@@ -67,6 +69,14 @@ const MainLayout: React.FC = () => {
       path: ROUTES.bienesRaices,
       active: true,
       description: "Propiedades en venta y alquiler",
+      comingSoon: false,
+    },
+    {
+      name: "Tienda",
+      icon: ShoppingBag,
+      path: ROUTES.tienda,
+      active: true,
+      description: "Catálogo y compras con Mercado Pago",
       comingSoon: false,
     },
   ];
@@ -164,6 +174,14 @@ const MainLayout: React.FC = () => {
               {sessionActive ? (
                 <div className="flex items-center space-x-3">
                   <CreditBalanceBadge />
+                  <BuyCreditsButton compact label="Comprar créditos" />
+                  <Link
+                    to={ROUTES.tiendaCarrito}
+                    className="relative p-2.5 rounded-3xl text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                    title="Carrito"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                  </Link>
                   <Link
                     to="/messages"
                     className="relative p-2.5 rounded-3xl text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
@@ -288,6 +306,9 @@ const MainLayout: React.FC = () => {
                       🪙 {user.credits !== undefined ? user.credits : 0} Créditos disponibles
                     </div>
                   )}
+                  <Link to="/creditos" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
+                    Comprar créditos
+                  </Link>
                   <Link to="/profile" className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
                     Mi Perfil
                   </Link>
@@ -303,6 +324,9 @@ const MainLayout: React.FC = () => {
                 </div>
               ) : (
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-3">
+                  <Link to="/creditos" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
+                    Ver planes de créditos
+                  </Link>
                   <Link to="/login" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
                     Iniciar Sesión
                   </Link>
