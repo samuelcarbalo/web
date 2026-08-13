@@ -17,7 +17,8 @@ const formatCop = (value: number | string) =>
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data: product, isLoading, isError, isFetching, refetch } = useShopProduct(slug);
+  const { data, isLoading, isError, isFetching, refetch } = useShopProduct(slug);
+  const product = data?.product ?? null;
   const addItem = useCartStore((s) => s.addItem);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -25,11 +26,11 @@ const ProductDetail: React.FC = () => {
   if (isLoading) {
     return <div className="page-container py-20 text-center text-gray-500">Cargando producto…</div>;
   }
-  if (isError || !product) {
+  if (isError || !product || data?.degraded) {
     return (
       <div className="page-container py-20">
         <CatalogErrorState
-          message="No se pudo cargar este producto en este momento"
+          message={data?.warning || 'No se pudo cargar este producto en este momento'}
           onRetry={() => void refetch()}
           isRetrying={isFetching}
         />
