@@ -28,13 +28,16 @@ const ShopList: React.FC = () => {
   );
 
   const {
-    data: categories = [],
+    data: categoriesData,
     isError: categoriesError,
     refetch: refetchCategories,
   } = useShopCategories();
   const { data, isLoading, isError, isFetching, refetch } = useShopProducts(params);
+  const categories = categoriesData?.items ?? [];
   const products = data?.results ?? [];
-  const catalogError = isError || categoriesError;
+  const catalogWarning = data?.warning || categoriesData?.warning;
+  const catalogDegraded = Boolean(data?.degraded || categoriesData?.degraded);
+  const catalogError = (isError || categoriesError) && !catalogDegraded;
 
   const retryCatalog = () => {
     void refetch();
@@ -155,11 +158,17 @@ const ShopList: React.FC = () => {
             ))}
           </div>
         )}
-        {!isLoading && catalogError && (
-          <CatalogErrorState onRetry={retryCatalog} isRetrying={isFetching} />
+        {!isLoading && (catalogError || catalogDegraded) && (
+          <div className="mb-8">
+            <CatalogErrorState
+              message={catalogWarning || 'No se pudo cargar el catálogo en este momento'}
+              onRetry={retryCatalog}
+              isRetrying={isFetching}
+            />
+          </div>
         )}
 
-        {!isLoading && !catalogError && products.length > 0 && (
+        {!isLoading && !catalogError && !catalogDegraded && products.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -167,7 +176,7 @@ const ShopList: React.FC = () => {
           </div>
         )}
 
-        {!isLoading && !catalogError && products.length === 0 && (
+        {!isLoading && !catalogError && !catalogDegraded && products.length === 0 && (
           <div className="text-center py-16 card-static max-w-xl mx-auto">
             <ShoppingBag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-bold">No hay productos con estos filtros</h3>

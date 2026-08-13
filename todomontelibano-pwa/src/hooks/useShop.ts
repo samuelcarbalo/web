@@ -20,11 +20,17 @@ export const useShopCategories = () =>
   useQuery({
     queryKey: shopKeys.categories(),
     queryFn: async () => {
-      const { data } = await shopApi.getCategories();
-      return normalizeList<ShopCategory>(data as ShopCategory[] | { results: ShopCategory[] });
+      const soft = await shopApi.getCategories();
+      return {
+        items: normalizeList<ShopCategory>(
+          soft.data as ShopCategory[] | { results: ShopCategory[] },
+        ),
+        warning: soft.warning,
+        degraded: soft.degraded,
+      };
     },
     staleTime: 5 * 60 * 1000,
-    retry: 1,
+    retry: false,
     throwOnError: false,
   });
 
@@ -32,14 +38,25 @@ export const useShopProducts = (params?: ProductListParams) =>
   useQuery({
     queryKey: shopKeys.products(params),
     queryFn: async () => {
-      const { data } = await shopApi.getProducts(params);
-      if (Array.isArray(data)) {
-        return { count: data.length, results: data as ShopProduct[] };
+      const soft = await shopApi.getProducts(params);
+      if (Array.isArray(soft.data)) {
+        return {
+          count: soft.data.length,
+          results: soft.data as ShopProduct[],
+          warning: soft.warning,
+          degraded: soft.degraded,
+        };
       }
-      return data as { count: number; results: ShopProduct[] };
+      const payload = soft.data as { count: number; results: ShopProduct[] };
+      return {
+        count: payload.count ?? 0,
+        results: payload.results ?? [],
+        warning: soft.warning,
+        degraded: soft.degraded,
+      };
     },
     staleTime: 60 * 1000,
-    retry: 1,
+    retry: false,
     throwOnError: false,
   });
 
@@ -47,12 +64,16 @@ export const useShopProduct = (slug?: string) =>
   useQuery({
     queryKey: shopKeys.product(slug || ''),
     queryFn: async () => {
-      const { data } = await shopApi.getProduct(slug!);
-      return data;
+      const soft = await shopApi.getProduct(slug!);
+      return {
+        product: soft.data,
+        warning: soft.warning,
+        degraded: soft.degraded,
+      };
     },
     enabled: !!slug,
     staleTime: 60 * 1000,
-    retry: 1,
+    retry: false,
     throwOnError: false,
   });
 
