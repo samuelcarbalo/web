@@ -24,6 +24,8 @@ export const useShopCategories = () =>
       return normalizeList<ShopCategory>(data as ShopCategory[] | { results: ShopCategory[] });
     },
     staleTime: 5 * 60 * 1000,
+    retry: 1,
+    throwOnError: false,
   });
 
 export const useShopProducts = (params?: ProductListParams) =>
@@ -37,6 +39,8 @@ export const useShopProducts = (params?: ProductListParams) =>
       return data as { count: number; results: ShopProduct[] };
     },
     staleTime: 60 * 1000,
+    retry: 1,
+    throwOnError: false,
   });
 
 export const useShopProduct = (slug?: string) =>
@@ -48,6 +52,8 @@ export const useShopProduct = (slug?: string) =>
     },
     enabled: !!slug,
     staleTime: 60 * 1000,
+    retry: 1,
+    throwOnError: false,
   });
 
 export const useShopCheckout = () => {

@@ -4,6 +4,7 @@ import { Search, ShoppingBag, Filter, ChevronDown } from 'lucide-react';
 import { useShopCategories, useShopProducts } from '../../hooks/useShop';
 import { ROUTES, SITE_NAME } from '../../config/seo';
 import ProductCard from '../../components/Shop/ProductCard';
+import CatalogErrorState from '../../components/Shop/CatalogErrorState';
 import JsonLd from '../../components/SEO/JsonLd';
 
 const ShopList: React.FC = () => {
@@ -26,9 +27,19 @@ const ShopList: React.FC = () => {
     [category, searchParams, minPrice, maxPrice],
   );
 
-  const { data: categories = [] } = useShopCategories();
-  const { data, isLoading, isError } = useShopProducts(params);
+  const {
+    data: categories = [],
+    isError: categoriesError,
+    refetch: refetchCategories,
+  } = useShopCategories();
+  const { data, isLoading, isError, isFetching, refetch } = useShopProducts(params);
   const products = data?.results ?? [];
+  const catalogError = isError || categoriesError;
+
+  const retryCatalog = () => {
+    void refetch();
+    void refetchCategories();
+  };
 
   const applyFilters = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,14 +155,11 @@ const ShopList: React.FC = () => {
             ))}
           </div>
         )}
-        {isError && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-6">
-            No se pudo cargar el catálogo. Verifica que el backend tenga el módulo ecommerce
-            desplegado.
-          </p>
+        {!isLoading && catalogError && (
+          <CatalogErrorState onRetry={retryCatalog} isRetrying={isFetching} />
         )}
 
-        {!isLoading && products.length > 0 && (
+        {!isLoading && !catalogError && products.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -159,7 +167,7 @@ const ShopList: React.FC = () => {
           </div>
         )}
 
-        {!isLoading && products.length === 0 && !isError && (
+        {!isLoading && !catalogError && products.length === 0 && (
           <div className="text-center py-16 card-static max-w-xl mx-auto">
             <ShoppingBag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-bold">No hay productos con estos filtros</h3>
