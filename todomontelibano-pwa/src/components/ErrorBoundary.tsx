@@ -31,11 +31,6 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     window.location.assign('/');
   };
 
-  private handleRetry = () => {
-    this.props.onReset?.();
-    this.setState({ hasError: false, message: undefined, isChunk: false });
-  };
-
   private handleHardReload = () => {
     void recoverFromStaleChunks().then((ok) => {
       if (!ok) window.location.reload();
@@ -49,23 +44,23 @@ export default class ErrorBoundary extends React.Component<Props, State> {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
         <div className="max-w-md w-full rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center shadow-lg">
           <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-            {this.state.isChunk ? 'Nueva versión disponible' : 'Algo salió mal'}
+            {this.state.isChunk ? 'Nueva versión disponible' : 'Ocurrió un error inesperado'}
           </h1>
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
             {this.state.isChunk
               ? 'La aplicación se actualizó. Recarga para cargar los archivos más recientes.'
-              : 'La página no pudo renderizarse. Esto a veces ocurre tras una actualización.'}
+              : 'La página no pudo renderizarse. Recarga para continuar; el resto de la app no debería quedar en blanco.'}
           </p>
-          {this.state.message && (
+          {this.state.message && !this.state.isChunk && (
             <p className="mt-2 text-xs text-gray-400 break-words">{this.state.message}</p>
           )}
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button
               type="button"
-              onClick={this.state.isChunk ? this.handleHardReload : this.handleRetry}
+              onClick={this.handleHardReload}
               className="px-5 py-2.5 rounded-2xl font-bold text-sm bg-violet-600 text-white hover:bg-violet-500"
             >
-              {this.state.isChunk ? 'Actualizar ahora' : 'Reintentar'}
+              Recargar
             </button>
             <button
               type="button"

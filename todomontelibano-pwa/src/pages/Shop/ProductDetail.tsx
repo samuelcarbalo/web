@@ -6,6 +6,7 @@ import { useCartStore } from '../../store/cartStore';
 import { getMediaUrl } from '../../lib/api';
 import { ROUTES } from '../../config/seo';
 import SeoHead from '../../components/SEO/SeoHead';
+import CatalogErrorState from '../../components/Shop/CatalogErrorState';
 
 const formatCop = (value: number | string) =>
   new Intl.NumberFormat('es-CO', {
@@ -16,7 +17,7 @@ const formatCop = (value: number | string) =>
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data: product, isLoading, isError } = useShopProduct(slug);
+  const { data: product, isLoading, isError, isFetching, refetch } = useShopProduct(slug);
   const addItem = useCartStore((s) => s.addItem);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -26,11 +27,17 @@ const ProductDetail: React.FC = () => {
   }
   if (isError || !product) {
     return (
-      <div className="page-container py-20 text-center">
-        <p className="text-gray-600 mb-4">Producto no encontrado.</p>
-        <Link to={ROUTES.tienda} className="btn-primary">
-          Volver al catálogo
-        </Link>
+      <div className="page-container py-20">
+        <CatalogErrorState
+          message="No se pudo cargar este producto en este momento"
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
+        <div className="text-center mt-6">
+          <Link to={ROUTES.tienda} className="text-sm font-bold text-violet-600">
+            Volver al catálogo
+          </Link>
+        </div>
       </div>
     );
   }
