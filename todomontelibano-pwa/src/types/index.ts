@@ -45,6 +45,8 @@ export interface User {
   organization_name?: string;
   role: 'user' | 'manager' | 'admin';
   is_superuser?: boolean;
+  is_staff?: boolean;
+  is_unlimited_credits?: boolean;
   user_type: 'person' | 'company';
   avatar?: string;
   bio?: string;

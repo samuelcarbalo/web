@@ -217,6 +217,11 @@ const MainLayout: React.FC = () => {
                         <Link to="/dashboard" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Dashboard
                         </Link>
+                        {(user?.is_superuser || user?.is_staff) && (
+                          <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Administración
+                          </Link>
+                        )}
                         <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Mis pedidos
                         </Link>

@@ -26,25 +26,30 @@ export const useMe = () => {
           return null;
         }
 
-        const [profileRes, userRes] = await Promise.all([
-          api.get<Profile>('/profiles/me/'),
-          api.get<any>('/auth/me/'),
-        ]);
-        const profile = profileRes.data;
+        const userRes = await api.get<any>('/auth/me/');
         const user_res = userRes.data;
-        const fullName = profile.user_name || '';
+        let profile: Partial<Profile> = {};
+        try {
+          const profileRes = await api.get<Profile>('/profiles/me/');
+          profile = profileRes.data;
+        } catch {
+          /* superusuario de plataforma puede no tener Profile */
+        }
+        const fullName = profile.user_name || user_res.full_name || user_res.email || '';
 
         const user: User = {
-          id: profile.user,
-          email: profile.user_email,
-          first_name: fullName.split(' ')[0] || '',
-          last_name: fullName.split(' ').slice(1).join(' ') || '',
+          id: profile.user || user_res.id,
+          email: profile.user_email || user_res.email,
+          first_name: user_res.first_name || fullName.split(' ')[0] || '',
+          last_name: user_res.last_name || fullName.split(' ').slice(1).join(' ') || '',
           name: fullName,
           phone: profile.phone,
           organization: profile.organization,
           organization_name: profile.organization_name,
           role: user_res.role as 'user' | 'manager' | 'admin',
           is_superuser: !!user_res.is_superuser,
+          is_staff: !!user_res.is_staff,
+          is_unlimited_credits: !!user_res.is_unlimited_credits,
           user_type: user_res.user_type || 'person',
           avatar: profile.avatar,
           bio: profile.bio || undefined,
@@ -153,6 +158,8 @@ export const useLogin = () => {
         organization_name: profile.organization_name,
         role: user_res.role || 'user',
         is_superuser: !!user_res.is_superuser,
+        is_staff: !!user_res.is_staff,
+        is_unlimited_credits: !!user_res.is_unlimited_credits,
         user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
         bio: profile.bio || undefined,
@@ -205,6 +212,8 @@ export const useRegister = () => {
         organization_name: profile.organization_name,
         role: user_res.role || 'user',
         is_superuser: !!user_res.is_superuser,
+        is_staff: !!user_res.is_staff,
+        is_unlimited_credits: !!user_res.is_unlimited_credits,
         user_type: user_res.user_type || 'person',
         avatar: profile.avatar,
         bio: profile.bio || undefined,
@@ -256,4 +265,9 @@ export const isUser = () => {
 export const isSuperUser = () => {
   const user = useAuthStore((state) => state.user);
   return !!user?.is_superuser;
+}
+
+export const isPlatformAdmin = () => {
+  const user = useAuthStore((state) => state.user);
+  return !!(user?.is_superuser || user?.is_staff);
 }

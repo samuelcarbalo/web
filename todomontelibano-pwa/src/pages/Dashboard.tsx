@@ -16,6 +16,7 @@ import {
   Coins,
   ShoppingBag,
   Package,
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
@@ -187,6 +188,26 @@ const Dashboard: React.FC = () => {
             <BuyCreditsButton label="Comprar créditos" />
           </div>
         </div>
+
+        {(isSuperUser || user?.is_staff) && (
+          <Link
+            to="/dashboard/admin"
+            className="card mb-8 border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-r from-indigo-50 to-slate-50 dark:from-indigo-950/30 dark:to-slate-950/20 hover:shadow-2xl transition-shadow block"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-3xl bg-indigo-700 text-white">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Administración</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">Panel de usuarios</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                  Listar, editar créditos, bloquear o eliminar cuentas
+                </p>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {isSuperUser && (
           <Link

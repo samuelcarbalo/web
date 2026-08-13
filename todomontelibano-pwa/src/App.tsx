@@ -54,6 +54,7 @@ const CartPage = lazyWithRetry(() => import('./pages/Shop/CartPage'));
 const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
 const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
 const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
+const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
 const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
 const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
 const CreateEvent = lazyWithRetry(() => import('./pages/Events/CreateEvent'));
@@ -136,10 +137,12 @@ const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles?: string[];
   requireSuperuser?: boolean;
+  requireAdmin?: boolean;
 }> = ({
   children,
   allowedRoles,
   requireSuperuser,
+  requireAdmin,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
@@ -162,6 +165,10 @@ const ProtectedRoute: React.FC<{
   }
 
   if (requireSuperuser && !user?.is_superuser) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireAdmin && !(user?.is_superuser || user?.is_staff)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -325,6 +332,15 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="dashboard/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminUsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="admin-panel" element={<Navigate to="/dashboard/admin" replace />} />
                 <Route
                   path="profile"
                   element={
