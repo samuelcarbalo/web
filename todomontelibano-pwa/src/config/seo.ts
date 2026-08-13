@@ -42,6 +42,7 @@ export const ROUTES = {
   tiendaCarrito: '/tienda/carrito',
   tiendaCheckout: '/tienda/checkout',
   tiendaResultado: '/tienda/resultado',
+  tiendaPedidos: '/tienda/pedidos',
   privacy: '/privacy',
   terms: '/terms',
   contact: '/contact',
@@ -106,6 +107,13 @@ export const SEO_PAGES: Record<string, SeoMeta> = {
     path: ROUTES.eventos,
     ogType: 'website',
   },
+  [ROUTES.tienda]: {
+    title: `Tienda | Catálogo de Productos | ${brand}`,
+    description:
+      `Explora el catálogo de productos locales en ${brand}. Filtra por categoría y compra con Mercado Pago.`,
+    path: ROUTES.tienda,
+    ogType: 'website',
+  },
   [ROUTES.eventosPublicar]: {
     title: `Publicar Evento Publicitario | ${brand}`,
     description: `Publica tu feria, concierto o activación de marca en la agenda de ${brand}.`,
@@ -145,6 +153,7 @@ export const SITEMAP_ROUTES = [
   { path: ROUTES.deportes, priority: 0.9, changefreq: 'daily' as const },
   { path: ROUTES.bienesRaices, priority: 0.9, changefreq: 'daily' as const },
   { path: ROUTES.eventos, priority: 0.9, changefreq: 'daily' as const },
+  { path: ROUTES.tienda, priority: 0.9, changefreq: 'daily' as const },
   { path: ROUTES.contact, priority: 0.5, changefreq: 'monthly' as const },
   { path: ROUTES.privacy, priority: 0.3, changefreq: 'yearly' as const },
   { path: ROUTES.terms, priority: 0.3, changefreq: 'yearly' as const },

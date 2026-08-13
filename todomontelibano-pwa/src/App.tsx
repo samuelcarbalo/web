@@ -1,6 +1,7 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Layout
 import MainLayout from './components/Layout/MainLayout';
@@ -52,6 +53,8 @@ const ProductDetail = lazyWithRetry(() => import('./pages/Shop/ProductDetail'));
 const CartPage = lazyWithRetry(() => import('./pages/Shop/CartPage'));
 const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
 const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
+const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
+const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
 const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
 const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
 const CreateEvent = lazyWithRetry(() => import('./pages/Events/CreateEvent'));
@@ -61,6 +64,7 @@ const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
+import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
 import {
   JobsLegacyRedirect,
   SportsLegacyRedirect,
@@ -73,6 +77,12 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5,
       retry: 1,
       refetchOnWindowFocus: false,
+      throwOnError: false,
+      networkMode: 'online',
+    },
+    mutations: {
+      retry: 0,
+      throwOnError: false,
     },
   },
 });
@@ -83,16 +93,14 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-/** Hidrata sesión; libera isLoading siempre (finally + timeout). No bloquea rutas públicas. */
+/** Hidrata sesión; libera isLoading siempre. No bloquea rutas públicas (tienda, empleos, etc.). */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
   const meQuery = useMe();
 
   useEffect(() => {
     const finishHydration = () => {
-      setHydrated(true);
       if (!hasValidSessionHint()) {
         logout();
         setLoading(false);
@@ -112,21 +120,15 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
       setLoading(false);
       return;
     }
-    // Cuando deja de fetchear (éxito, error o cancelado), soltar loader
     if (!meQuery.isFetching) {
       setLoading(false);
     }
   }, [meQuery.isFetching, meQuery.fetchStatus, setLoading]);
 
-  // Seguridad: nunca bloquear ProtectedRoute más de 3s en F5
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 3_000);
     return () => window.clearTimeout(timer);
   }, [setLoading]);
-
-  if (!hydrated) {
-    return <PageLoader />;
-  }
 
   return <>{children}</>;
 };
@@ -135,10 +137,12 @@ const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles?: string[];
   requireSuperuser?: boolean;
+  requireAdmin?: boolean;
 }> = ({
   children,
   allowedRoles,
   requireSuperuser,
+  requireAdmin,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
@@ -164,11 +168,20 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/dashboard" replace />;
   }
 
+  if (requireAdmin && !(user?.is_superuser || user?.is_staff)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user?.role || '')) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
+};
+
+const ProductosAliasRedirect: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  return <Navigate to={slug ? `/tienda/${slug}` : '/tienda'} replace />;
 };
 
 const App: React.FC = () => {
@@ -177,7 +190,9 @@ const App: React.FC = () => {
       <Router>
         <ScrollToTop />
         <AuthInitializer>
-          <Suspense fallback={<PageLoader />}>
+          <PwaUpdateBanner />
+          <ErrorBoundary onReset={() => queryClient.resetQueries()}>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Rutas públicas - NO requieren auth */}
               <Route path="/" element={<MainLayout />}>
@@ -276,11 +291,29 @@ const App: React.FC = () => {
                 <Route path="creditos" element={<CreditPackagesPage />} />
                 <Route path="creditos/resultado" element={<PaymentResultPage />} />
 
+                {/* Tienda pública: catálogo y ficha (como empleos / bienes raíces) */}
                 <Route path="tienda" element={<ShopList />} />
                 <Route path="tienda/carrito" element={<CartPage />} />
-                <Route path="tienda/checkout" element={<CheckoutPage />} />
+                <Route
+                  path="tienda/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="tienda/resultado" element={<ShopPaymentResultPage />} />
+                <Route
+                  path="tienda/pedidos"
+                  element={
+                    <ProtectedRoute>
+                      <MyOrdersPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="tienda/:slug" element={<ProductDetail />} />
+                <Route path="productos" element={<Navigate to="/tienda" replace />} />
+                <Route path="productos/:slug" element={<ProductosAliasRedirect />} />
 
                 {/* Rutas protegidas adicionales */}
                 <Route
@@ -299,6 +332,15 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="dashboard/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminUsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="admin-panel" element={<Navigate to="/dashboard/admin" replace />} />
                 <Route
                   path="profile"
                   element={
@@ -348,6 +390,7 @@ const App: React.FC = () => {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
         </AuthInitializer>
       </Router>
     </QueryClientProvider>

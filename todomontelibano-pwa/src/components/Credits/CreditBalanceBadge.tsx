@@ -17,6 +17,7 @@ const CreditBalanceBadge: React.FC<CreditBalanceBadgeProps> = ({
   if (!isAuthenticated) return null;
 
   const credits = user?.credits ?? 0;
+  const unlimited = !!(user?.is_unlimited_credits || user?.is_superuser);
 
   return (
     <Link
@@ -27,10 +28,11 @@ const CreditBalanceBadge: React.FC<CreditBalanceBadgeProps> = ({
       <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden />
       {showLabel ? (
         <span>
-          Saldo: <strong>{credits}</strong> créditos
+          Saldo: <strong>{unlimited ? 'Ilimitado' : credits}</strong>
+          {unlimited ? '' : ' créditos'}
         </span>
       ) : (
-        <strong>{credits}</strong>
+        <strong>{unlimited ? '∞' : credits}</strong>
       )}
     </Link>
   );

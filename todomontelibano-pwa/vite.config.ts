@@ -15,8 +15,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
-        // Registro manual en src/lib/pwa.ts (controllerchange + update on focus)
+        registerType: 'prompt',
         injectRegister: false,
         includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
@@ -67,6 +66,13 @@ export default defineConfig(({ mode }) => {
               icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
             },
             {
+              name: 'Tienda',
+              short_name: 'Tienda',
+              description: 'Catálogo y compras locales',
+              url: '/tienda',
+              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+            },
+            {
               name: 'Eventos',
               short_name: 'Eventos',
               description: 'Eventos publicitarios y agenda local',
@@ -76,8 +82,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          // Crítico: el SW nuevo debe tomar control al instante (evita blank en F5 post-deploy)
-          skipWaiting: true,
+          skipWaiting: false,
           clientsClaim: true,
           cleanupOutdatedCaches: true,
           importScripts: ['/notification-sw.js'],
@@ -103,7 +108,7 @@ export default defineConfig(({ mode }) => {
       Sitemap({
         hostname: siteUrl,
         generateRobotsTxt: false,
-        dynamicRoutes: ['/', '/empleos', '/deportes', '/bienes-raices', '/eventos', '/contact', '/privacy', '/terms'],
+        dynamicRoutes: ['/', '/empleos', '/deportes', '/bienes-raices', '/eventos', '/tienda', '/contact', '/privacy', '/terms'],
         changefreq: 'daily',
         priority: {
           '*': 0.5,
@@ -112,6 +117,7 @@ export default defineConfig(({ mode }) => {
           '/deportes': 0.9,
           '/bienes-raices': 0.9,
           '/eventos': 0.9,
+          '/tienda': 0.9,
           '/contact': 0.5,
           '/privacy': 0.3,
           '/terms': 0.3,

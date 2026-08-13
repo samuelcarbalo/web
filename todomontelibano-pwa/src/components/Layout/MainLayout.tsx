@@ -171,17 +171,18 @@ const MainLayout: React.FC = () => {
 
               <ThemeToggle />
 
+              <Link
+                to={ROUTES.tiendaCarrito}
+                className="relative p-2.5 rounded-3xl text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                title="Carrito"
+              >
+                <ShoppingBag className="w-5 h-5" />
+              </Link>
+
               {sessionActive ? (
                 <div className="flex items-center space-x-3">
                   <CreditBalanceBadge />
                   <BuyCreditsButton compact label="Comprar créditos" />
-                  <Link
-                    to={ROUTES.tiendaCarrito}
-                    className="relative p-2.5 rounded-3xl text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
-                    title="Carrito"
-                  >
-                    <ShoppingBag className="w-5 h-5" />
-                  </Link>
                   <Link
                     to="/messages"
                     className="relative p-2.5 rounded-3xl text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
@@ -215,6 +216,14 @@ const MainLayout: React.FC = () => {
                         </Link>
                         <Link to="/dashboard" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Dashboard
+                        </Link>
+                        {(user?.is_superuser || user?.is_staff) && (
+                          <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Administración
+                          </Link>
+                        )}
+                        <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                          Mis pedidos
                         </Link>
                         <Link to="/messages" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Mensajes
@@ -315,6 +324,9 @@ const MainLayout: React.FC = () => {
                   <Link to="/dashboard" className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
                     Dashboard
                   </Link>
+                  <Link to={ROUTES.tiendaPedidos} className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
+                    Mis pedidos
+                  </Link>
                   <button
                     onClick={() => { logout(); setIsMenuOpen(false); }}
                     className="w-full text-left py-3 text-base font-bold text-red-600 dark:text-red-400"
@@ -366,6 +378,7 @@ const MainLayout: React.FC = () => {
                 <li><Link to={ROUTES.empleos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Empleos</Link></li>
                 <li><Link to={ROUTES.eventos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Eventos</Link></li>
                 <li><Link to={ROUTES.bienesRaices} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Bienes Raíces</Link></li>
+                <li><Link to={ROUTES.tienda} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Tienda</Link></li>
               </ul>
             </div>
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { shopApi, type ProductListParams } from '../lib/shopApi';
-import type { ShopCategory, ShopProduct } from '../types/shop';
+import type { ShopCategory, ShopOrder, ShopProduct } from '../types/shop';
 
 function normalizeList<T>(data: T[] | { results: T[] } | undefined): T[] {
   if (!data) return [];
@@ -59,3 +59,14 @@ export const useShopCheckout = () => {
     },
   });
 };
+
+export const useMyShopOrders = (enabled = true) =>
+  useQuery({
+    queryKey: shopKeys.orders(),
+    queryFn: async () => {
+      const { data } = await shopApi.getMyOrders();
+      return normalizeList<ShopOrder>(data as ShopOrder[] | { results: ShopOrder[] });
+    },
+    enabled,
+    staleTime: 30 * 1000,
+  });

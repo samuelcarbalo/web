@@ -1,22 +1,21 @@
 import { registerSW } from 'virtual:pwa-register';
 
+type UpdateFn = (reloadPage?: boolean) => Promise<void>;
+
+let updateSW: UpdateFn | undefined;
+
 /**
- * Registra el SW con auto-update y fuerza recarga cuando el nuevo worker toma el control.
- * Sin clientsClaim + reload en controllerchange, F5 puede seguir sirviendo index/chunks viejos
- * (pantalla blanca) hasta cerrar todas las pestañas.
+ * Registro PWA en modo prompt: detecta un SW nuevo post-deploy y avisa al usuario.
+ * No recarga sola (eso congelaba la pestaña en blanco). El banner llama a applyPwaUpdate().
  */
 export function setupPwaUpdates(): void {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
-
-  registerSW({
+  updateSW = registerSW({
     immediate: true,
+    onNeedRefresh() {
+      window.dispatchEvent(new Event('pwa:need-refresh'));
+    },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
 
@@ -24,18 +23,25 @@ export function setupPwaUpdates(): void {
         registration.update().catch(() => undefined);
       };
 
-      // Al volver a la pestaña / foco, buscar SW nuevo (post-deploy)
       window.addEventListener('focus', checkForUpdate);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') checkForUpdate();
       });
-
       window.setInterval(checkForUpdate, 60_000);
     },
     onRegisterError(error) {
       console.error('[PWA] Error registrando Service Worker:', error);
     },
   });
+}
+
+/** Activa el SW nuevo y recarga con los assets recientes (skipWaiting vía plugin). */
+export async function applyPwaUpdate(): Promise<void> {
+  if (updateSW) {
+    await updateSW(true);
+    return;
+  }
+  window.location.reload();
 }
 
 /** Si la app no monta (root vacío), desregistra SW y limpia caches una sola vez. */

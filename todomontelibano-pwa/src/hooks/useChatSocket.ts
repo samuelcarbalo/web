@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getWebSocketUrl } from '../lib/chatApi';
+import { openSafeWebSocket } from '../lib/notificationsRealtime';
 import { chatKeys } from './useChat';
 import type { ChatWebSocketEvent, Message } from '../types/chat';
 
@@ -21,17 +22,47 @@ export const useChatSocket = ({
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const closeSocket = useCallback(() => {
+    const ws = wsRef.current;
+    wsRef.current = null;
+    if (!ws) return;
+    try {
+      ws.onopen = null;
+      ws.onmessage = null;
+      ws.onerror = null;
+      ws.onclose = null;
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const connect = useCallback(() => {
     if (!conversationId || !enabled) return;
 
+    closeSocket();
     const url = getWebSocketUrl(conversationId);
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
+    const ws = openSafeWebSocket(url);
+    if (!ws) {
+      setIsConnected(false);
+      return;
+    }
 
+    wsRef.current = ws;
     ws.onopen = () => setIsConnected(true);
     ws.onclose = () => setIsConnected(false);
-    ws.onerror = () => setIsConnected(false);
+    ws.onerror = () => {
+      setIsConnected(false);
+      try {
+        ws.close();
+      } catch {
+        /* ignore */
+      }
+    };
 
     ws.onmessage = (event) => {
       try {
@@ -55,7 +86,7 @@ export const useChatSocket = ({
               };
             }
           );
-          queryClient.invalidateQueries({ queryKey: chatKeys.all });
+          void queryClient.invalidateQueries({ queryKey: chatKeys.all });
         } else if (data.type === 'typing' && onTyping) {
           onTyping(data.user_id, data.username, data.action);
         } else if (data.type === 'presence' && onPresence) {
@@ -65,27 +96,47 @@ export const useChatSocket = ({
         // ignore malformed messages
       }
     };
-  }, [conversationId, enabled, queryClient, onTyping, onPresence]);
+  }, [conversationId, enabled, queryClient, onTyping, onPresence, closeSocket]);
 
   useEffect(() => {
     connect();
+
+    if (conversationId && enabled) {
+      pollRef.current = setInterval(() => {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) {
+          void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) });
+          void queryClient.invalidateQueries({ queryKey: chatKeys.all });
+        }
+      }, 20_000);
+    }
+
     return () => {
-      wsRef.current?.close();
-      wsRef.current = null;
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      closeSocket();
+      setIsConnected(false);
     };
-  }, [connect]);
+  }, [connect, conversationId, enabled, queryClient, closeSocket]);
 
   const sendWsMessage = useCallback((body: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'message.send', body }));
-      return true;
+      try {
+        wsRef.current.send(JSON.stringify({ type: 'message.send', body }));
+        return true;
+      } catch {
+        return false;
+      }
     }
     return false;
   }, []);
 
   const sendTyping = useCallback((action: 'start' | 'stop') => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: `typing.${action}` }));
+      try {
+        wsRef.current.send(JSON.stringify({ type: `typing.${action}` }));
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -97,7 +148,11 @@ export const useChatSocket = ({
 
   const markRead = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'read.mark' }));
+      try {
+        wsRef.current.send(JSON.stringify({ type: 'read.mark' }));
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 

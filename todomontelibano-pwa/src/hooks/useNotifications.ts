@@ -1,10 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import {
   getNotifications,
   getNotificationUnreadCount,
   markNotificationRead,
   markAllNotificationsRead,
 } from '../lib/notificationsApi';
+import {
+  isNotificationsRealtimeLive,
+  subscribeNotificationsRealtime,
+} from '../lib/notificationsRealtime';
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -13,22 +18,32 @@ export const notificationKeys = {
 };
 
 export const useNotifications = (enabled = true, unreadOnly = false) => {
+  const [realtimeLive, setRealtimeLive] = useState(isNotificationsRealtimeLive);
+
+  useEffect(() => subscribeNotificationsRealtime(setRealtimeLive), []);
+
   return useQuery({
     queryKey: notificationKeys.list(unreadOnly),
     queryFn: () => getNotifications(unreadOnly ? { unread: true } : undefined),
     enabled,
-    refetchInterval: 30000,
-    staleTime: 15000,
+    refetchInterval: realtimeLive ? 60_000 : 15_000,
+    staleTime: 10_000,
+    throwOnError: false,
   });
 };
 
 export const useNotificationUnreadCount = (enabled = true) => {
+  const [realtimeLive, setRealtimeLive] = useState(isNotificationsRealtimeLive);
+
+  useEffect(() => subscribeNotificationsRealtime(setRealtimeLive), []);
+
   return useQuery({
     queryKey: notificationKeys.unread(),
     queryFn: getNotificationUnreadCount,
     enabled,
-    refetchInterval: 30000,
-    staleTime: 15000,
+    refetchInterval: realtimeLive ? 60_000 : 15_000,
+    staleTime: 10_000,
+    throwOnError: false,
   });
 };
 
