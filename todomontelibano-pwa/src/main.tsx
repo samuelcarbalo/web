@@ -6,10 +6,12 @@ import { initTheme } from './hooks/useTheme'
 import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary'
 import { setupBlankScreenRecovery, setupPwaUpdates } from './lib/pwa'
+import { setupChunkLoadRecovery } from './lib/chunkRecovery'
 
 initTheme()
 setupPwaUpdates()
 setupBlankScreenRecovery()
+setupChunkLoadRecovery()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

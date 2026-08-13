@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Layout
 import MainLayout from './components/Layout/MainLayout';
@@ -75,6 +76,12 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5,
       retry: 1,
       refetchOnWindowFocus: false,
+      throwOnError: false,
+      networkMode: 'online',
+    },
+    mutations: {
+      retry: 0,
+      throwOnError: false,
     },
   },
 });
@@ -177,7 +184,8 @@ const App: React.FC = () => {
         <ScrollToTop />
         <AuthInitializer>
           <PwaUpdateBanner />
-          <Suspense fallback={<PageLoader />}>
+          <ErrorBoundary onReset={() => queryClient.resetQueries()}>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Rutas públicas - NO requieren auth */}
               <Route path="/" element={<MainLayout />}>
@@ -366,6 +374,7 @@ const App: React.FC = () => {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
         </AuthInitializer>
       </Router>
     </QueryClientProvider>

@@ -1,9 +1,45 @@
 import { getWebSocketBaseUrl } from '../api/config';
 import type { Notification } from '../types/notification';
 
+type RealtimeListener = (live: boolean) => void;
+
+let notificationsRealtimeLive = false;
+const realtimeListeners = new Set<RealtimeListener>();
+
+export function isNotificationsRealtimeLive(): boolean {
+  return notificationsRealtimeLive;
+}
+
+export function setNotificationsRealtimeLive(live: boolean): void {
+  if (notificationsRealtimeLive === live) return;
+  notificationsRealtimeLive = live;
+  realtimeListeners.forEach((listener) => {
+    try {
+      listener(live);
+    } catch {
+      /* ignore */
+    }
+  });
+}
+
+export function subscribeNotificationsRealtime(listener: RealtimeListener): () => void {
+  realtimeListeners.add(listener);
+  return () => realtimeListeners.delete(listener);
+}
+
 export function getNotificationsWebSocketUrl(): string {
   const token = localStorage.getItem('access_token') || '';
-  return `${getWebSocketBaseUrl()}/ws/notifications/?token=${token}`;
+  return `${getWebSocketBaseUrl()}/ws/notifications/?token=${encodeURIComponent(token)}`;
+}
+
+export function openSafeWebSocket(url: string): WebSocket | null {
+  try {
+    if (!url.includes('token=') || /token=($|&)/.test(url)) return null;
+    return new WebSocket(url);
+  } catch (error) {
+    console.warn('[ws] No se pudo abrir WebSocket:', error);
+    return null;
+  }
 }
 
 export async function ensureNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {

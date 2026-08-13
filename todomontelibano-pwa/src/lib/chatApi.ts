@@ -75,5 +75,5 @@ export const deleteMessage = async (messageId: string) => {
 
 export const getWebSocketUrl = (conversationId: string): string => {
   const token = localStorage.getItem('access_token') || '';
-  return `${getWebSocketBaseUrl()}/ws/messaging/conversations/${conversationId}/?token=${token}`;
+  return `${getWebSocketBaseUrl()}/ws/messaging/conversations/${conversationId}/?token=${encodeURIComponent(token)}`;
 };

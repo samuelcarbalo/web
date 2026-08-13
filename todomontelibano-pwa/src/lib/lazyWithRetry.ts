@@ -1,11 +1,9 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-
-const CHUNK_RELOAD_KEY = 'chunk_reload_v1';
+import { clearChunkReloadFlag, recoverFromStaleChunks } from './chunkRecovery';
 
 /**
- * React.lazy con un único reintento de reload ante chunks 404 (post-deploy).
- * NO limpiar la marca al boot de main.tsx: eso provocaba bucle infinito de F5
- * (clear → fail → reload → clear → …) y pantalla blanca en la misma pestaña.
+ * React.lazy que recarga una sola vez si el chunk ya no existe
+ * (el hosting SPA responde index.html con MIME text/html).
  */
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
@@ -13,43 +11,12 @@ export function lazyWithRetry<T extends ComponentType<any>>(
   return lazy(async () => {
     try {
       const mod = await factory();
-      try {
-        sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-      } catch {
-        /* ignore */
-      }
+      clearChunkReloadFlag();
       return mod;
     } catch (error) {
-      let alreadyReloaded = false;
-      try {
-        alreadyReloaded = sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1';
-      } catch {
-        alreadyReloaded = false;
-      }
-
-      if (!alreadyReloaded) {
-        try {
-          sessionStorage.setItem(CHUNK_RELOAD_KEY, '1');
-        } catch {
-          /* ignore */
-        }
-        // Intentar soltar caches del SW antes del reload
-        try {
-          if ('caches' in window) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map((k) => caches.delete(k)));
-          }
-        } catch {
-          /* ignore */
-        }
-        window.location.reload();
+      const reloading = await recoverFromStaleChunks();
+      if (reloading) {
         return new Promise(() => undefined) as Promise<{ default: T }>;
-      }
-
-      try {
-        sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-      } catch {
-        /* ignore */
       }
       throw error;
     }
