@@ -14,6 +14,8 @@ import {
   House,
   Mail,
   Coins,
+  ShoppingBag,
+  Package,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
@@ -21,6 +23,9 @@ import { useTournaments } from '../hooks/useSports';
 import { useContactMessages } from '../hooks/useContact';
 import CreditBalanceBadge from '../components/Credits/CreditBalanceBadge';
 import BuyCreditsButton from '../components/Credits/BuyCreditsButton';
+import { useMyShopOrders } from '../hooks/useShop';
+import { ROUTES } from '../config/seo';
+import { useCartStore } from '../store/cartStore';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -108,6 +113,8 @@ const Dashboard: React.FC = () => {
   const unreadContactCount = contactMessages.filter((m) => !m.is_read).length;
   const { data: tournaments } = useTournaments({ status: 'active', enabled: false });
   const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManagerOrAdmin });
+  const { data: shopOrders = [] } = useMyShopOrders(true);
+  const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   
 
   // Stats de deportes (nuevo)
@@ -122,9 +129,11 @@ const Dashboard: React.FC = () => {
     { label: 'Publicar propiedad', icon: House, link: '/real-estate/create', primary: false },
     { label: 'Mis propiedades', icon: House, link: '/real-estate/my_listings', primary: false },
     { label: 'Ver aplicaciones', icon: Eye, link: '/applications', primary: false },
+    { label: 'Ir a la tienda', icon: ShoppingBag, link: ROUTES.tienda, primary: false },
   ] : [
     { label: 'Buscar empleos', icon: Briefcase, link: '/jobs', primary: true },
     { label: 'Ver propiedades', icon: House, link: '/real-estate', primary: false },
+    { label: 'Explorar tienda', icon: ShoppingBag, link: ROUTES.tienda, primary: false },
     { label: 'Editar perfil', icon: User, link: '/profile', primary: false },
   ];
 
@@ -291,6 +300,53 @@ const Dashboard: React.FC = () => {
           </div>
 
           
+        </div>
+
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+              <ShoppingBag className="w-6 h-6 mr-2 text-violet-600 dark:text-violet-400" />
+              Tienda
+            </h2>
+            <Link to={ROUTES.tienda} className="text-violet-600 hover:text-violet-700 text-sm font-medium">
+              Ver catálogo →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link to={ROUTES.tienda} className="card hover:shadow-2xl transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-3xl bg-violet-600">
+                  <ShoppingBag className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Explorar catálogo</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Productos públicos</p>
+                </div>
+              </div>
+            </Link>
+            <Link to={ROUTES.tiendaCarrito} className="card hover:shadow-2xl transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-3xl bg-indigo-500">
+                  <ShoppingBag className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Carrito</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{cartCount}</p>
+                </div>
+              </div>
+            </Link>
+            <Link to={ROUTES.tiendaPedidos} className="card hover:shadow-2xl transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-3xl bg-emerald-500">
+                  <Package className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mis pedidos</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{shopOrders.length}</p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -485,6 +541,23 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
             )}
+
+            {/* Resumen Tienda */}
+            <div className="card bg-gradient-to-br from-violet-600 to-indigo-600 text-white">
+              <h2 className="text-lg font-bold mb-2 flex items-center">
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                Tienda
+              </h2>
+              <p className="text-violet-100 text-sm mb-4">
+                {shopOrders.length} pedido{shopOrders.length === 1 ? '' : 's'} · {cartCount} en carrito
+              </p>
+              <Link
+                to={ROUTES.tiendaPedidos}
+                className="block w-full py-2 bg-white text-violet-600 rounded-3xl font-medium hover:bg-violet-50 text-center"
+              >
+                Ver mis pedidos
+              </Link>
+            </div>
 
             {/* Resumen Deportes (nuevo) */}
             <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">

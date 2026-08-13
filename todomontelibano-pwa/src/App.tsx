@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Layout
@@ -52,6 +52,7 @@ const ProductDetail = lazyWithRetry(() => import('./pages/Shop/ProductDetail'));
 const CartPage = lazyWithRetry(() => import('./pages/Shop/CartPage'));
 const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
 const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
+const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
 const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
 const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
 const CreateEvent = lazyWithRetry(() => import('./pages/Events/CreateEvent'));
@@ -61,6 +62,7 @@ const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
+import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
 import {
   JobsLegacyRedirect,
   SportsLegacyRedirect,
@@ -83,16 +85,14 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-/** Hidrata sesión; libera isLoading siempre (finally + timeout). No bloquea rutas públicas. */
+/** Hidrata sesión; libera isLoading siempre. No bloquea rutas públicas (tienda, empleos, etc.). */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
   const meQuery = useMe();
 
   useEffect(() => {
     const finishHydration = () => {
-      setHydrated(true);
       if (!hasValidSessionHint()) {
         logout();
         setLoading(false);
@@ -112,21 +112,15 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
       setLoading(false);
       return;
     }
-    // Cuando deja de fetchear (éxito, error o cancelado), soltar loader
     if (!meQuery.isFetching) {
       setLoading(false);
     }
   }, [meQuery.isFetching, meQuery.fetchStatus, setLoading]);
 
-  // Seguridad: nunca bloquear ProtectedRoute más de 3s en F5
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 3_000);
     return () => window.clearTimeout(timer);
   }, [setLoading]);
-
-  if (!hydrated) {
-    return <PageLoader />;
-  }
 
   return <>{children}</>;
 };
@@ -171,12 +165,18 @@ const ProtectedRoute: React.FC<{
   return <>{children}</>;
 };
 
+const ProductosAliasRedirect: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  return <Navigate to={slug ? `/tienda/${slug}` : '/tienda'} replace />;
+};
+
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <ScrollToTop />
         <AuthInitializer>
+          <PwaUpdateBanner />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Rutas públicas - NO requieren auth */}
@@ -276,11 +276,29 @@ const App: React.FC = () => {
                 <Route path="creditos" element={<CreditPackagesPage />} />
                 <Route path="creditos/resultado" element={<PaymentResultPage />} />
 
+                {/* Tienda pública: catálogo y ficha (como empleos / bienes raíces) */}
                 <Route path="tienda" element={<ShopList />} />
                 <Route path="tienda/carrito" element={<CartPage />} />
-                <Route path="tienda/checkout" element={<CheckoutPage />} />
+                <Route
+                  path="tienda/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="tienda/resultado" element={<ShopPaymentResultPage />} />
+                <Route
+                  path="tienda/pedidos"
+                  element={
+                    <ProtectedRoute>
+                      <MyOrdersPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="tienda/:slug" element={<ProductDetail />} />
+                <Route path="productos" element={<Navigate to="/tienda" replace />} />
+                <Route path="productos/:slug" element={<ProductosAliasRedirect />} />
 
                 {/* Rutas protegidas adicionales */}
                 <Route

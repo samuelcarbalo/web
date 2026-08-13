@@ -45,7 +45,10 @@ const ShopPaymentResultPage: React.FC = () => {
           <Link to={ROUTES.tienda} className="btn-primary justify-center">
             Seguir comprando
           </Link>
-          <Link to="/dashboard" className="text-sm font-bold text-violet-600">
+          <Link to={ROUTES.tiendaPedidos} className="text-sm font-bold text-violet-600">
+            Ver mis pedidos
+          </Link>
+          <Link to="/dashboard" className="text-sm font-bold text-gray-500">
             Ir al dashboard
           </Link>
         </div>

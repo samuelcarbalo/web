@@ -14,6 +14,7 @@ import {
   Shield,
   Bell,
   Coins,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import JsonLd from "../components/SEO/JsonLd";
@@ -67,6 +68,16 @@ const Home: React.FC = () => {
       comingSoon: false,
       path: ROUTES.bienesRaices,
       stats: "Propiedades",
+    },
+    {
+      icon: ShoppingBag,
+      title: "Tienda",
+      description:
+        "Catálogo de productos locales. Navega sin cuenta y paga con Mercado Pago.",
+      gradient: "from-indigo-500 to-violet-600",
+      active: true,
+      path: ROUTES.tienda,
+      stats: "Catálogo abierto",
     },
   ];
 
@@ -182,7 +193,7 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 lg:gap-8">
             {services.map((service) => (
               <div
                 key={service.title}
