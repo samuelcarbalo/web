@@ -1,2 +1,3 @@
-# Cloudflare Pages / Netlify SPA fallback
+# SPA fallback — Netlify / Cloudflare Pages / Render static
+# Todas las rutas de cliente deben servir index.html (status 200).
 /*    /index.html   200

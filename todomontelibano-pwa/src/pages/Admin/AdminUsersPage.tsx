@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X } from 'lucide-react';
 import {
   useAdminUsers,
@@ -10,6 +11,8 @@ import {
 import type { AdminUser } from '../../lib/adminApi';
 
 const AdminUsersPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const focusCredits = searchParams.get('focus') === 'credits';
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<AdminUser | null>(null);
@@ -64,6 +67,12 @@ const AdminUsersPage: React.FC = () => {
           <p className="mt-2 text-violet-100 max-w-2xl font-light">
             Gestiona usuarios, créditos y estado de cuentas. Solo visible para staff / superusuario.
           </p>
+          {focusCredits && (
+            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-amber-400/20 border border-amber-200/50 px-4 py-2 text-sm font-bold text-amber-50">
+              <Coins className="w-4 h-4" />
+              Modo ajuste de créditos: abre un usuario con el lápiz y edita el saldo.
+            </div>
+          )}
         </div>
       </div>
 

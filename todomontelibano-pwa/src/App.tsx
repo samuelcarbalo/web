@@ -10,6 +10,7 @@ import ScrollToTop from './components/UI/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import ForgotPassword from './pages/Auth/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import NotFoundPage from './pages/NotFoundPage';
 import { lazyWithRetry } from './lib/lazyWithRetry';
@@ -54,6 +55,7 @@ const CartPage = lazyWithRetry(() => import('./pages/Shop/CartPage'));
 const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
 const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
 const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
+const CreateProduct = lazyWithRetry(() => import('./pages/Shop/CreateProduct'));
 const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
 const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
 const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
@@ -332,6 +334,14 @@ const App: React.FC = () => {
 
                 {/* Tienda pública: catálogo y ficha (como empleos / bienes raíces) */}
                 <Route path="tienda" element={<ShopList />} />
+                <Route
+                  path="tienda/publicar"
+                  element={
+                    <ProtectedRoute allowedRoles={['manager', 'admin']}>
+                      <CreateProduct />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="tienda/carrito" element={<CartPage />} />
                 <Route
                   path="tienda/checkout"
@@ -425,6 +435,8 @@ const App: React.FC = () => {
               {/* Auth routes - públicas */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
