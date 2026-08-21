@@ -59,7 +59,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           {product.name}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 min-h-[2.5rem]">
-          {product.short_description || product.description || 'Producto disponible en CAPISJ DIGITAL.'}
+          {product.short_description || product.description || 'Producto disponible en Chever.'}
         </p>
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-2xl font-extrabold text-gray-900 dark:text-white">

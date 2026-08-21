@@ -4,7 +4,7 @@ import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { useShopProduct } from '../../hooks/useShop';
 import { useCartStore } from '../../store/cartStore';
 import { getMediaUrl } from '../../lib/api';
-import { ROUTES } from '../../config/seo';
+import { ROUTES, SITE_NAME } from '../../config/seo';
 import SeoHead from '../../components/SEO/SeoHead';
 import CatalogErrorState from '../../components/Shop/CatalogErrorState';
 
@@ -52,8 +52,9 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       <SeoHead
-        title={`${product.name} | Tienda CAPISJ DIGITAL`}
+        title={`${product.name} | Tienda ${SITE_NAME}`}
         description={product.short_description || product.description || product.name}
+        path={ROUTES.tiendaProducto(product.slug)}
         ogImage={product.image_url ? getMediaUrl(product.image_url) : undefined}
       />
       <div className="page-container py-8">

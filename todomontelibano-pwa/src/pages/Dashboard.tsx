@@ -110,6 +110,7 @@ const Dashboard: React.FC = () => {
   // Stats de torneos (nuevo)
   const isManagerOrAdmin = user?.role === 'manager' || user?.role === 'admin';
   const isSuperUser = !!user?.is_superuser;
+  const isPlatformAdmin = isSuperUser || !!user?.is_staff;
   const { data: contactMessages = [] } = useContactMessages(isSuperUser, { is_read: false });
   const unreadContactCount = contactMessages.filter((m) => !m.is_read).length;
   const { data: tournaments } = useTournaments({ status: 'active', enabled: false });
@@ -166,6 +167,15 @@ const Dashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <CreditBalanceBadge />
             <BuyCreditsButton label="Obtener más créditos" />
+            {isPlatformAdmin && (
+              <Link
+                to="/dashboard/admin"
+                className="inline-flex items-center gap-2 rounded-2xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-indigo-600 transition-colors"
+              >
+                <Shield className="w-4 h-4" />
+                Panel de administración
+              </Link>
+            )}
           </div>
         </div>
 
@@ -189,22 +199,27 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {(isSuperUser || user?.is_staff) && (
+        {isPlatformAdmin && (
           <Link
             to="/dashboard/admin"
             className="card mb-8 border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-r from-indigo-50 to-slate-50 dark:from-indigo-950/30 dark:to-slate-950/20 hover:shadow-2xl transition-shadow block"
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-3xl bg-indigo-700 text-white">
-                <Shield className="w-6 h-6" />
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-3xl bg-indigo-700 text-white">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Administración</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Panel de usuarios</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                    Listar, editar créditos, bloquear o eliminar cuentas
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Administración</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">Panel de usuarios</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                  Listar, editar créditos, bloquear o eliminar cuentas
-                </p>
-              </div>
+              <span className="hidden sm:inline-flex rounded-2xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white">
+                Abrir panel
+              </span>
             </div>
           </Link>
         )}

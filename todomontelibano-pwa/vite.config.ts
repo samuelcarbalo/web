@@ -17,13 +17,14 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'prompt',
         injectRegister: false,
-        includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
+        includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt', 'chever-logo.svg'],
         manifest: {
-          id: '/',
-          name: 'CAPISJ DIGITAL',
-          short_name: 'CAPISJ',
+          // id estable: Chrome reutiliza la misma instalación aunque cambie name/short_name
+          id: `${siteUrl.replace(/\/$/, '')}/`,
+          name: 'Chever',
+          short_name: 'Chever',
           description:
-            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios CAPISJ DIGITAL.',
+            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios Chever.',
           theme_color: '#021433',
           background_color: '#F9F9F9',
           lang: 'es',
@@ -33,6 +34,14 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           orientation: 'portrait-primary',
           categories: ['business', 'productivity', 'lifestyle'],
+          // Ayuda a getInstalledRelatedApps() a detectar la PWA ya instalada
+          related_applications: [
+            {
+              platform: 'webapp',
+              url: `${siteUrl.replace(/\/$/, '')}/manifest.webmanifest`,
+            },
+          ],
+          prefer_related_applications: false,
           icons: [
             { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
             { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
@@ -82,13 +91,13 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          // skipWaiting=false: el banner aplica la actualización sobre el mismo SW
           skipWaiting: false,
           clientsClaim: true,
           cleanupOutdatedCaches: true,
           importScripts: ['/notification-sw.js'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
-          // Navegación siempre red primero; no cachear HTML largo (rompe chunks hasheados)
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === 'navigate',

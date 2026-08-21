@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type PwaInstallOutcome = 'accepted' | 'dismissed' | null;
 
+const INSTALLED_KEY = 'pwa_installed_v1';
+
 type InstallSnapshot = {
   deferredPrompt: BeforeInstallPromptEvent | null;
   isInstalled: boolean;
@@ -25,10 +27,29 @@ function setSnapshot(partial: Partial<InstallSnapshot>) {
   emit();
 }
 
+function readInstalledFlag(): boolean {
+  try {
+    return localStorage.getItem(INSTALLED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markInstalled() {
+  try {
+    localStorage.setItem(INSTALLED_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+  setSnapshot({ isInstalled: true, deferredPrompt: null });
+}
+
 function isStandaloneDisplay(): boolean {
   if (typeof window === 'undefined') return false;
   const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  const iosStandalone = 'standalone' in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+  const iosStandalone =
+    'standalone' in navigator &&
+    Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
   return mediaStandalone || iosStandalone;
 }
 
@@ -40,20 +61,44 @@ function detectIos(): boolean {
   return iOSDevice || iPadOs;
 }
 
+async function detectRelatedInstalledApp(): Promise<boolean> {
+  const nav = navigator as Navigator & {
+    getInstalledRelatedApps?: () => Promise<Array<{ platform?: string; url?: string }>>;
+  };
+  if (typeof nav.getInstalledRelatedApps !== 'function') return false;
+  try {
+    const apps = await nav.getInstalledRelatedApps();
+    return Array.isArray(apps) && apps.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 let initialized = false;
 
 function ensureInstallListeners() {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
 
-  if (isStandaloneDisplay()) {
-    setSnapshot({ isInstalled: true, deferredPrompt: null, isReady: true });
+  if (isStandaloneDisplay() || readInstalledFlag()) {
+    markInstalled();
+    setSnapshot({ isReady: true });
     return;
   }
 
   setSnapshot({ isReady: true });
 
+  void detectRelatedInstalledApp().then((related) => {
+    if (related) markInstalled();
+  });
+
   const onBeforeInstallPrompt = (event: Event) => {
+    // Si ya está instalada (standalone / flag / related), no ofrecer otra instalación
+    if (snapshot.isInstalled || isStandaloneDisplay() || readInstalledFlag()) {
+      event.preventDefault();
+      setSnapshot({ deferredPrompt: null, isInstalled: true });
+      return;
+    }
     event.preventDefault();
     setSnapshot({
       deferredPrompt: event as BeforeInstallPromptEvent,
@@ -62,7 +107,7 @@ function ensureInstallListeners() {
   };
 
   const onAppInstalled = () => {
-    setSnapshot({ deferredPrompt: null, isInstalled: true });
+    markInstalled();
   };
 
   window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
@@ -88,6 +133,7 @@ export type UsePWAInstallResult = {
 /**
  * Shared PWA install state. Multiple consumers (hero button + banner) share
  * the same deferred `beforeinstallprompt` event.
+ * Tras instalar una vez, no vuelve a ofrecer “descargar” la misma app.
  */
 export function usePWAInstall(): UsePWAInstallResult {
   const [, rerender] = useState(0);
@@ -103,7 +149,7 @@ export function usePWAInstall(): UsePWAInstallResult {
     const onDisplayMode = () => {
       const standalone = isStandaloneDisplay();
       setIsStandalone(standalone);
-      if (standalone) setSnapshot({ isInstalled: true, deferredPrompt: null });
+      if (standalone) markInstalled();
     };
     media.addEventListener?.('change', onDisplayMode);
 
@@ -114,6 +160,11 @@ export function usePWAInstall(): UsePWAInstallResult {
   }, []);
 
   const handleInstall = useCallback(async (): Promise<PwaInstallOutcome> => {
+    if (snapshot.isInstalled || isStandaloneDisplay() || readInstalledFlag()) {
+      markInstalled();
+      return 'accepted';
+    }
+
     const promptEvent = snapshot.deferredPrompt;
     if (!promptEvent) return null;
 
@@ -121,20 +172,18 @@ export function usePWAInstall(): UsePWAInstallResult {
     const { outcome } = await promptEvent.userChoice;
     setSnapshot({ deferredPrompt: null });
     if (outcome === 'accepted') {
-      setSnapshot({ isInstalled: true });
+      markInstalled();
     }
     return outcome;
   }, []);
 
-  const isInstallable = Boolean(snapshot.deferredPrompt) && !snapshot.isInstalled && !isStandalone;
-  const canPromptInstall =
-    !snapshot.isInstalled &&
-    !isStandalone &&
-    (isInstallable || isIos);
+  const alreadyInstalled = snapshot.isInstalled || isStandalone || readInstalledFlag();
+  const isInstallable = Boolean(snapshot.deferredPrompt) && !alreadyInstalled;
+  const canPromptInstall = !alreadyInstalled && (isInstallable || isIos);
 
   return {
     isInstallable,
-    isInstalled: snapshot.isInstalled || isStandalone,
+    isInstalled: alreadyInstalled,
     isIos,
     isStandalone,
     isReady: snapshot.isReady,

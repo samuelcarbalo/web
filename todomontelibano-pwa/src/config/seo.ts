@@ -10,8 +10,7 @@ export const SITE_LOCALE = 'es_CO';
  * Evitar enlaces tipo ibb.co/xxx (página HTML); usar i.ibb.co/.../archivo.jpg
  */
 export const DEFAULT_OG_IMAGE =
-  import.meta.env.VITE_OG_IMAGE ||
-  'https://i.ibb.co/wZNxrY8t/CAPISJ-DIGITAL-logo-principal.jpg';
+  import.meta.env.VITE_OG_IMAGE || `${SITE_URL.replace(/\/$/, '')}/chever-logo.svg`;
 export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — Empleos, deportes, bienes raíces y eventos en Córdoba`;
@@ -142,6 +141,70 @@ export const SEO_PAGES: Record<string, SeoMeta> = {
     title: `Crear Cuenta | ${brand}`,
     description: `Regístrate gratis en ${brand}.`,
     path: ROUTES.register,
+    noindex: true,
+  },
+  [ROUTES.privacy]: {
+    title: `Política de Privacidad | ${brand}`,
+    description: `Cómo ${brand} trata tus datos personales.`,
+    path: ROUTES.privacy,
+  },
+  [ROUTES.terms]: {
+    title: `Términos de Servicio | ${brand}`,
+    description: `Condiciones de uso de la plataforma ${brand}.`,
+    path: ROUTES.terms,
+  },
+  [ROUTES.creditos]: {
+    title: `Créditos | Publica en ${brand}`,
+    description: `Compra créditos para publicar empleos, inmuebles, eventos y torneos en ${brand}.`,
+    path: ROUTES.creditos,
+    noindex: true,
+  },
+  [ROUTES.tiendaCarrito]: {
+    title: `Carrito | ${brand}`,
+    description: `Revisa los productos de tu carrito en la tienda de ${brand}.`,
+    path: ROUTES.tiendaCarrito,
+    noindex: true,
+  },
+  [ROUTES.tiendaCheckout]: {
+    title: `Checkout | ${brand}`,
+    description: `Finaliza tu compra en ${brand} con Mercado Pago.`,
+    path: ROUTES.tiendaCheckout,
+    noindex: true,
+  },
+  [ROUTES.tiendaResultado]: {
+    title: `Resultado de pago | ${brand}`,
+    description: `Estado de tu pedido en ${brand}.`,
+    path: ROUTES.tiendaResultado,
+    noindex: true,
+  },
+  [ROUTES.tiendaPedidos]: {
+    title: `Mis pedidos | ${brand}`,
+    description: `Historial de compras en ${brand}.`,
+    path: ROUTES.tiendaPedidos,
+    noindex: true,
+  },
+  '/dashboard': {
+    title: `Panel | ${brand}`,
+    description: `Tu panel de ${brand}.`,
+    path: '/dashboard',
+    noindex: true,
+  },
+  '/profile': {
+    title: `Perfil | ${brand}`,
+    description: `Gestiona tu perfil en ${brand}.`,
+    path: '/profile',
+    noindex: true,
+  },
+  '/applications': {
+    title: `Postulaciones | ${brand}`,
+    description: `Tus postulaciones en ${brand}.`,
+    path: '/applications',
+    noindex: true,
+  },
+  '/messages': {
+    title: `Mensajes | ${brand}`,
+    description: `Bandeja de mensajes de ${brand}.`,
+    path: '/messages',
     noindex: true,
   },
 };

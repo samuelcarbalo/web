@@ -57,7 +57,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({
       <meta property="og:locale" content={SITE_LOCALE} />
       <meta property="og:image" content={image} />
       <meta property="og:image:secure_url" content={image} />
-      <meta property="og:image:type" content="image/jpeg" />
+      <meta property="og:image:type" content={image.endsWith('.svg') ? 'image/svg+xml' : 'image/jpeg'} />
       <meta property="og:image:width" content={String(DEFAULT_OG_IMAGE_WIDTH)} />
       <meta property="og:image:height" content={String(DEFAULT_OG_IMAGE_HEIGHT)} />
       <meta property="og:image:alt" content={DEFAULT_OG_IMAGE_ALT} />

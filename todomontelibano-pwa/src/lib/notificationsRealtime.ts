@@ -88,5 +88,5 @@ function defaultTitle(type: Notification['type']): string {
   if (type === 'payment_success') return '¡Pago aprobado!';
   if (type === 'payment_failed') return 'Pago rechazado';
   if (type === 'payment_pending') return 'Pago pendiente';
-  return 'CAPISJ DIGITAL';
+  return 'Chever';
 }

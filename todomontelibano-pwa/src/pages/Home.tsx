@@ -32,7 +32,7 @@ const Home: React.FC = () => {
       icon: Briefcase,
       title: "Empleos",
       description:
-        "Encuentra oportunidades laborales en CAPISJ DIGITAL y zona bananera. Publica vacantes si eres empresa.",
+        "Encuentra oportunidades laborales en Chever y zona bananera. Publica vacantes si eres empresa.",
       gradient: "from-violet-500 to-indigo-600",
       active: true,
       path: ROUTES.empleos,
@@ -62,7 +62,7 @@ const Home: React.FC = () => {
       icon: House,
       title: "Bienes Raíces",
       description:
-        "Casas, apartamentos, locales y terrenos en venta y arriendo en CAPISJ DIGITAL.",
+        "Casas, apartamentos, locales y terrenos en venta y arriendo en Chever.",
       gradient: "from-orange-500 to-rose-600",
       active: true,
       comingSoon: false,
@@ -118,7 +118,7 @@ const Home: React.FC = () => {
             <div className="inline-flex items-center px-5 py-2.5 rounded-full glass mb-10">
               <span className="flex h-2 w-2 rounded-full bg-emerald-400 mr-2.5 animate-pulse" />
               <span className="text-sm font-bold text-white/90">
-                Plataforma activa en CAPISJ DIGITAL
+                Plataforma activa en Chever
               </span>
             </div>
 
@@ -189,7 +189,7 @@ const Home: React.FC = () => {
               Nuestros Servicios
             </h2>
             <p className="mt-6 text-lg font-medium text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              CAPISJ DIGITAL conecta a la comunidad con múltiples servicios en una sola plataforma
+              Chever conecta a la comunidad con múltiples servicios en una sola plataforma
             </p>
           </div>
 
@@ -251,11 +251,11 @@ const Home: React.FC = () => {
             <div>
               <span className="badge text-xs uppercase tracking-widest">Características</span>
               <h2 className="mt-4 text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-6">
-                ¿Por qué elegir CAPISJ DIGITAL?
+                ¿Por qué elegir Chever?
               </h2>
               <p className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
                 Nuestra plataforma está diseñada pensando en las necesidades de la comunidad de
-                CAPISJ DIGITAL, ofreciendo una experiencia unificada para todos los servicios.
+                Chever, ofreciendo una experiencia unificada para todos los servicios.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -292,7 +292,7 @@ const Home: React.FC = () => {
                         <span className="text-white font-bold text-lg">T</span>
                       </div>
                       <div>
-                        <p className="text-white font-bold">CAPISJ DIGITAL</p>
+                        <p className="text-white font-bold">Chever</p>
                         <p className="text-violet-200/70 text-xs font-medium">App Móvil</p>
                       </div>
                     </div>
@@ -324,7 +324,7 @@ const Home: React.FC = () => {
               Planes de pago flexibles
             </h2>
             <p className="mt-6 text-lg font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
-              Los créditos CAPISJ DIGITAL te permiten publicar empleos, inmuebles, eventos y torneos.
+              Los créditos Chever te permiten publicar empleos, inmuebles, eventos y torneos.
               Elige el paquete que se ajuste a tu necesidad — desde pruebas rápidas hasta patrocinios —
               y paga de forma segura con Mercado Pago.
             </p>
@@ -391,7 +391,7 @@ const Home: React.FC = () => {
               ¿Listo para comenzar?
             </h2>
             <p className="text-violet-100 text-lg font-medium mb-10">
-              Únete a la comunidad de CAPISJ DIGITAL y descubre todas las oportunidades que tenemos para ti.
+              Únete a la comunidad de Chever y descubre todas las oportunidades que tenemos para ti.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link

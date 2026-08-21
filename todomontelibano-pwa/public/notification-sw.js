@@ -3,7 +3,7 @@ self.addEventListener('message', (event) => {
   const data = event.data;
   if (!data || data.type !== 'SHOW_NOTIFICATION') return;
 
-  const title = data.title || 'CAPISJ DIGITAL';
+  const title = data.title || 'Chever';
   const options = {
     body: data.body || '',
     icon: '/icon-192x192.png',

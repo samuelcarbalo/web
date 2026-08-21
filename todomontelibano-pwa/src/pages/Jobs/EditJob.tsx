@@ -319,7 +319,7 @@ const EditJob: React.FC = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="input-field pl-10"
-                    placeholder="Ej: CAPISJ DIGITAL, Córdoba"
+                    placeholder="Ej: Chever, Córdoba"
                   />
                 </div>
               </div>
