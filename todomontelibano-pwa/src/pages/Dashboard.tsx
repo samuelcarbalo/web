@@ -700,7 +700,7 @@ const Dashboard: React.FC = () => {
                     </span>
                     {canManageContent(user) && (
                       <span className="inline-block px-2 py-0.5 text-xs bg-amber-100 text-amber-800 border border-amber-200 font-semibold rounded-full">
-                        🪙 {user.credits !== undefined ? user.credits : 0} Créditos
+                        🪙 {user?.credits ?? 0} Créditos
                       </span>
                     )}
                   </div>
