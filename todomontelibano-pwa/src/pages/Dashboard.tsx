@@ -19,6 +19,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { canManageContent } from '../hooks/usePermissions';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
 import { useTournaments } from '../hooks/useSports';
 import { useContactMessages } from '../hooks/useContact';
@@ -34,9 +35,9 @@ const Dashboard: React.FC = () => {
   
   // Datos de deportes
   
-  // Solo para empresas/managers
+  // Solo para empresas/managers/admins de plataforma
   let isCompany = false;
-  const isManager = user?.role === 'manager';
+  const isManager = canManageContent(user);
   if (isManager){
     isCompany = true;
   }
@@ -108,7 +109,7 @@ const Dashboard: React.FC = () => {
   ];
   
   // Stats de torneos (nuevo)
-  const isManagerOrAdmin = user?.role === 'manager' || user?.role === 'admin';
+  const isManagerOrAdmin = canManageContent(user);
   const isSuperUser = !!user?.is_superuser;
   const isPlatformAdmin = isSuperUser || !!user?.is_staff;
   const { data: contactMessages = [] } = useContactMessages(isSuperUser, { is_read: false });
@@ -537,7 +538,7 @@ const Dashboard: React.FC = () => {
                     <span className="inline-block px-2 py-0.5 text-xs bg-violet-100 dark:bg-violet-950/40 text-blue-700 rounded-full">
                       {user?.user_type === 'company' ? 'Empresa' : 'Persona'}
                     </span>
-                    {user?.role === 'manager' && (
+                    {canManageContent(user) && (
                       <span className="inline-block px-2 py-0.5 text-xs bg-amber-100 text-amber-800 border border-amber-200 font-semibold rounded-full">
                         🪙 {user.credits !== undefined ? user.credits : 0} Créditos
                       </span>

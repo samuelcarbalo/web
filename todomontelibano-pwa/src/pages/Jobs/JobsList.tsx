@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
+import { canManageContent } from '../../hooks/usePermissions';
 import JsonLd from '../../components/SEO/JsonLd';
 import { buildJobsCollectionSchema } from '../../components/SEO/schemas/seoSchemas';
 import { ROUTES } from '../../config/seo';
@@ -122,7 +123,7 @@ const JobsList: React.FC = () => {
                 Descubre tu próximo paso profesional en Chever. Las mejores empresas de la región publican sus vacantes aquí.
               </p>
             </div>
-            {isAuthenticated && user?.user_type === 'company' && (
+            {isAuthenticated && (user?.user_type === 'company' || canManageContent(user)) && (
               <div className="mt-6 md:mt-0 flex-shrink-0">
                 <Link
                   to={ROUTES.empleosCreate}

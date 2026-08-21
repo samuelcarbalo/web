@@ -64,6 +64,7 @@ const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
+import { canManageContent } from './hooks/usePermissions';
 import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
 import {
   JobsLegacyRedirect,
@@ -202,11 +203,15 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (requireAdmin && !(user?.is_superuser || user?.is_staff)) {
+  if (requireAdmin && !(user?.is_superuser || user?.is_staff || user?.role === 'admin')) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user?.role || '')) {
+  if (
+    allowedRoles &&
+    !canManageContent(user) &&
+    !allowedRoles.includes(user?.role || '')
+  ) {
     return <Navigate to="/dashboard" replace />;
   }
 

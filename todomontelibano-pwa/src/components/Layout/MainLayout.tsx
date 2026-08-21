@@ -26,6 +26,7 @@ import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
 import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
 import BrandLogo from "../Brand/BrandLogo";
+import { canManageContent } from "../../hooks/usePermissions";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
 
 const MainLayout: React.FC = () => {
@@ -228,12 +229,12 @@ const MainLayout: React.FC = () => {
                         <Link to="/messages" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Mensajes
                         </Link>
-                        {user?.role === "manager" && (
+                        {canManageContent(user) && (
                           <Link to="/real-estate/my_listings" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                             Mis Propiedades
                           </Link>
                         )}
-                        {user?.role === "manager" && (
+                        {canManageContent(user) && (
                           <Link to="/jobs/offers/" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                             Gestionar Empleos
                           </Link>
@@ -310,7 +311,7 @@ const MainLayout: React.FC = () => {
 
               {sessionActive ? (
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
-                  {user?.role === "manager" && (
+                  {canManageContent(user) && (
                     <div className="px-4 py-3 text-sm font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-center gap-1.5 mb-3">
                       🪙 {user.credits !== undefined ? user.credits : 0} Créditos disponibles
                     </div>

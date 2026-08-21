@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { House, Plus, Eye, Edit, Trash2, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { canManageContent } from '../../hooks/usePermissions';
 import { useMyListings, useDeleteListing, useRenewListing } from '../../hooks/useRealEstate';
 import { getMediaUrl } from '../../lib/api';
 import type { RealEstateOffer } from '../../types';
@@ -11,7 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = { sale: 'Venta', rent: 'Alquiler
 const MyListings: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const isManager = user?.role === 'manager' || user?.role === 'admin';
+  const isManager = canManageContent(user);
 
   const { data, isLoading, error } = useMyListings({ enabled: isManager });
   const deleteMutation = useDeleteListing();
