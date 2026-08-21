@@ -239,6 +239,16 @@ const MainLayout: React.FC = () => {
                             Gestionar Empleos
                           </Link>
                         )}
+                        {canManageContent(user) && (
+                          <Link to="/eventos/mis-eventos" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Mis Eventos
+                          </Link>
+                        )}
+                        {canManageContent(user) && (
+                          <Link to="/tienda/publicar" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Crear producto
+                          </Link>
+                        )}
                         <hr className="my-2 border-gray-200 dark:border-gray-700" />
                         <button
                           onClick={logout}

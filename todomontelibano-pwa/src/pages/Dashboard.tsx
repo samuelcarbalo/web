@@ -127,26 +127,125 @@ const Dashboard: React.FC = () => {
     totalTeams: tournaments?.results?.reduce((acc: number, t: any) => acc + (t.teams_count || 0), 0) || 0,
   };
 
-  const quickActions = isCompany ? [
-    { label: 'Publicar empleo', icon: Plus, link: '/jobs/create', primary: true },
-    { label: 'Publicar propiedad', icon: House, link: '/real-estate/create', primary: false },
-    { label: 'Mis propiedades', icon: House, link: '/real-estate/my_listings', primary: false },
-    { label: 'Ver aplicaciones', icon: Eye, link: '/applications', primary: false },
-    { label: 'Ir a la tienda', icon: ShoppingBag, link: ROUTES.tienda, primary: false },
-  ] : [
-    { label: 'Buscar empleos', icon: Briefcase, link: '/jobs', primary: true },
-    { label: 'Ver propiedades', icon: House, link: '/real-estate', primary: false },
-    { label: 'Explorar tienda', icon: ShoppingBag, link: ROUTES.tienda, primary: false },
-    { label: 'Editar perfil', icon: User, link: '/profile', primary: false },
-  ];
+  const quickActions = isManagerOrAdmin
+    ? [
+        {
+          label: '+ Crear Empleo',
+          icon: Briefcase,
+          link: ROUTES.empleosCreate,
+          tone: 'bg-violet-600 hover:bg-violet-500 text-white',
+        },
+        {
+          label: '+ Crear Torneo',
+          icon: Trophy,
+          link: ROUTES.deportesCreate,
+          tone: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+        },
+        {
+          label: '+ Crear Bienes Raíces',
+          icon: House,
+          link: ROUTES.bienesRaicesCreate,
+          tone: 'bg-amber-600 hover:bg-amber-500 text-white',
+        },
+        {
+          label: '+ Crear Evento',
+          icon: Calendar,
+          link: ROUTES.eventosPublicar,
+          tone: 'bg-rose-600 hover:bg-rose-500 text-white',
+        },
+        {
+          label: '+ Crear Producto',
+          icon: Package,
+          link: ROUTES.tiendaCreate,
+          tone: 'bg-indigo-600 hover:bg-indigo-500 text-white',
+        },
+        ...(isPlatformAdmin
+          ? [
+              {
+                label: '+ Ajustar Créditos',
+                icon: Coins,
+                link: ROUTES.adminCredits,
+                tone: 'bg-slate-800 hover:bg-slate-700 text-white ring-2 ring-amber-400/80',
+              },
+            ]
+          : [
+              {
+                label: 'Comprar créditos',
+                icon: Coins,
+                link: ROUTES.creditos,
+                tone: 'bg-amber-500 hover:bg-amber-400 text-white',
+              },
+            ]),
+      ]
+    : [
+        { label: 'Buscar empleos', icon: Briefcase, link: ROUTES.empleos, tone: 'bg-violet-600 hover:bg-violet-500 text-white' },
+        { label: 'Ver torneos', icon: Trophy, link: ROUTES.deportes, tone: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Ver propiedades', icon: House, link: ROUTES.bienesRaices, tone: 'bg-amber-600 hover:bg-amber-500 text-white' },
+        { label: 'Ver eventos', icon: Calendar, link: ROUTES.eventos, tone: 'bg-rose-600 hover:bg-rose-500 text-white' },
+        { label: 'Explorar tienda', icon: ShoppingBag, link: ROUTES.tienda, tone: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
+      ];
 
-  // Acciones rápidas de deportes (nuevo)
-  const sportsQuickActions = isManagerOrAdmin ? [
-    { label: 'Crear torneo', icon: Trophy, link: '/sports/tournaments/create', primary: true, color: 'bg-green-600 hover:bg-green-700' },
-    { label: 'Ver torneos', icon: Calendar, link: '/sports/my_tournaments', primary: false, color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200' },
-  ] : [
-    { label: 'Ver torneos', icon: Trophy, link: '/sports', primary: true, color: 'bg-green-600 hover:bg-green-700' },
-    { label: 'Mis equipos', icon: Users, link: '/sports/teams', primary: false, color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200' },
+  const moduleCards = [
+    {
+      key: 'empleos',
+      title: 'Empleos',
+      description: 'Publica vacantes y gestiona postulaciones',
+      icon: Briefcase,
+      color: 'bg-violet-600',
+      href: isManagerOrAdmin ? ROUTES.empleosMyOffers : ROUTES.empleos,
+      createHref: isManagerOrAdmin ? ROUTES.empleosCreate : undefined,
+      createLabel: 'Crear empleo',
+      stat: isCompany ? (myJobs as any)?.count || 0 : (applications as any)?.count || 0,
+      statLabel: isCompany ? 'mis ofertas' : 'aplicaciones',
+    },
+    {
+      key: 'deportes',
+      title: 'Deportes',
+      description: 'Torneos, equipos y resultados',
+      icon: Trophy,
+      color: 'bg-emerald-600',
+      href: ROUTES.deportes,
+      createHref: isManagerOrAdmin ? ROUTES.deportesCreate : undefined,
+      createLabel: 'Crear torneo',
+      stat: sportsStats.myTournaments || sportsStats.activeTournaments,
+      statLabel: isManagerOrAdmin ? 'mis torneos' : 'activos',
+    },
+    {
+      key: 'bienes',
+      title: 'Bienes Raíces',
+      description: 'Propiedades en venta y alquiler',
+      icon: House,
+      color: 'bg-amber-600',
+      href: isManagerOrAdmin ? '/bienes-raices/mis-publicaciones' : ROUTES.bienesRaices,
+      createHref: isManagerOrAdmin ? ROUTES.bienesRaicesCreate : undefined,
+      createLabel: 'Publicar propiedad',
+      stat: '—',
+      statLabel: 'módulo',
+    },
+    {
+      key: 'eventos',
+      title: 'Eventos',
+      description: 'Ferias, conciertos y activaciones',
+      icon: Calendar,
+      color: 'bg-rose-600',
+      href: isManagerOrAdmin ? ROUTES.eventosMisEventos : ROUTES.eventos,
+      createHref: isManagerOrAdmin ? ROUTES.eventosPublicar : undefined,
+      createLabel: 'Crear evento',
+      stat: '—',
+      statLabel: 'módulo',
+    },
+    {
+      key: 'tienda',
+      title: 'Tienda',
+      description: 'Catálogo y pedidos locales',
+      icon: ShoppingBag,
+      color: 'bg-indigo-600',
+      href: ROUTES.tienda,
+      createHref: isManagerOrAdmin ? ROUTES.tiendaCreate : undefined,
+      createLabel: 'Crear producto',
+      stat: shopOrders.length,
+      statLabel: 'pedidos',
+    },
   ];
 
   return (
@@ -161,13 +260,22 @@ const Dashboard: React.FC = () => {
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               {isCompany 
-                ? 'Gestiona tus publicaciones, torneos y encuentra candidatos' 
-                : 'Encuentra empleos, torneos deportivos y más oportunidades'}
+                ? 'Gestiona los 5 módulos, créditos y publicaciones desde un solo lugar' 
+                : 'Encuentra empleos, torneos, eventos, propiedades y más'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <CreditBalanceBadge />
             <BuyCreditsButton label="Obtener más créditos" />
+            {isPlatformAdmin && (
+              <Link
+                to={ROUTES.adminCredits}
+                className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-amber-400 transition-colors"
+              >
+                <Coins className="w-4 h-4" />
+                Ajustar créditos
+              </Link>
+            )}
             {isPlatformAdmin && (
               <Link
                 to="/dashboard/admin"
@@ -192,11 +300,23 @@ const Dashboard: React.FC = () => {
                   ¿Necesitas más créditos?
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                  Recarga cuando quieras para seguir publicando empleos, inmuebles o torneos.
+                  Recarga para publicar empleos, inmuebles, eventos o torneos.
+                  {isPlatformAdmin ? ' Como admin también puedes ajustar créditos de usuarios.' : ''}
                 </p>
               </div>
             </div>
-            <BuyCreditsButton label="Comprar créditos" />
+            <div className="flex flex-wrap gap-2">
+              <BuyCreditsButton label="Comprar créditos" />
+              {isPlatformAdmin && (
+                <Link
+                  to={ROUTES.adminCredits}
+                  className="inline-flex items-center justify-center rounded-2xl border-2 border-amber-500 bg-white px-4 py-2.5 text-sm font-bold text-amber-700 hover:bg-amber-50"
+                >
+                  <Coins className="w-4 h-4 mr-2" />
+                  Ajustar créditos de usuario
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -252,6 +372,46 @@ const Dashboard: React.FC = () => {
           </Link>
         )}
 
+        {/* Módulos del sistema (5) */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Módulos</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+            {moduleCards.map((mod) => (
+              <div
+                key={mod.key}
+                className="card hover:shadow-2xl transition-shadow flex flex-col"
+              >
+                <Link to={mod.href} className="flex items-start gap-3">
+                  <div className={`p-3 rounded-3xl ${mod.color} text-white shrink-0`}>
+                    <mod.icon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 dark:text-white">{mod.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                      {mod.description}
+                    </p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-2">
+                      {mod.stat}{' '}
+                      <span className="font-normal text-gray-500">{mod.statLabel}</span>
+                    </p>
+                  </div>
+                </Link>
+                {mod.createHref && (
+                  <Link
+                    to={mod.createHref}
+                    className={`mt-4 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold text-white ${mod.color}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {mod.createLabel}
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Stats Grid - Empleos */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -281,21 +441,31 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
 
-        {/* NUEVA SECCIÓN: Deportes */}
+        {/* Deportes */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
               <Trophy className="w-6 h-6 mr-2 text-green-600" />
               Deportes
             </h2>
-            <Link to="/sports" className="text-green-600 hover:text-green-700 text-sm font-medium">
-              Ver todos →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isManagerOrAdmin && (
+                <Link
+                  to={ROUTES.deportesCreate}
+                  className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-500"
+                >
+                  <Plus className="w-4 h-4" />
+                  Crear torneo
+                </Link>
+              )}
+              <Link to="/deportes" className="text-green-600 hover:text-green-700 text-sm font-medium">
+                Ver todos →
+              </Link>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Stat: Torneos activos */}
-            <Link to="/sports/my_tournaments/active" className="card hover:shadow-2xl transition-shadow">
+            <Link to="/deportes/my_tournaments/active" className="card hover:shadow-2xl transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-3xl bg-green-500">
                   <Trophy className="w-6 h-6 text-white" />
@@ -307,9 +477,8 @@ const Dashboard: React.FC = () => {
               </div>
             </Link>
 
-            {/* Stat: Mis torneos (solo managers/admins) */}
             {isManagerOrAdmin && (
-              <Link to="/sports/my_tournaments" className="card hover:shadow-2xl transition-shadow">
+              <Link to="/deportes/my_tournaments" className="card hover:shadow-2xl transition-shadow">
                 <div className="flex items-center">
                   <div className="p-3 rounded-3xl bg-green-600">
                     <Calendar className="w-6 h-6 text-white" />
@@ -322,7 +491,6 @@ const Dashboard: React.FC = () => {
               </Link>
             )}
 
-            {/* Stat: Equipos inscritos */}
             <div className="card">
               <div className="flex items-center">
                 <div className="p-3 rounded-3xl bg-violet-500 dark:bg-violet-600">
@@ -335,8 +503,56 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          
+        {/* Eventos + Bienes Raíces */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="card border border-rose-200/60 dark:border-rose-900/40">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-rose-600" />
+                Eventos
+              </h2>
+              <Link to={ROUTES.eventos} className="text-sm font-medium text-rose-600">
+                Ver →
+              </Link>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Ferias, conciertos y activaciones de marca.
+            </p>
+            {isManagerOrAdmin && (
+              <Link
+                to={ROUTES.eventosPublicar}
+                className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-500"
+              >
+                <Plus className="w-4 h-4" />
+                Crear evento
+              </Link>
+            )}
+          </div>
+          <div className="card border border-amber-200/60 dark:border-amber-900/40">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <House className="w-5 h-5 text-amber-600" />
+                Bienes Raíces
+              </h2>
+              <Link to={ROUTES.bienesRaices} className="text-sm font-medium text-amber-700">
+                Ver →
+              </Link>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Publica casas, locales y terrenos en venta o arriendo.
+            </p>
+            {isManagerOrAdmin && (
+              <Link
+                to={ROUTES.bienesRaicesCreate}
+                className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-500"
+              >
+                <Plus className="w-4 h-4" />
+                Publicar propiedad
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="mb-8">
@@ -345,9 +561,20 @@ const Dashboard: React.FC = () => {
               <ShoppingBag className="w-6 h-6 mr-2 text-violet-600 dark:text-violet-400" />
               Tienda
             </h2>
-            <Link to={ROUTES.tienda} className="text-violet-600 hover:text-violet-700 text-sm font-medium">
-              Ver catálogo →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isManagerOrAdmin && (
+                <Link
+                  to={ROUTES.tiendaCreate}
+                  className="inline-flex items-center gap-1.5 rounded-2xl bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-indigo-500"
+                >
+                  <Plus className="w-4 h-4" />
+                  Crear producto
+                </Link>
+              )}
+              <Link to={ROUTES.tienda} className="text-violet-600 hover:text-violet-700 text-sm font-medium">
+                Ver catálogo →
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link to={ROUTES.tienda} className="card hover:shadow-2xl transition-shadow">
@@ -391,90 +618,25 @@ const Dashboard: React.FC = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Quick Actions - Empleos */}
+            {/* Acciones rápidas — todos los módulos */}
             <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Acciones rápidas - Empleos - Deportes</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Acciones rápidas</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Crea cualquier entidad del sistema con un clic
+              </p>
               <div className="flex flex-wrap gap-3">
                 {quickActions.map((action) => (
                   <Link
                     key={action.label}
                     to={action.link}
-                    className={`flex items-center px-4 py-2 rounded-3xl font-medium ${
-                      action.primary 
-                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500' 
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200'
-                    }`}
+                    className={`inline-flex items-center px-4 py-2.5 rounded-3xl font-bold text-sm shadow-sm ${action.tone}`}
                   >
                     <action.icon className="w-4 h-4 mr-2" />
                     {action.label}
                   </Link>
                 ))}
               </div>
-              <br></br>
-              <div className="flex flex-wrap gap-3">
-                {sportsQuickActions.map((action) => (
-                  <Link
-                  key={action.label}
-                  to={action.link}
-                  className={`flex items-center px-4 py-2 rounded-3xl font-medium ${
-                    action.primary 
-                      ? 'bg-green-600 text-white hover:bg-green-700' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200'
-                  }`}
-                >
-                  <action.icon className="w-4 h-4 mr-2" />
-                  {action.label}
-                </Link>
-                ))}
-              </div>
             </div>
-
-            {/* Torneos destacados (próximos) */}
-            {/* <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                <Trophy className="w-5 h-5 mr-2 text-green-600" />
-                Próximos torneos
-              </h2>
-              {tournaments?.results && tournaments.results.length > 0 ? (
-                <div className="space-y-3">
-                  {tournaments.results.slice(0, 3).map((tournament: any) => (
-                    <Link 
-                      key={tournament.id} 
-                      to={`/sports/tournaments/${tournament.slug}`}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-3xl hover:bg-green-50 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-3xl flex items-center justify-center mr-3 ${
-                          tournament.sport_type === 'football' ? 'bg-green-500' :
-                          tournament.sport_type === 'softball' ? 'bg-yellow-500' :
-                          tournament.sport_type === 'basketball' ? 'bg-orange-500' : 'bg-violet-50 dark:bg-violet-950/300'
-                        }`}>
-                          <Trophy className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{tournament.name}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {new Date(tournament.start_date).toLocaleDateString('es-CO', {
-                              day: 'numeric',
-                              month: 'short'
-                            })} • {tournament.teams_count}/{tournament.max_teams} equipos
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-green-600 text-sm font-medium">Ver →</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-gray-500">
-                  <Trophy className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No hay torneos próximos</p>
-                  <Link to="/sports" className="text-green-600 text-sm mt-1 inline-block">
-                    Explorar torneos
-                  </Link>
-                </div>
-              )}
-            </div> */}
 
             {/* Recent Activity - Empleos */}
             <div className="card">
@@ -497,14 +659,13 @@ const Dashboard: React.FC = () => {
                 <div className="text-center py-8 text-gray-500">
                   <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>No hay actividad reciente</p>
-                  <Link to="/jobs" className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 text-sm mt-2 inline-block">
+                  <Link to="/empleos" className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 text-sm mt-2 inline-block">
                     Explorar empleos →
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Recomendaciones */}
             {!isCompany && (
               <div className="card bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Completa tu perfil</h2>
@@ -524,7 +685,6 @@ const Dashboard: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             
-            {/* Mi Perfil Resumen */}
             <div className="card">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Mi perfil</h2>
               <div className="flex items-center gap-4 mb-4">
@@ -554,7 +714,6 @@ const Dashboard: React.FC = () => {
               </Link>
             </div>
 
-            {/* Notificaciones */}
             <div className="card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">Notificaciones</h2>
@@ -565,21 +724,22 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Plan actual (solo empresas) */}
             {isCompany && (
               <div className="card bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
                 <h2 className="text-lg font-bold mb-2">Tu plan</h2>
                 <p className="text-2xl font-bold mb-1">Gratis</p>
                 <p className="text-violet-100 text-sm mb-4">
-                  3 publicaciones activas
+                  Publica en los 5 módulos con créditos
                 </p>
-                <button className="w-full py-2 bg-white text-violet-600 dark:text-violet-400 rounded-3xl font-medium hover:bg-violet-50 dark:bg-violet-950/30">
-                  Actualizar plan
-                </button>
+                <Link
+                  to={ROUTES.creditos}
+                  className="block w-full py-2 bg-white text-violet-600 rounded-3xl font-medium hover:bg-violet-50 text-center"
+                >
+                  Obtener créditos
+                </Link>
               </div>
             )}
 
-            {/* Resumen Tienda */}
             <div className="card bg-gradient-to-br from-violet-600 to-indigo-600 text-white">
               <h2 className="text-lg font-bold mb-2 flex items-center">
                 <ShoppingBag className="w-5 h-5 mr-2" />
@@ -596,7 +756,6 @@ const Dashboard: React.FC = () => {
               </Link>
             </div>
 
-            {/* Resumen Deportes (nuevo) */}
             <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
               <h2 className="text-lg font-bold mb-2 flex items-center">
                 <Trophy className="w-5 h-5 mr-2" />
@@ -606,7 +765,7 @@ const Dashboard: React.FC = () => {
                 {sportsStats.activeTournaments} torneos disponibles
               </p>
               <Link 
-                to="/sports" 
+                to="/deportes" 
                 className="block w-full py-2 bg-white text-green-600 rounded-3xl font-medium hover:bg-green-50 text-center"
               >
                 Ver torneos
