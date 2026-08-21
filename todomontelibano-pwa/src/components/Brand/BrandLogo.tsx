@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import brandLogo from '../../assets/CAPISJ_DIGITAL_logo_principal.svg';
-import { BRAND_DISPLAY_NAME } from '../../config/brand';
+import brandLogo from '../../assets/chever-logo.svg';
+import { BRAND_DISPLAY_NAME, BRAND_LOGO_IMG_CLASS } from '../../config/brand';
 
 type BrandLogoProps = {
   /** Image height in Tailwind units (default h-12). */
@@ -11,7 +11,7 @@ type BrandLogoProps = {
 };
 
 /**
- * Official CAPISJ DIGITAL SVG mark for auth headers and chrome.
+ * Marca Chever (SVG) para auth, header y footer. En dark mode se invierte a blanco.
  */
 const BrandLogo: React.FC<BrandLogoProps> = ({
   className = 'h-12 w-auto max-w-[200px]',
@@ -21,7 +21,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
     <img
       src={brandLogo}
       alt={BRAND_DISPLAY_NAME}
-      className={`object-contain mx-auto ${className}`}
+      className={`${BRAND_LOGO_IMG_CLASS} mx-auto ${className}`}
     />
   );
 

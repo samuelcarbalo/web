@@ -30,9 +30,18 @@ export function clearChunkReloadFlag(): void {
   }
 }
 
+function isStandalonePwa(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
+  );
+}
+
 /**
- * Un reload con cache-bust tras un chunk 404 (el servidor devolvió index.html).
- * Devuelve false si ya se intentó, para mostrar UI en vez de bucle.
+ * Recupera chunks obsoletos tras un deploy.
+ * Limpia caches de assets pero NO desregistra el Service Worker de la PWA instalada
+ * (unregister + reinstall = “descargar otra vez” la misma app).
  */
 export async function recoverFromStaleChunks(): Promise<boolean> {
   if (alreadyAttemptedChunkReload()) return false;
@@ -44,13 +53,35 @@ export async function recoverFromStaleChunks(): Promise<boolean> {
   }
 
   try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-    }
     if ('caches' in window) {
       const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
+      await Promise.all(
+        keys
+          .filter((k) => /workbox|assets|pages|precach/i.test(k))
+          .map((k) => caches.delete(k)),
+      );
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        regs.map(async (reg) => {
+          try {
+            await reg.update();
+          } catch {
+            /* ignore */
+          }
+        }),
+      );
+      // Solo unregister fuera de la PWA instalada (navegador normal)
+      if (!isStandalonePwa()) {
+        const controlling = navigator.serviceWorker.controller;
+        if (controlling) {
+          // Pedir skipWaiting al waiting si existe, sin borrar el registro
+          regs.forEach((reg) => {
+            reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+          });
+        }
+      }
     }
   } catch {
     /* ignore */

@@ -133,7 +133,7 @@ const CreditPackagesPage: React.FC = () => {
                 Cartera interna
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                Planes de créditos CAPISJ DIGITAL
+                Planes de créditos Chever
               </h1>
               <p className="mt-3 text-violet-100 max-w-xl text-lg">
                 Publica empleos, propiedades y torneos con nuestra moneda interna.

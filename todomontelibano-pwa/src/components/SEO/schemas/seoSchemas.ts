@@ -16,7 +16,7 @@ export const buildHomeSchema = () => {
       '@id': `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      logo: absoluteUrl('/icon-512x512.png'),
+      logo: absoluteUrl('/chever-logo.svg'),
       sameAs: [],
     },
     {
@@ -58,8 +58,8 @@ export const buildHomeSchema = () => {
 export const buildJobsCollectionSchema = (jobCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Bolsa de Empleo CAPISJ DIGITAL',
-  description: 'Listado de vacantes y ofertas laborales disponibles en CAPISJ DIGITAL.',
+  name: `Bolsa de Empleo ${SITE_NAME}`,
+  description: `Listado de vacantes y ofertas laborales disponibles en ${SITE_NAME}.`,
   url: absoluteUrl(ROUTES.empleos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -126,9 +126,9 @@ export const buildJobPostingSchema = (job: {
 export const buildEventsCollectionSchema = (eventCount?: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Eventos publicitarios CAPISJ DIGITAL',
+  name: `Eventos publicitarios ${SITE_NAME}`,
   description:
-    'Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en CAPISJ DIGITAL.',
+    `Agenda de ferias, conciertos, activaciones de marca y eventos publicitarios locales en ${SITE_NAME}.`,
   url: absoluteUrl(ROUTES.eventos),
   inLanguage: 'es-CO',
   isPartOf: { '@id': `${SITE_URL}/#website` },

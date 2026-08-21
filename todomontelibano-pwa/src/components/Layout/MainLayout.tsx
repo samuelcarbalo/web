@@ -25,7 +25,7 @@ import BuyCreditsButton from "../Credits/BuyCreditsButton";
 import { hasValidSessionHint } from '../../lib/session';
 import { ROUTES } from "../../config/seo";
 import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
-import brandLogo from "../../assets/CAPISJ_DIGITAL_logo_principal.svg";
+import BrandLogo from "../Brand/BrandLogo";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
 
 const MainLayout: React.FC = () => {
@@ -96,7 +96,7 @@ const MainLayout: React.FC = () => {
         <div className="page-container">
           <div className="flex justify-between items-center h-16 md:h-20">
             <Link to="/" className="flex items-center space-x-3 group">
-              <img src={brandLogo} alt={BRAND_DISPLAY_NAME} className="h-10 w-auto max-w-[160px] object-contain transition-all duration-300 group-hover:scale-[1.02]" />
+              <BrandLogo linkToHome={false} className="h-10 w-auto max-w-[160px] transition-all duration-300 group-hover:scale-[1.02]" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
                   {BRAND_DISPLAY_NAME}
@@ -218,8 +218,8 @@ const MainLayout: React.FC = () => {
                           Dashboard
                         </Link>
                         {(user?.is_superuser || user?.is_staff) && (
-                          <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Administración
+                          <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
+                            Panel de administración
                           </Link>
                         )}
                         <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
@@ -324,6 +324,15 @@ const MainLayout: React.FC = () => {
                   <Link to="/dashboard" className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
                     Dashboard
                   </Link>
+                  {(user?.is_superuser || user?.is_staff) && (
+                    <Link
+                      to="/dashboard/admin"
+                      className="block py-3 text-base font-bold text-indigo-700 dark:text-indigo-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Panel de administración
+                    </Link>
+                  )}
                   <Link to={ROUTES.tiendaPedidos} className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
                     Mis pedidos
                   </Link>
@@ -361,7 +370,7 @@ const MainLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <img src={brandLogo} alt={BRAND_DISPLAY_NAME} className="h-9 w-auto max-w-[140px] object-contain" />
+                <BrandLogo linkToHome={false} className="h-9 w-auto max-w-[140px]" />
                 <span className="text-lg font-bold text-gray-900 dark:text-white">{BRAND_DISPLAY_NAME}</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md">

@@ -250,7 +250,7 @@ const Profile: React.FC = () => {
                         value={formData.location}
                         onChange={(e) => setFormData({...formData, location: e.target.value})}
                         className="input-field pl-10 disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
-                        placeholder="Ej: CAPISJ DIGITAL, Córdoba"
+                        placeholder="Ej: Chever, Córdoba"
                       />
                     </div>
                   </div>

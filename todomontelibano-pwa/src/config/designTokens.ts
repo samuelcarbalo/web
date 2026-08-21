@@ -1,6 +1,6 @@
 /**
- * CAPISJ DIGITAL — Design tokens
- * Derived exclusively from CAPISJ_DIGITAL_logo_principal.svg
+ * Chever — Design tokens
+ * Derived from chever-logo.svg
  *
  * Brand roles:
  *   Primary   → Navy wordmark  #021433
@@ -26,7 +26,7 @@ export const LOGO_COLORS = {
   silver: '#D4D4D4',
 } as const;
 
-/** Primary = Navy (wordmark CAPISJ) */
+/** Primary = Navy */
 export const primary = {
   50: '#F5F7FA',
   100: '#E6EBF2',

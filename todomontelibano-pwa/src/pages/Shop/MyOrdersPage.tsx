@@ -32,7 +32,7 @@ const MyOrdersPage: React.FC = () => {
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mt-3 tracking-tight">Mis pedidos</h1>
           <p className="mt-2 text-violet-100 max-w-xl font-light">
-            Historial de compras realizadas en el catálogo CAPISJ DIGITAL.
+            Historial de compras realizadas en el catálogo Chever.
           </p>
         </div>
       </div>

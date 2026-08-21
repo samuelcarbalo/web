@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useLogin } from '../../hooks/useAuth';
 import ThemeToggle from '../../components/UI/ThemeToggle';
 import BrandLogo from '../../components/Brand/BrandLogo';
+import SeoHead from '../../components/SEO/SeoHead';
 import { TENANT_CONFIG } from '../../config/tenant';
 import { buildRegisterUrl, isSafeInternalPath, setAuthRedirect } from '../../lib/authRedirect';
 
@@ -29,6 +30,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="auth-page">
+      <SeoHead title="Iniciar Sesión" path="/login" noindex />
       <div
         className="pointer-events-none absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl"
         aria-hidden

@@ -13,6 +13,7 @@ import {
 import { useRegister } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/UI/ThemeToggle";
 import BrandLogo from "../../components/Brand/BrandLogo";
+import SeoHead from "../../components/SEO/SeoHead";
 import { buildLoginUrl, isSafeInternalPath, setAuthRedirect } from "../../lib/authRedirect";
 
 const Register: React.FC = () => {
@@ -56,6 +57,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="auth-page">
+      <SeoHead title="Crear Cuenta" path="/register" noindex />
       <div
         className="pointer-events-none absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl"
         aria-hidden
@@ -119,7 +121,7 @@ const Register: React.FC = () => {
               <div className="space-y-6">
                 <div>
                   <label className="auth-label mb-4">
-                    ¿Cómo vas a usar CAPISJ DIGITAL?
+                    ¿Cómo vas a usar Chever?
                   </label>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button
