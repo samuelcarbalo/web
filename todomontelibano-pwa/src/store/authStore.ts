@@ -71,12 +71,16 @@ export const useAuthStore = create<AuthState>()(
           useAuthStore.setState({ isLoading: false, isAuthenticated: false, user: null, tokens: null });
           return;
         }
-        syncPersistedAuth(state);
-        const hasToken = !!localStorage.getItem('access_token');
-        if (!hasToken) {
+        try {
+          syncPersistedAuth(state);
+          const hasToken = !!localStorage.getItem('access_token');
+          if (!hasToken) {
+            useAuthStore.setState({ isLoading: false });
+          }
+          // Con token: useMe / AuthInitializer liberan isLoading (finally + timeout 5s)
+        } catch {
           useAuthStore.setState({ isLoading: false });
         }
-        // Con token: useMe / AuthInitializer liberan isLoading (también con finally + timeout)
       },
     }
   )

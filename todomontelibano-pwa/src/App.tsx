@@ -93,40 +93,74 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
-/** Hidrata sesión; libera isLoading siempre. No bloquea rutas públicas (tienda, empleos, etc.). */
+const AUTH_INIT_TIMEOUT_MS = 5_000;
+
+/**
+ * Hidrata sesión; libera isLoading SIEMPRE (finally + timeout 5s).
+ * No bloquea rutas públicas (tienda, empleos, etc.).
+ */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const setLoading = useAuthStore((state) => state.setLoading);
   const logout = useAuthStore((state) => state.logout);
   const meQuery = useMe();
 
   useEffect(() => {
-    const finishHydration = () => {
-      if (!hasValidSessionHint()) {
-        logout();
-        setLoading(false);
-      }
+    let cancelled = false;
+
+    const release = () => {
+      if (!cancelled) setLoading(false);
     };
 
-    if (useAuthStore.persist.hasHydrated()) {
-      finishHydration();
-      return;
+    try {
+      const finishHydration = () => {
+        try {
+          if (!hasValidSessionHint()) {
+            logout();
+          }
+        } finally {
+          release();
+        }
+      };
+
+      if (useAuthStore.persist.hasHydrated()) {
+        finishHydration();
+        return;
+      }
+
+      const unsub = useAuthStore.persist.onFinishHydration(finishHydration);
+      return () => {
+        cancelled = true;
+        unsub?.();
+      };
+    } catch {
+      release();
     }
 
-    return useAuthStore.persist.onFinishHydration(finishHydration);
+    return () => {
+      cancelled = true;
+    };
   }, [logout, setLoading]);
 
   useEffect(() => {
-    if (!hasValidSessionHint()) {
+    try {
+      if (!hasValidSessionHint()) {
+        setLoading(false);
+        return;
+      }
+      // idle / success / error: ya no está fetching → liberar
+      if (meQuery.fetchStatus === 'idle' || !meQuery.isFetching) {
+        setLoading(false);
+      }
+    } catch {
       setLoading(false);
-      return;
     }
-    if (!meQuery.isFetching) {
-      setLoading(false);
-    }
-  }, [meQuery.isFetching, meQuery.fetchStatus, setLoading]);
+  }, [meQuery.isFetching, meQuery.fetchStatus, meQuery.isError, meQuery.isSuccess, setLoading]);
 
+  // Timeout de seguridad: nunca más de 5s en pantalla de carga de auth
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 3_000);
+    const timer = window.setTimeout(() => {
+      setLoading(false);
+    }, AUTH_INIT_TIMEOUT_MS);
     return () => window.clearTimeout(timer);
   }, [setLoading]);
 
