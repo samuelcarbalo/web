@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useAdminJobs, useDeleteJob } from '../../hooks/useJobs';
+import { canManageContent } from '../../hooks/usePermissions';
 import type { Job } from '../../types';
 
 const MyOffers: React.FC = () => {
@@ -21,13 +22,12 @@ const MyOffers: React.FC = () => {
   const navigate = useNavigate();
   const deleteMutation = useDeleteJob();
 
-  // Verificar que sea manager/empresa
-  const isManager = user?.role === 'manager';
+  const canManage = canManageContent(user);
   
   // Obtener los jobs del usuario usando el hook existente
   const { data: jobsData, isLoading, error } = useAdminJobs(
     { posted_by: user?.id },
-    { enabled: !!(isManager && user?.id) }
+    { enabled: !!(canManage && user?.id) }
   );
 
   // Transformar los datos según la estructura de PaginatedResponse
@@ -63,7 +63,7 @@ const MyOffers: React.FC = () => {
     }
   };
 
-  if (!isManager) {
+  if (!canManage) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
         <div className="page-container">
@@ -73,7 +73,7 @@ const MyOffers: React.FC = () => {
               Acceso restringido
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Esta sección solo está disponible para cuentas de empresa.
+              Esta sección solo está disponible para cuentas de empresa o administradores.
             </p>
             <Link to="/dashboard" className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium">
               Volver al dashboard →

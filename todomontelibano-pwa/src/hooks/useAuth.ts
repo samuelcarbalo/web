@@ -245,21 +245,21 @@ export const useLogout = () => {
 
 
 export const isAdmin = () => {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore.getState().user;
   if (!user) return false;
-  return user.role === 'admin';
+  return user.role === 'admin' || !!user.is_superuser || !!user.is_staff;
 }
 
 export const isManager = () => {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore.getState().user;
   if (!user) return false;
-  return user.role === 'manager';
+  return user.role === 'manager' || user.role === 'admin' || !!user.is_superuser || !!user.is_staff;
 }
 
 export const isUser = () => {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore.getState().user;
   if (!user) return false;
-  return user.role === 'user';
+  return user.role === 'user' && !user.is_superuser && !user.is_staff;
 }
 
 export const isSuperUser = () => {

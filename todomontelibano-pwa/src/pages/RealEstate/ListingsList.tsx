@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useListings } from '../../hooks/useRealEstate';
 import { useAuthStore } from '../../store/authStore';
+import { canManageContent } from '../../hooks/usePermissions';
 import { getMediaUrl } from '../../lib/api';
 import type { RealEstateOffer } from '../../types';
 
@@ -64,7 +65,7 @@ const ListingsList: React.FC = () => {
                 Encuentra casas, apartamentos, locales y terrenos en venta y alquiler.
               </p>
             </div>
-            {isAuthenticated && user?.user_type === 'company' && (
+            {isAuthenticated && (user?.user_type === 'company' || canManageContent(user)) && (
               <Link
                 to="/real-estate/create"
                 className="mt-6 md:mt-0 inline-flex items-center px-5 py-3 bg-white text-rose-600 font-bold rounded-3xl shadow-lg hover:shadow-2xl transition-all hover:scale-[1.02]"

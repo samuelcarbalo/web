@@ -20,6 +20,7 @@ import {
   useAdvancePhase,
 } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
+import { canManageContent } from '../../hooks/usePermissions';
 import type { BracketNode, CompetitionGroup, TournamentPhase } from '../../types/sports';
 import { getMatchAwayScore, getMatchHomeScore } from '../../lib/matchScoring';
 
@@ -44,7 +45,7 @@ const TournamentStructurePage: React.FC = () => {
 
   const sportType = tournament?.sport_type || 'football';
 
-  const isOwner = user?.id === tournament?.posted_by || user?.role === 'manager';
+  const isOwner = user?.id === tournament?.posted_by || canManageContent(user);
   const teams = teamsData?.results ?? [];
 
   const assignedTeamIds = useMemo(() => {

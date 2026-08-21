@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Plus, Search, Sparkles, Globe } from 'lucide-react';
 import { useEvents } from '../../hooks/useEvents';
 import { useAuthStore } from '../../store/authStore';
+import { canManageContent } from '../../hooks/usePermissions';
 import { useBannersByPosition } from '../../hooks/useSports';
 import BannerAd from '../../components/BannerAd';
 import ClassifiedAdSlot from '../../components/Advertising/ClassifiedAdSlot';
@@ -56,7 +57,7 @@ const EventsList: React.FC = () => {
             alcance con campañas publicitarias.
           </p>
         </div>
-        {isAuthenticated && (user?.role === 'manager' || user?.role === 'admin') && (
+        {isAuthenticated && canManageContent(user) && (
           <div className="flex gap-2">
             <Link
               to="/eventos/mis-eventos"
