@@ -6,6 +6,7 @@ import ThemeToggle from '../../components/UI/ThemeToggle';
 import BrandLogo from '../../components/Brand/BrandLogo';
 import SeoHead from '../../components/SEO/SeoHead';
 import { TENANT_CONFIG } from '../../config/tenant';
+import { ROUTES } from '../../config/seo';
 import { buildRegisterUrl, isSafeInternalPath, setAuthRedirect } from '../../lib/authRedirect';
 
 const Login: React.FC = () => {
@@ -101,7 +102,7 @@ const Login: React.FC = () => {
                 <input id="remember-me" type="checkbox" className="auth-checkbox" />
                 <label htmlFor="remember-me" className="auth-checkbox-label">Recordarme</label>
               </div>
-              <Link to="/forgot-password" className="text-sm font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500">
+              <Link to={ROUTES.forgotPassword} className="text-sm font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
