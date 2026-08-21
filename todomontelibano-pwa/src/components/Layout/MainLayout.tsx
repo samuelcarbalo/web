@@ -323,7 +323,7 @@ const MainLayout: React.FC = () => {
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
                   {canManageContent(user) && (
                     <div className="px-4 py-3 text-sm font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-center gap-1.5 mb-3">
-                      🪙 {user.credits !== undefined ? user.credits : 0} Créditos disponibles
+                      🪙 {user?.credits ?? 0} Créditos disponibles
                     </div>
                   )}
                   <Link to="/creditos" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
