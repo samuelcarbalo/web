@@ -72,15 +72,10 @@ export async function recoverFromStaleChunks(): Promise<boolean> {
           }
         }),
       );
-      // Solo unregister fuera de la PWA instalada (navegador normal)
       if (!isStandalonePwa()) {
-        const controlling = navigator.serviceWorker.controller;
-        if (controlling) {
-          // Pedir skipWaiting al waiting si existe, sin borrar el registro
-          regs.forEach((reg) => {
-            reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-          });
-        }
+        regs.forEach((reg) => {
+          reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+        });
       }
     }
   } catch {
@@ -93,18 +88,17 @@ export async function recoverFromStaleChunks(): Promise<boolean> {
   return true;
 }
 
-/** Captura MIME text/html en <script type="module"> (no siempre llega a React.lazy). */
+/**
+ * Solo recupera ante errores reales de chunk/MIME.
+ * No disparar por cualquier error en <script type="module"> (eso provocaba
+ * recargas infinitas y pantalla de arranque congelada).
+ */
 export function setupChunkLoadRecovery(): void {
   if (typeof window === 'undefined') return;
 
   const handler = (event: ErrorEvent) => {
     const msg = event.message || '';
-    const target = event.target;
-    const isModuleScript =
-      target instanceof HTMLScriptElement &&
-      (target.type === 'module' || (target.src || '').includes('/assets/'));
-
-    if (isChunkLoadError(event.error) || /MIME type of ['"]text\/html['"]/i.test(msg) || isModuleScript) {
+    if (isChunkLoadError(event.error) || /MIME type of ['"]text\/html['"]/i.test(msg)) {
       void recoverFromStaleChunks();
     }
   };

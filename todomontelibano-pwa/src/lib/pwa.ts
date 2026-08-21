@@ -69,7 +69,10 @@ export function setupBlankScreenRecovery(): void {
 
   window.setTimeout(() => {
     const root = document.getElementById('root');
-    const mounted = !!(root && root.childElementCount > 0);
+    // `#app-boot` vive dentro de #root hasta que React monta.
+    // Antes se usaba childElementCount > 0 y el spinner contaba como “montado”.
+    const stillOnBoot = !!document.getElementById('app-boot');
+    const mounted = !!(root && root.childElementCount > 0 && !stillOnBoot);
     if (mounted) {
       try {
         sessionStorage.removeItem(flag);

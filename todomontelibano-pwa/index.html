@@ -94,5 +94,21 @@
       }
     </style>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Si React no monta en 8s, forzar una recarga con cache-bust (una sola vez) -->
+    <script>
+      (function () {
+        var KEY = 'boot_watchdog_v1';
+        setTimeout(function () {
+          if (!document.getElementById('app-boot')) return;
+          try {
+            if (sessionStorage.getItem(KEY) === '1') return;
+            sessionStorage.setItem(KEY, '1');
+          } catch (e) {}
+          var u = new URL(location.href);
+          u.searchParams.set('_boot', String(Date.now()));
+          location.replace(u.toString());
+        }, 8000);
+      })();
+    </script>
   </body>
 </html>

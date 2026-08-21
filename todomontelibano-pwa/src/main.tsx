@@ -24,12 +24,21 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 })
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <HelmetProvider>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </HelmetProvider>
-  </StrictMode>,
-)
+const rootEl = document.getElementById('root')
+if (rootEl) {
+  createRoot(rootEl).render(
+    <StrictMode>
+      <HelmetProvider>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </HelmetProvider>
+    </StrictMode>,
+  )
+  // React ya reemplazó #root; limpiar flag del watchdog de index.html
+  try {
+    sessionStorage.removeItem('boot_watchdog_v1')
+  } catch {
+    /* ignore */
+  }
+}
