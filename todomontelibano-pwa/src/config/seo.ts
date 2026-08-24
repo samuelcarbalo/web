@@ -1,7 +1,7 @@
 import { BRAND_DISPLAY_NAME } from './brand';
 
 /** URL base del sitio (producción). Configurar en .env: VITE_SITE_URL */
-export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://capisjdigital.site';
+export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://chever.co';
 export const SITE_NAME = BRAND_DISPLAY_NAME;
 export const SITE_LOCALE = 'es_CO';
 

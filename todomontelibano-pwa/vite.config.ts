@@ -6,7 +6,7 @@ import Sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const siteUrl = env.VITE_SITE_URL || 'https://capisjdigital.site';
+  const siteUrl = env.VITE_SITE_URL || 'https://chever.co';
 
   return {
     // Rutas anidadas (/dashboard, /tienda/x) deben resolver assets desde la raíz

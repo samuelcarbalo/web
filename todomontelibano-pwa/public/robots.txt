@@ -9,4 +9,4 @@ Disallow: /applications
 Disallow: /messages
 Disallow: /creditos
 
-Sitemap: https://capisjdigital.site/sitemap.xml
+Sitemap: https://chever.co/sitemap.xml
