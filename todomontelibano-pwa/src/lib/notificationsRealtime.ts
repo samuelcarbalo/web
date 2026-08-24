@@ -63,7 +63,7 @@ export async function showLocalPaymentNotification(n: Notification): Promise<voi
 
   if (!('serviceWorker' in navigator)) {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/icon-192x192.png', tag: `notif-${n.id}` });
+      new Notification(title, { body, icon: '/chever-logo.svg', tag: `notif-${n.id}` });
     }
     return;
   }
@@ -79,7 +79,7 @@ export async function showLocalPaymentNotification(n: Notification): Promise<voi
     });
   } catch {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/icon-192x192.png', tag: `notif-${n.id}` });
+      new Notification(title, { body, icon: '/chever-logo.svg', tag: `notif-${n.id}` });
     }
   }
 }

@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'prompt',
         injectRegister: false,
-        includeAssets: ['icon-192x192.png', 'icon-512x512.png', 'robots.txt', 'chever-logo.svg'],
+        includeAssets: ['chever-logo.svg', 'icon-192x192.png', 'icon-512x512.png', 'robots.txt'],
         manifest: {
           // id estable: Chrome reutiliza la misma instalación aunque cambie name/short_name
           id: `${siteUrl.replace(/\/$/, '')}/`,
@@ -43,6 +43,13 @@ export default defineConfig(({ mode }) => {
           ],
           prefer_related_applications: false,
           icons: [
+            {
+              src: '/chever-logo.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'any maskable',
+            },
+            // PNG de respaldo para plataformas que aún prefieren raster en install
             { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
             { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
             {
@@ -58,35 +65,35 @@ export default defineConfig(({ mode }) => {
               short_name: 'Empleos',
               description: 'Bolsa de trabajo y vacantes',
               url: '/empleos',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+              icons: [{ src: '/chever-logo.svg', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Deportes',
               short_name: 'Deportes',
               description: 'Torneos y ligas locales',
               url: '/deportes',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+              icons: [{ src: '/chever-logo.svg', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Bienes Raíces',
               short_name: 'Inmuebles',
               description: 'Propiedades en venta y alquiler',
               url: '/bienes-raices',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+              icons: [{ src: '/chever-logo.svg', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Tienda',
               short_name: 'Tienda',
               description: 'Catálogo y compras locales',
               url: '/tienda',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+              icons: [{ src: '/chever-logo.svg', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Eventos',
               short_name: 'Eventos',
               description: 'Eventos publicitarios y agenda local',
               url: '/eventos',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+              icons: [{ src: '/chever-logo.svg', sizes: 'any', type: 'image/svg+xml' }],
             },
           ],
         },
