@@ -9,12 +9,12 @@
   "start_url": "/?source=pwa",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#021433",
-  "background_color": "#F9F9F9",
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
   "categories": ["business", "productivity", "lifestyle"],
   "icons": [
     {
-      "src": "/chever-logo.svg",
+      "src": "/chever-logo-pwa.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -44,35 +44,35 @@
       "short_name": "Empleos",
       "description": "Bolsa de trabajo y vacantes",
       "url": "/empleos",
-      "icons": [{ "src": "/chever-logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/chever-logo-pwa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
     },
     {
       "name": "Deportes",
       "short_name": "Deportes",
       "description": "Torneos y ligas locales",
       "url": "/deportes",
-      "icons": [{ "src": "/chever-logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/chever-logo-pwa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
     },
     {
       "name": "Bienes Raíces",
       "short_name": "Inmuebles",
       "description": "Propiedades en venta y alquiler",
       "url": "/bienes-raices",
-      "icons": [{ "src": "/chever-logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/chever-logo-pwa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
     },
     {
       "name": "Tienda",
       "short_name": "Tienda",
       "description": "Catálogo y compras locales",
       "url": "/tienda",
-      "icons": [{ "src": "/chever-logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/chever-logo-pwa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
     },
     {
       "name": "Eventos",
       "short_name": "Eventos",
       "description": "Eventos publicitarios y agenda local",
       "url": "/eventos",
-      "icons": [{ "src": "/chever-logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/chever-logo-pwa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
     }
   ]
 }
