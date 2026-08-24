@@ -15,7 +15,7 @@ function loadSiteUrl() {
     const match = readFileSync(envPath, 'utf8').match(/^VITE_SITE_URL=(.+)$/m);
     if (match?.[1]) return match[1].trim().replace(/\/$/, '');
   }
-  return 'https://capisjdigital.site';
+  return 'https://chever.co';
 }
 
 const siteUrl = loadSiteUrl();
