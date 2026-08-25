@@ -16,7 +16,7 @@ export const buildHomeSchema = () => {
       '@id': `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      logo: absoluteUrl('/chever-logo.svg'),
+      logo: absoluteUrl('/chever_oficial.svg'),
       sameAs: [],
     },
     {

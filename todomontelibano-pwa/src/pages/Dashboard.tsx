@@ -28,6 +28,7 @@ import BuyCreditsButton from '../components/Credits/BuyCreditsButton';
 import { useMyShopOrders } from '../hooks/useShop';
 import { ROUTES } from '../config/seo';
 import { useCartStore } from '../store/cartStore';
+import BrandLogo from '../components/Brand/BrandLogo';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -254,15 +255,22 @@ const Dashboard: React.FC = () => {
         
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              ¡Hola, {user?.first_name}! 👋
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              {isCompany 
-                ? 'Gestiona los 5 módulos, créditos y publicaciones desde un solo lugar' 
-                : 'Encuentra empleos, torneos, eventos, propiedades y más'}
-            </p>
+          <div className="flex items-start gap-3 min-w-0">
+            <BrandLogo
+              linkToHome={false}
+              variant="mark"
+              className="mt-1 h-10 w-auto max-w-[7rem] shrink-0 opacity-90"
+            />
+            <div className="min-w-0">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                ¡Hola, {user?.first_name}!
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {isCompany 
+                  ? 'Gestiona los 5 módulos, créditos y publicaciones desde un solo lugar' 
+                  : 'Encuentra empleos, torneos, eventos, propiedades y más'}
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <CreditBalanceBadge />

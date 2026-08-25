@@ -95,14 +95,19 @@ const MainLayout: React.FC = () => {
       </a>
       <header className="pwa-header" role="banner">
         <div className="page-container">
-          <div className="flex justify-between items-center h-16 md:h-20">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <BrandLogo linkToHome={false} className="h-10 w-auto max-w-[160px] transition-all duration-300 group-hover:scale-[1.02]" />
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                  {BRAND_DISPLAY_NAME}
-                </h1>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="flex justify-between items-center h-[4.5rem] md:h-20 py-1.5">
+            <Link
+              to="/"
+              className="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink"
+              aria-label={`${BRAND_DISPLAY_NAME} — inicio`}
+            >
+              <BrandLogo
+                linkToHome={false}
+                variant="oficial"
+                className="h-12 sm:h-14 md:h-14 w-auto max-w-[min(52vw,220px)] sm:max-w-[240px] transition-all duration-300 group-hover:scale-[1.02]"
+              />
+              <div className="hidden lg:block min-w-0">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">
                   {BRAND_TAGLINE}
                 </p>
               </div>
@@ -381,7 +386,7 @@ const MainLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <BrandLogo linkToHome={false} className="h-9 w-auto max-w-[140px]" />
+                <BrandLogo linkToHome={false} variant="oficial" className="h-10 w-auto max-w-[160px]" />
                 <span className="text-lg font-bold text-gray-900 dark:text-white">{BRAND_DISPLAY_NAME}</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md">
