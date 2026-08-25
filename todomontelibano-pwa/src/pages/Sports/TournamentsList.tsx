@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Trophy,
@@ -19,6 +19,7 @@ import {
   Shield,
   Star,
   Zap,
+  Loader2,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTournaments, useBannersByPosition } from '../../hooks/useSports';
@@ -31,7 +32,12 @@ import BannerAd from '../../components/BannerAd';
 
 // ─── Helpers de fecha ─────────────────────────────────────────────────────────
 
-const toDateString = (date: Date) => date.toISOString().split('T')[0];
+const toDateString = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
 
 const addDays = (date: Date, days: number): Date => {
   const d = new Date(date);
@@ -44,6 +50,8 @@ const isSameDay = (a: Date, b: Date) =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
+type NearbyDirection = 'past' | 'upcoming';
+
 // ─── Hook para partidos de un día ─────────────────────────────────────────────
 const useMatchesForDay = (date: Date, enabled: boolean) => {
   const from = toDateString(date);
@@ -53,6 +61,27 @@ const useMatchesForDay = (date: Date, enabled: boolean) => {
     queryKey: ['matches-day', from],
     queryFn: () => getMatches({ from, to }),
     enabled,
+    staleTime: 1000 * 60 * 2,
+  });
+};
+
+const useNearbyMatches = (
+  date: Date,
+  direction: NearbyDirection | null,
+  pageOffset: number,
+  enabled: boolean
+) => {
+  const from_date = toDateString(date);
+  return useQuery({
+    queryKey: ['matches-nearby', from_date, direction, pageOffset],
+    queryFn: () =>
+      getMatches({
+        direction: direction!,
+        from_date,
+        limit: 5,
+        offset: pageOffset,
+      }),
+    enabled: enabled && !!direction,
     staleTime: 1000 * 60 * 2,
   });
 };
@@ -139,6 +168,34 @@ const TournamentsList: React.FC = () => {
   const { data: matchesData, isLoading: loadingMatches } = useMatchesForDay(currentDay, isMatchesTab);
   const dayMatches: Match[] = matchesData?.results ?? [];
 
+  const [nearbyDirection, setNearbyDirection] = useState<NearbyDirection | null>(null);
+  const [nearbyOffset, setNearbyOffset] = useState(0);
+
+  useEffect(() => {
+    setNearbyDirection(null);
+    setNearbyOffset(0);
+  }, [offset]);
+
+  const {
+    data: nearbyData,
+    isLoading: loadingNearby,
+    isFetching: fetchingNearby,
+    isError: nearbyError,
+  } = useNearbyMatches(
+    currentDay,
+    nearbyDirection,
+    nearbyOffset,
+    isMatchesTab && dayMatches.length === 0
+  );
+  const nearbyMatches: Match[] = nearbyData?.results ?? [];
+  const nearbyHasMore = Boolean(nearbyData?.has_more);
+  const nearbyCanGoBack = nearbyOffset > 0;
+
+  const startNearby = (direction: NearbyDirection) => {
+    setNearbyDirection(direction);
+    setNearbyOffset(0);
+  };
+
   const isToday = isSameDay(currentDay, today);
 
   const dayLabel = useMemo(() => {
@@ -159,6 +216,135 @@ const TournamentsList: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+
+  const formatMatchDay = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('es-CO', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+
+  const renderMatchCard = (match: Match, showDate = false) => (
+    <Link
+      key={match.id}
+      to={`/deportes/matches/${match.id}`}
+      className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-5 hover:shadow-2xl hover:border-gray-300 dark:hover:border-gray-600 transition-all block group"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-3xl">
+            {match.tournament_name}
+          </span>
+          {match.match_week && (
+            <span className="text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2.5 py-1 rounded-3xl">
+              J{match.match_week}
+            </span>
+          )}
+          {showDate && (
+            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-3xl capitalize">
+              {formatMatchDay(match.match_date)}
+            </span>
+          )}
+        </div>
+
+        {match.status === 'live' && (
+          <span className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full animate-pulse">
+            <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+            EN VIVO
+          </span>
+        )}
+        {match.status === 'finished' && (
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-3xl">
+            Finalizado
+          </span>
+        )}
+        {match.status === 'scheduled' && (
+          <span className="text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2.5 py-1 rounded-3xl">
+            Programado
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {match.home_team_logo ? (
+            <img
+              src={match.home_team_logo}
+              alt={match.home_team_name}
+              className="w-11 h-11 rounded-3xl object-cover shadow-sm bg-white flex-shrink-0"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-sm flex-shrink-0">
+              {match.home_team_name?.[0]}
+            </div>
+          )}
+          <span className="font-bold text-sm text-gray-900 dark:text-white truncate">
+            {match.home_team_name}
+          </span>
+        </div>
+
+        <div className="shrink-0 text-center min-w-[64px]">
+          {match.status === 'finished' &&
+          match.home_score != null &&
+          match.away_score != null ? (
+            <div className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-3xl">
+              <span className={`text-lg font-bold tabular-nums ${match.home_score > match.away_score ? 'text-green-400' : ''}`}>
+                {match.home_score}
+              </span>
+              <span className="text-gray-500">-</span>
+              <span className={`text-lg font-bold tabular-nums ${match.away_score > match.home_score ? 'text-green-400' : ''}`}>
+                {match.away_score}
+              </span>
+            </div>
+          ) : match.status === 'live' ? (
+            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-3xl font-bold text-sm">
+              {match.home_score ?? 0} - {match.away_score ?? 0}
+            </div>
+          ) : (
+            <span className="text-sm font-bold text-gray-300">VS</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+          <span className="font-bold text-sm text-gray-900 dark:text-white truncate text-right">
+            {match.away_team_name}
+          </span>
+          {match.away_team_logo ? (
+            <img
+              src={match.away_team_logo}
+              alt={match.away_team_name}
+              className="w-11 h-11 rounded-3xl object-cover shadow-sm bg-white flex-shrink-0"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-sm flex-shrink-0">
+              {match.away_team_name?.[0]}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="flex items-center gap-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            {formatMatchTime(match.match_date)}
+          </span>
+          {match.venue && (
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="truncate max-w-[140px]">{match.venue}</span>
+            </span>
+          )}
+        </div>
+
+        <span className="flex items-center gap-1 text-green-600 text-xs font-semibold group-hover:gap-2 transition-all">
+          <Eye className="w-3.5 h-3.5" />
+          Ver partido
+          <ArrowRight className="w-3 h-3" />
+        </span>
+      </div>
+    </Link>
+  );
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const tabs: { value: Tab; label: string; icon: React.FC<{ className?: string }> }[] = [
@@ -429,148 +615,117 @@ const TournamentsList: React.FC = () => {
                 ))}
               </div>
             ) : dayMatches.length === 0 ? (
-              <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800/80 p-16 text-center">
-                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-10 h-10 text-gray-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sin partidos este día</h3>
-                <p className="text-gray-500 mt-2 max-w-sm mx-auto">
-                  No hay partidos programados para {dateLabel}. Usa las flechas para explorar otras fechas.
-                </p>
-                {offset !== 0 && (
-                  <button
-                    onClick={() => setOffset(0)}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-3xl hover:bg-green-700 transition-colors"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Ir a hoy
-                  </button>
+              <div className="space-y-4">
+                {!nearbyDirection && (
+                  <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800/80 p-10 sm:p-16 text-center">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Calendar className="w-10 h-10 text-gray-300" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sin partidos este día</h3>
+                    <p className="text-gray-500 mt-2 max-w-sm mx-auto">
+                      No hay partidos programados para {dateLabel}. Busca los más cercanos sin cambiar el selector.
+                    </p>
+                    <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => startNearby('past')}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Ver partidos anteriores
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startNearby('upcoming')}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
+                      >
+                        Ver próximos partidos
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {offset !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setOffset(0)}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-3xl hover:bg-green-700 transition-colors"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Ir a hoy
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {nearbyDirection && (
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {nearbyDirection === 'past' ? 'Partidos anteriores' : 'Próximos partidos'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Referencia: {dateLabel} · bloques de 5
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNearbyDirection(null);
+                          setNearbyOffset(0);
+                        }}
+                        className="text-sm font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+                      >
+                        Volver al día vacío
+                      </button>
+                    </div>
+
+                    {loadingNearby || fetchingNearby ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <MatchCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : nearbyError ? (
+                      <div className="rounded-3xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-6 text-center text-sm text-red-700 dark:text-red-300">
+                        No se pudieron cargar los partidos. Intenta de nuevo.
+                      </div>
+                    ) : nearbyMatches.length === 0 ? (
+                      <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center text-sm text-gray-500">
+                        No hay más partidos en esta dirección.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {nearbyMatches.map((match) => renderMatchCard(match, true))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                      <button
+                        type="button"
+                        disabled={!nearbyCanGoBack || fetchingNearby}
+                        onClick={() => setNearbyOffset((o) => Math.max(0, o - 5))}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        {nearbyDirection === 'past' ? 'Cargar 5 siguientes' : 'Cargar 5 anteriores'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!nearbyHasMore || fetchingNearby}
+                        onClick={() => setNearbyOffset((o) => o + 5)}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-500"
+                      >
+                        {fetchingNearby ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        {nearbyDirection === 'past' ? 'Cargar 5 anteriores' : 'Cargar 5 siguientes'}
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (
               <div className="space-y-3">
-                {dayMatches.map((match: Match) => (
-                  <Link
-                    key={match.id}
-                    to={`/sports/matches/${match.id}`}
-                    className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-5 hover:shadow-2xl hover:border-gray-300 dark:hover:border-gray-600 transition-all block group"
-                  >
-                    {/* Header: Torneo + estado */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-3xl">
-                          {match.tournament_name}
-                        </span>
-                        {match.match_week && (
-                          <span className="text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2.5 py-1 rounded-3xl">
-                            J{match.match_week}
-                          </span>
-                        )}
-                      </div>
-
-                      {match.status === 'live' && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full animate-pulse">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                          EN VIVO
-                        </span>
-                      )}
-                      {match.status === 'finished' && (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-3xl">
-                          Finalizado
-                        </span>
-                      )}
-                      {match.status === 'scheduled' && (
-                        <span className="text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2.5 py-1 rounded-3xl">
-                          Programado
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Equipos + marcador */}
-                    <div className="flex items-center justify-between gap-4">
-                      {/* Local */}
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {match.home_team_logo ? (
-                          <img
-                            src={match.home_team_logo}
-                            alt={match.home_team_name}
-                            className="w-11 h-11 rounded-3xl object-cover shadow-sm bg-white flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-11 h-11 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-sm flex-shrink-0">
-                            {match.home_team_name?.[0]}
-                          </div>
-                        )}
-                        <span className="font-bold text-sm text-gray-900 dark:text-white truncate">
-                          {match.home_team_name}
-                        </span>
-                      </div>
-
-                      {/* Marcador / VS */}
-                      <div className="shrink-0 text-center min-w-[64px]">
-                        {match.status === 'finished' &&
-                        match.home_score != null &&
-                        match.away_score != null ? (
-                          <div className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-3xl">
-                            <span className={`text-lg font-bold tabular-nums ${match.home_score > match.away_score ? 'text-green-400' : ''}`}>
-                              {match.home_score}
-                            </span>
-                            <span className="text-gray-500">-</span>
-                            <span className={`text-lg font-bold tabular-nums ${match.away_score > match.home_score ? 'text-green-400' : ''}`}>
-                              {match.away_score}
-                            </span>
-                          </div>
-                        ) : match.status === 'live' ? (
-                          <div className="bg-red-50 text-red-600 px-4 py-2 rounded-3xl font-bold text-sm">
-                            {match.home_score ?? 0} - {match.away_score ?? 0}
-                          </div>
-                        ) : (
-                          <span className="text-sm font-bold text-gray-300">VS</span>
-                        )}
-                      </div>
-
-                      {/* Visitante */}
-                      <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                        <span className="font-bold text-sm text-gray-900 dark:text-white truncate text-right">
-                          {match.away_team_name}
-                        </span>
-                        {match.away_team_logo ? (
-                          <img
-                            src={match.away_team_logo}
-                            alt={match.away_team_name}
-                            className="w-11 h-11 rounded-3xl object-cover shadow-sm bg-white flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-11 h-11 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-sm flex-shrink-0">
-                            {match.away_team_name?.[0]}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Footer: Hora, sede, CTA */}
-                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          {formatMatchTime(match.match_date)}
-                        </span>
-                        {match.venue && (
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5" />
-                            <span className="truncate max-w-[140px]">{match.venue}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <span className="flex items-center gap-1 text-green-600 text-xs font-semibold group-hover:gap-2 transition-all">
-                        <Eye className="w-3.5 h-3.5" />
-                        Ver partido
-                        <ArrowRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                {dayMatches.map((match: Match) => renderMatchCard(match))}
               </div>
             )}
           </div>

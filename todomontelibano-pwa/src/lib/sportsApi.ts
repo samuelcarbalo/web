@@ -133,11 +133,21 @@ export const getMatches = async (params?: {
   live?: boolean;
   from?: string;
   to?: string;
+  from_date?: string;
+  direction?: 'upcoming' | 'past';
+  limit?: number;
+  offset?: number;
   page?: number;
   phase?: string;
   group?: string;
 }) => {
-  const response = await api.get<PaginatedResponse<Match>>('/sports/matches/', { params });
+  const response = await api.get<PaginatedResponse<Match> & {
+    has_more?: boolean;
+    limit?: number;
+    offset?: number;
+    direction?: string;
+    from_date?: string;
+  }>('/sports/matches/', { params });
   return response.data;
 };
 
