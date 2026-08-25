@@ -22,6 +22,8 @@ import { buildHomeSchema } from "../components/SEO/schemas/seoSchemas";
 import { ROUTES } from "../config/seo";
 import { useActiveUsersCount } from "../hooks/useActiveUsersCount";
 import PwaInstallButton from "../components/PWA/PwaInstallButton";
+import brandMark from "../assets/chever-logo.svg";
+import { BRAND_LOGO_IMG_CLASS } from "../config/brand";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
@@ -115,17 +117,31 @@ const Home: React.FC = () => {
 
         <div className="relative page-container pt-24 pb-20 sm:pt-28 sm:pb-24">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center px-5 py-2.5 rounded-full glass mb-10">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 mr-2.5 animate-pulse" />
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass mb-8 sm:mb-10">
+              <img
+                src={brandMark}
+                alt=""
+                aria-hidden="true"
+                className={`${BRAND_LOGO_IMG_CLASS} h-7 w-auto max-w-[7rem] brightness-0 invert opacity-95`}
+              />
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-sm font-bold text-white/90">
                 Plataforma activa en Chever
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight">
-              Todo lo que necesitas
-              <span className="block text-gradient mt-3">en un solo lugar</span>
-            </h1>
+            <div className="relative mx-auto mb-6 sm:mb-8">
+              <img
+                src={brandMark}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-auto max-w-[min(90vw,22rem)] -translate-x-1/2 -translate-y-1/2 opacity-[0.12] brightness-0 invert sm:h-52"
+              />
+              <h1 className="relative text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight">
+                Todo lo que necesitas
+                <span className="block text-gradient mt-3">en un solo lugar</span>
+              </h1>
+            </div>
 
             <p className="mt-8 text-lg sm:text-xl text-violet-100/90 font-medium max-w-2xl mx-auto leading-relaxed">
               La plataforma integral de todo el Departamento de Córdoba. Encuentra empleos, eventos,

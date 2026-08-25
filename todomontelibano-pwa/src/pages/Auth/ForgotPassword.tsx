@@ -40,7 +40,7 @@ const ForgotPassword: React.FC = () => {
 
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="flex justify-center">
-          <BrandLogo className="h-14 w-auto max-w-[220px]" />
+          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" />
         </div>
         <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           Recuperar contraseña

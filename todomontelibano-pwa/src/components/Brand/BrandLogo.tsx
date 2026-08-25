@@ -1,25 +1,36 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import brandLogo from '../../assets/chever-logo.svg';
+import brandMark from '../../assets/chever-logo.svg';
+import brandOficial from '../../assets/chever_oficial.svg';
 import { BRAND_DISPLAY_NAME, BRAND_LOGO_IMG_CLASS } from '../../config/brand';
 
+export type BrandLogoVariant = 'oficial' | 'mark';
+
 type BrandLogoProps = {
-  /** Image height in Tailwind units (default h-12). */
+  /** Image size classes (Tailwind). */
   className?: string;
   /** Wrap logo in a link to home. */
   linkToHome?: boolean;
+  /**
+   * oficial — wordmark (Navbar, auth, footer, PWA)
+   * mark — isotipo (loaders, empty states, hero decor)
+   */
+  variant?: BrandLogoVariant;
 };
 
 /**
- * Marca Chever (SVG) para auth, header y footer. En dark mode se invierte a blanco.
+ * Marca Chever. En dark mode el SVG negro se invierte a blanco.
  */
 const BrandLogo: React.FC<BrandLogoProps> = ({
   className = 'h-12 w-auto max-w-[200px]',
   linkToHome = true,
+  variant = 'oficial',
 }) => {
+  const src = variant === 'mark' ? brandMark : brandOficial;
+
   const img = (
     <img
-      src={brandLogo}
+      src={src}
       alt={BRAND_DISPLAY_NAME}
       className={`${BRAND_LOGO_IMG_CLASS} mx-auto ${className}`}
     />

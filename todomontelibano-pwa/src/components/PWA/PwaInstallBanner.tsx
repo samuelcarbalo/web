@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
 import { BRAND_DISPLAY_NAME } from '../../config/brand';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import BrandLogo from '../Brand/BrandLogo';
 
 const DISMISS_KEY = 'pwa-install-banner-dismissed';
 
@@ -39,9 +40,12 @@ const PwaInstallBanner: React.FC = () => {
         <X className="h-4 w-4" />
       </button>
       <div className="pr-8">
-        <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400">
-          <Download className="h-4 w-4" />
-          <span className="text-sm font-semibold">Instala {BRAND_DISPLAY_NAME}</span>
+        <div className="flex items-center gap-3">
+          <BrandLogo linkToHome={false} variant="mark" className="h-10 w-auto max-w-[7rem] shrink-0" />
+          <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400">
+            <Download className="h-4 w-4" />
+            <span className="text-sm font-semibold">Instala {BRAND_DISPLAY_NAME}</span>
+          </div>
         </div>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           Acceso rápido a la plataforma desde tu dispositivo, sin abrir el navegador cada vez.
