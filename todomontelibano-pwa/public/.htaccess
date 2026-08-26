@@ -1,46 +1,44 @@
 # Hostinger / Apache — SPA fallback (React Router)
-# Todas las rutas de cliente deben servir index.html (no buscar carpeta física).
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # Si ya es index.html, no reescribir
   RewriteRule ^index\.html$ - [L]
 
-  # No reescribir archivos ni directorios reales (assets, favicon, etc.)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-
-  # Cualquier otra ruta → index.html (React Router resuelve /forgot-password, etc.)
   RewriteRule . /index.html [L]
 </IfModule>
 
-# Cache-Control por tipo de recurso (orden: HTML/SW primero, luego assets hasheados)
 <IfModule mod_headers.c>
-  # Shell HTML — NUNCA cachear (deploys deben verse al instante)
+  # Shell HTML — nunca cachear
   <FilesMatch "index\.html$">
+    Header unset ETag
+    FileETag None
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
   </FilesMatch>
 
-  # Service Worker + manifest — siempre revalidar
-  <FilesMatch "(^sw\.js$|^workbox-.+\.js$|^manifest\.webmanifest$|^notification-sw\.js$)">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
-    Header set Pragma "no-cache"
-    Header set Expires "0"
-  </FilesMatch>
-
-  # Logos / íconos estáticos en public/ (sin hash) — caché corta + revalidación
+  # Logos / íconos estáticos en public/
   <FilesMatch "^(chever.*\.(svg|png)|icon-192x192\.png|icon-512x512\.png|favicon\.ico)$">
     Header set Cache-Control "public, max-age=3600, must-revalidate"
   </FilesMatch>
 
-  # JS/CSS/fuentes del build (Vite fingerprint) — caché larga
+  # JS/CSS/fuentes del build (Vite fingerprint)
   <FilesMatch "\.(js|css|woff2?)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
+
+  # CRÍTICO: sw.js / workbox NUNCA immutable (debe ir DESPUÉS de la regla .js)
+  <FilesMatch "^(sw\.js|workbox-.+\.js|notification-sw\.js|manifest\.webmanifest)$">
+    Header unset ETag
+    FileETag None
+    Header unset Cache-Control
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
 </IfModule>
 
-# Si mod_rewrite no está disponible, ErrorDocument como respaldo
 ErrorDocument 404 /index.html
