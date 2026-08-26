@@ -62,7 +62,7 @@ const PwaInstallBanner: React.FC = () => {
         <button
           type="button"
           onClick={onInstall}
-          className="rounded-2xl bg-secondary-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-secondary-600"
+          className="rounded-2xl bg-secondary-700 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-secondary-800 dark:hover:bg-secondary-600"
         >
           Instalar
         </button>

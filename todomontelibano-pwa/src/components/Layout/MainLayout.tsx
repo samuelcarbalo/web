@@ -88,7 +88,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-300">
       <RouteSeo />
       <a href="#main-content" className="skip-link">
         Saltar al contenido principal
@@ -107,7 +107,7 @@ const MainLayout: React.FC = () => {
                 className="h-12 sm:h-14 md:h-14 w-auto max-w-[min(52vw,220px)] sm:max-w-[240px] transition-all duration-300 group-hover:scale-[1.02]"
               />
               <div className="hidden lg:block min-w-0">
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
                   {BRAND_TAGLINE}
                 </p>
               </div>

@@ -8,6 +8,9 @@
   # Verificación Google Search Console (archivo estático en raíz)
   RewriteRule ^google[0-9a-f]+\.html$ - [L]
 
+  # llms.txt / robots.txt — servir plano sin SPA fallback
+  RewriteRule ^(llms|robots)\.txt$ - [L]
+
   # No reescribir archivos ni directorios reales (public/*.html, assets, etc.)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
@@ -22,6 +25,12 @@
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
+  </FilesMatch>
+
+  # Texto plano SEO / LLMs
+  <FilesMatch "^(llms|robots)\.txt$">
+    Header set Content-Type "text/plain; charset=utf-8"
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
   </FilesMatch>
 
   # Logos / íconos estáticos en public/

@@ -1,5 +1,6 @@
 # SPA fallback — Netlify / Cloudflare Pages / Render static
-# Archivos reales (p. ej. google-site-verification) se sirven primero.
-# Excluir verificación de Google del rewrite a index.html.
+# Archivos reales se sirven primero (no rewrite a index.html).
 /google*.html  200
+/llms.txt      200
+/robots.txt    200
 /*             /index.html   200
