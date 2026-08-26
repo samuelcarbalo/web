@@ -1,4 +1,63 @@
-import { absoluteUrl, MAIN_NAV_ITEMS, ROUTES, SITE_NAME, SITE_URL } from '../../../config/seo';
+import { BRAND_ALTERNATE_NAMES, BRAND_ENTITY_DESCRIPTION } from '../../../config/brand';
+import {
+  absoluteUrl,
+  MAIN_NAV_ITEMS,
+  ROUTES,
+  SITE_NAME,
+  SITE_URL,
+} from '../../../config/seo';
+
+const siteRoot = () => SITE_URL.replace(/\/$/, '');
+const orgId = () => `${siteRoot()}/#organization`;
+const websiteId = () => `${siteRoot()}/#website`;
+const logoUrl = () => absoluteUrl('/chever_oficial.svg');
+
+/** Entidad de marca canónica (también embebida en index.html para crawlers sin JS). */
+export const buildBrandEntityGraph = () => ({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': orgId(),
+      name: SITE_NAME,
+      alternateName: [...BRAND_ALTERNATE_NAMES],
+      url: siteRoot(),
+      logo: logoUrl(),
+      description: BRAND_ENTITY_DESCRIPTION,
+      disambiguatingDescription:
+        'Plataforma digital comunitaria de Córdoba (Colombia). No es Chevrolet ni está afiliada a General Motors.',
+      areaServed: {
+        '@type': 'AdministrativeArea',
+        name: 'Córdoba, Colombia',
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': websiteId(),
+      url: siteRoot(),
+      name: SITE_NAME,
+      alternateName: [...BRAND_ALTERNATE_NAMES],
+      publisher: { '@id': orgId() },
+      inLanguage: 'es-CO',
+    },
+    {
+      '@type': 'WebApplication',
+      '@id': `${siteRoot()}/#webapp`,
+      name: SITE_NAME,
+      alternateName: ['Chever App', 'Chéver App'],
+      url: siteRoot(),
+      applicationCategory: 'LifestyleApplication',
+      operatingSystem: 'Web, Android, iOS',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'COP',
+      },
+      publisher: { '@id': orgId() },
+      description: BRAND_ENTITY_DESCRIPTION,
+    },
+  ],
+});
 
 export const buildHomeSchema = () => {
   const navElements = MAIN_NAV_ITEMS.map((item: (typeof MAIN_NAV_ITEMS)[number], index: number) => ({
@@ -9,50 +68,45 @@ export const buildHomeSchema = () => {
     url: absoluteUrl(item.path),
   }));
 
-  return [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      '@id': `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: absoluteUrl('/chever_oficial.svg?v=1.2'),
-      sameAs: [],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      '@id': `${SITE_URL}/#website`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      publisher: { '@id': `${SITE_URL}/#organization` },
-      inLanguage: 'es-CO',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: `${absoluteUrl(ROUTES.empleos)}?search={search_term_string}`,
+  const brandGraph = buildBrandEntityGraph();
+  const graph = brandGraph['@graph'].map((node) => {
+    if (node['@type'] === 'WebSite') {
+      return {
+        ...node,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${absoluteUrl(ROUTES.empleos)}?search={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
         },
-        'query-input': 'required name=search_term_string',
+        hasPart: navElements,
+      };
+    }
+    return node;
+  });
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      ...graph,
+      {
+        '@type': 'ItemList',
+        name: 'Servicios principales',
+        itemListElement: navElements.map((el: (typeof navElements)[number], i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          item: {
+            '@type': 'WebPage',
+            name: el.name,
+            url: el.url,
+            description: el.description,
+          },
+        })),
       },
-      hasPart: navElements,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'ItemList',
-      name: 'Servicios principales',
-      itemListElement: navElements.map((el: (typeof navElements)[number], i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        item: {
-          '@type': 'WebPage',
-          name: el.name,
-          url: el.url,
-          description: el.description,
-        },
-      })),
-    },
-  ];
+    ],
+  };
 };
 
 export const buildJobsCollectionSchema = (jobCount?: number) => ({

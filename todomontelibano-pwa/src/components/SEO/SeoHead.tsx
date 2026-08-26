@@ -7,6 +7,7 @@ import {
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_WIDTH,
   DEFAULT_SEO_DESCRIPTION,
+  SEO_KEYWORDS,
   SITE_LOCALE,
   SITE_NAME,
   type SeoMeta,
@@ -40,6 +41,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({
       <html lang="es" />
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      <meta name="keywords" content={SEO_KEYWORDS} />
       <link rel="canonical" href={canonical} />
 
       {noindex ? (

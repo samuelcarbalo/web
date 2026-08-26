@@ -29,10 +29,10 @@ export default defineConfig(({ mode }) => {
         manifest: {
           // id estable: Chrome reutiliza la misma instalación aunque cambie name/short_name
           id: `${siteUrl.replace(/\/$/, '')}/`,
-          name: 'Chever',
-          short_name: 'Chever',
+          name: 'Chéver',
+          short_name: 'Chéver',
           description:
-            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios Chever.',
+            'Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios Chéver.',
           theme_color: '#FFFFFF',
           background_color: '#FFFFFF',
           lang: 'es',

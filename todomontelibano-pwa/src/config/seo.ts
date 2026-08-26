@@ -16,7 +16,10 @@ export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — Empleos, deportes, bienes raíces y eventos en Córdoba`;
 
 export const DEFAULT_SEO_DESCRIPTION =
-  `Plataforma integral ${SITE_NAME}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia.`;
+  `Plataforma integral ${SITE_NAME}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia. No afiliada a Chevrolet.`;
+
+export const SEO_KEYWORDS =
+  'Chéver, Chever deportes, torneos Córdoba, empleos Córdoba, Chéver app, plataforma Córdoba Colombia';
 
 
 /** Rutas canónicas SEO (español) */
@@ -79,7 +82,7 @@ const brand = BRAND_DISPLAY_NAME;
 
 export const SEO_PAGES: Record<string, SeoMeta> = {
   '/': {
-    title: `${brand} | Empleos, Deportes, Bienes Raíces y Eventos en Córdoba`,
+    title: `${brand} - Plataforma Deportiva y Comunitaria en Córdoba`,
     description:
       `Plataforma integral ${brand}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba. Publica ferias, conciertos y activaciones de marca con visibilidad local.`,
     path: '/',
@@ -232,6 +235,11 @@ export const SITEMAP_ROUTES = [
 export const absoluteUrl = (path: string) =>
   `${SITE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
 
-/** Quita sufijo " | MARCA" para pasar title base a SeoHead. */
-export const stripSiteSuffix = (title: string) =>
-  title.replace(new RegExp(` \\| ${SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '');
+/** Quita sufijo " | MARCA" o prefijo "MARCA - " para pasar title base a SeoHead. */
+export const stripSiteSuffix = (title: string) => {
+  const escaped = SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (new RegExp(`^${escaped} - `).test(title)) {
+    return title;
+  }
+  return title.replace(new RegExp(` \\| ${escaped}$`), '');
+};
