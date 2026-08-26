@@ -2,11 +2,39 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/chever_oficial.svg" />
-    <link rel="apple-touch-icon" href="/chever-oficial-pwa.svg" />
+    <link rel="icon" type="image/svg+xml" href="/chever_oficial.svg?v=1.1" />
+    <link rel="apple-touch-icon" href="/chever-oficial-pwa.svg?v=1.1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#FFFFFF" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      (function () {
+        var APP_VERSION = '1.0.2';
+        var KEY = 'chever_app_version';
+        try {
+          var prev = localStorage.getItem(KEY);
+          if (prev && prev !== APP_VERSION) {
+            localStorage.setItem(KEY, APP_VERSION);
+            var reloadFlag = 'chever_version_reloaded';
+            if (sessionStorage.getItem(reloadFlag) !== APP_VERSION) {
+              sessionStorage.setItem(reloadFlag, APP_VERSION);
+              if ('caches' in window) {
+                caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                }).finally(function () {
+                  location.reload();
+                });
+                return;
+              }
+              location.reload();
+              return;
+            }
+          } else if (!prev) {
+            localStorage.setItem(KEY, APP_VERSION);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script>
       (function () {
         var t = localStorage.getItem('theme');
@@ -35,8 +63,8 @@
     <meta property="og:url" content="https://chever.co/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
-    <meta property="og:image" content="https://chever.co/chever_oficial.svg" />
-    <meta property="og:image:secure_url" content="https://chever.co/chever_oficial.svg" />
+    <meta property="og:image" content="https://chever.co/chever_oficial.svg?v=1.1" />
+    <meta property="og:image:secure_url" content="https://chever.co/chever_oficial.svg?v=1.1" />
     <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -49,7 +77,7 @@
       name="twitter:description"
       content="Plataforma integral Chever: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia."
     />
-    <meta name="twitter:image" content="https://chever.co/chever_oficial.svg" />
+    <meta name="twitter:image" content="https://chever.co/chever_oficial.svg?v=1.1" />
     <meta name="twitter:image:alt" content="Chever — Empleos, deportes, bienes raíces y eventos en Córdoba" />
 
     <meta name="apple-mobile-web-app-capable" content="yes" />

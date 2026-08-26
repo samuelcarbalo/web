@@ -1,36 +1,37 @@
 import { registerSW } from 'virtual:pwa-register';
+import { APP_VERSION } from '../config/appVersion';
 
 type UpdateFn = (reloadPage?: boolean) => Promise<void>;
 
 let updateSW: UpdateFn | undefined;
+let refreshing = false;
 
 /**
- * Registro PWA en modo prompt: detecta un SW nuevo post-deploy y avisa al usuario.
- * No recarga sola (eso congelaba la pestaña en blanco). El banner llama a applyPwaUpdate().
- * El mismo Service Worker se actualiza in-place; no se desregistra en deploys normales.
+ * Registro PWA en modo autoUpdate:
+ * - skipWaiting + clientsClaim en workbox
+ * - al detectar SW nuevo → aplica update y recarga sin bloquear al usuario
  */
 export function setupPwaUpdates(): void {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
   updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
+      // autoUpdate: aplicar de inmediato (sin banner bloqueante)
       window.dispatchEvent(new Event('pwa:need-refresh'));
+      void applyPwaUpdate();
     },
     onOfflineReady() {
       window.dispatchEvent(new Event('pwa:offline-ready'));
     },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
-
-      // Un solo SW controller: evita registros huérfanos que disparen “instalar de nuevo”
-      navigator.serviceWorker.getRegistrations().then((regs) => {
-        for (const reg of regs) {
-          if (reg !== registration && !reg.active?.scriptURL.includes('sw.js')) {
-            /* leave other scopes alone */
-          }
-        }
-      }).catch(() => undefined);
 
       const checkForUpdate = () => {
         registration.update().catch(() => undefined);
@@ -40,6 +41,7 @@ export function setupPwaUpdates(): void {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') checkForUpdate();
       });
+      // Poll cada 60s por si el hosting no empuja el SW al instante
       window.setInterval(checkForUpdate, 60_000);
     },
     onRegisterError(error) {
@@ -48,13 +50,49 @@ export function setupPwaUpdates(): void {
   });
 }
 
-/** Activa el SW nuevo y recarga con los assets recientes (skipWaiting vía plugin). */
+/** Activa el SW nuevo y recarga con los assets recientes. */
 export async function applyPwaUpdate(): Promise<void> {
-  if (updateSW) {
-    await updateSW(true);
-    return;
+  try {
+    if (updateSW) {
+      await updateSW(true);
+      return;
+    }
+  } catch {
+    /* fall through */
   }
   window.location.reload();
+}
+
+/**
+ * Si APP_VERSION cambió respecto a localStorage, limpia Cache Storage
+ * y fuerza una recarga única para servir el build nuevo.
+ */
+export async function purgeCachesIfVersionChanged(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  const KEY = 'chever_app_version';
+  try {
+    const prev = localStorage.getItem(KEY);
+    if (prev === APP_VERSION) return;
+
+    localStorage.setItem(KEY, APP_VERSION);
+
+    if (prev == null) {
+      // Primera visita: solo persistir versión, no recargar
+      return;
+    }
+
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+
+    const flag = 'chever_version_reloaded';
+    if (sessionStorage.getItem(flag) === APP_VERSION) return;
+    sessionStorage.setItem(flag, APP_VERSION);
+    window.location.reload();
+  } catch {
+    /* ignore storage errors */
+  }
 }
 
 /**
@@ -70,7 +108,6 @@ export function setupBlankScreenRecovery(): void {
   window.setTimeout(() => {
     const root = document.getElementById('root');
     // `#app-boot` vive dentro de #root hasta que React monta.
-    // Antes se usaba childElementCount > 0 y el spinner contaba como “montado”.
     const stillOnBoot = !!document.getElementById('app-boot');
     const mounted = !!(root && root.childElementCount > 0 && !stillOnBoot);
     if (mounted) {
@@ -95,13 +132,11 @@ export function setupBlankScreenRecovery(): void {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
         }
-        // Solo desregistrar SW si NO estamos en standalone (PWA ya instalada)
         const standalone =
           window.matchMedia('(display-mode: standalone)').matches ||
           Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
         if (!standalone && 'serviceWorker' in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
-          // Preferir update del activo en lugar de unregister total
           await Promise.all(
             regs.map(async (r) => {
               try {
