@@ -23,7 +23,6 @@ import { ROUTES } from "../config/seo";
 import { useActiveUsersCount } from "../hooks/useActiveUsersCount";
 import PwaInstallButton from "../components/PWA/PwaInstallButton";
 import brandMark from "../assets/chever-logo.svg";
-import { BRAND_LOGO_IMG_CLASS } from "../config/brand";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
@@ -104,40 +103,51 @@ const Home: React.FC = () => {
       <JsonLd data={buildHomeSchema()} />
       {/* Hero */}
       <div className="relative overflow-hidden hero-gradient">
-        <div className="absolute inset-0 opacity-20">
+        {/* Marca de agua + glow turquesa (sin patrón de cruces) */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
           <div
-            className="absolute inset-0"
+            className="absolute h-[32rem] w-[32rem] sm:h-[42rem] sm:w-[42rem] rounded-full"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              background:
+                "radial-gradient(circle, rgba(0,191,165,0.55) 0%, rgba(4,174,157,0.28) 32%, rgba(2,20,51,0) 68%)",
             }}
           />
+          <img
+            src={brandMark}
+            alt=""
+            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none opacity-10 brightness-0 invert select-none"
+          />
         </div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-violet-500/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-16 -left-10 w-64 h-64 bg-[#00BFA5]/25 rounded-full blur-3xl" aria-hidden="true" />
+        <div className="absolute bottom-8 -right-10 w-80 h-80 bg-[#0495de]/18 rounded-full blur-3xl" aria-hidden="true" />
 
         <div className="relative page-container pt-24 pb-20 sm:pt-28 sm:pb-24">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass mb-8 sm:mb-10">
-              <img
-                src={brandMark}
-                alt=""
-                aria-hidden="true"
-                className={`${BRAND_LOGO_IMG_CLASS} h-7 w-auto max-w-[7rem] brightness-0 invert opacity-95`}
-              />
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            {/* Badge estado */}
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-5 sm:mb-6">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
               <span className="text-sm font-bold text-white/90">
                 Plataforma activa en Chever
               </span>
             </div>
 
+            {/* Insignia oficial + título */}
             <div className="relative mx-auto mb-6 sm:mb-8">
-              <img
-                src={brandMark}
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-auto max-w-[min(90vw,22rem)] -translate-x-1/2 -translate-y-1/2 opacity-[0.12] brightness-0 invert sm:h-52"
-              />
-              <h1 className="relative text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight">
+              <div className="mb-5 inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-md">
+                <img
+                  src={brandMark}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-5 w-auto max-w-[5.5rem] object-contain object-center brightness-0 invert opacity-95"
+                />
+                <span className="text-xs font-semibold tracking-wide text-white/90 whitespace-nowrap">
+                  Plataforma Oficial de Córdoba
+                </span>
+              </div>
+              <h1 className="relative text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]">
                 Todo lo que necesitas
                 <span className="block text-gradient mt-3">en un solo lugar</span>
               </h1>

@@ -5,10 +5,11 @@ import './index.css'
 import { initTheme } from './hooks/useTheme'
 import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary'
-import { setupBlankScreenRecovery, setupPwaUpdates } from './lib/pwa'
+import { setupBlankScreenRecovery, setupPwaUpdates, purgeCachesIfVersionChanged } from './lib/pwa'
 import { recoverFromStaleChunks, setupChunkLoadRecovery } from './lib/chunkRecovery'
 
 initTheme()
+void purgeCachesIfVersionChanged()
 setupPwaUpdates()
 setupBlankScreenRecovery()
 setupChunkLoadRecovery()

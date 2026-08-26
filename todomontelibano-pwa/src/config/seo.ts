@@ -10,7 +10,7 @@ export const SITE_LOCALE = 'es_CO';
  * Evitar enlaces tipo ibb.co/xxx (página HTML); usar i.ibb.co/.../archivo.jpg
  */
 export const DEFAULT_OG_IMAGE =
-  import.meta.env.VITE_OG_IMAGE || `${SITE_URL.replace(/\/$/, '')}/chever_oficial.svg`;
+  import.meta.env.VITE_OG_IMAGE || `${SITE_URL.replace(/\/$/, '')}/chever_oficial.svg?v=1.1`;
 export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — Empleos, deportes, bienes raíces y eventos en Córdoba`;
