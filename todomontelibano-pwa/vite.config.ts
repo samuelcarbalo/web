@@ -111,7 +111,7 @@ export default defineConfig(({ mode }) => {
           // Precache hashed assets only — no HTML (navegación siempre desde red)
           globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
           navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api\//, /^\/google[^/]+\.html$/],
+          navigateFallbackDenylist: [/^\/api\//, /^\/google[^/]+\.html$/, /^\/llms\.txt$/, /^\/robots\.txt$/],
           runtimeCaching: [
             {
               // Evita servir index.html / rutas SPA desde Cache Storage

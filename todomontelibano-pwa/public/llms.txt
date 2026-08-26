@@ -1,0 +1,15 @@
+# Chéver - Plataforma Digital y Comunitaria
+
+> Chéver es la plataforma integral para el Departamento de Córdoba que consolida empleos, eventos, deportes, comercio y bienes raíces en un solo lugar.
+
+## Secciones Principales
+- [Inicio](https://capisjdigital.site/)
+- [Módulo de Deportes y Torneos](https://capisjdigital.site/deportes)
+- [Bolsa de Empleos](https://capisjdigital.site/empleos)
+- [Eventos Comunitarios](https://capisjdigital.site/eventos)
+- [Tienda y Comercio Local](https://capisjdigital.site/tienda)
+- [Bienes Raíces](https://capisjdigital.site/bienes-raices)
+
+## Documentación y Legales
+- [Términos y Condiciones](https://capisjdigital.site/terms)
+- [Política de Privacidad](https://capisjdigital.site/privacy)
