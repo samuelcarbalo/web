@@ -115,7 +115,11 @@ const Home: React.FC = () => {
           <img
             src={brandMark}
             alt=""
-            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none opacity-10 brightness-0 invert select-none"
+            aria-hidden="true"
+            width={512}
+            height={512}
+            decoding="async"
+            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none object-contain opacity-10 brightness-0 invert select-none"
           />
         </div>
         <div className="absolute top-16 -left-10 w-64 h-64 bg-[#00BFA5]/25 rounded-full blur-3xl" aria-hidden="true" />
@@ -141,6 +145,9 @@ const Home: React.FC = () => {
                   src={brandMark}
                   alt=""
                   aria-hidden="true"
+                  width={20}
+                  height={20}
+                  decoding="async"
                   className="h-5 w-auto max-w-[5.5rem] object-contain object-center brightness-0 invert opacity-95"
                 />
                 <span className="text-xs font-semibold tracking-wide text-white/90 whitespace-nowrap">
