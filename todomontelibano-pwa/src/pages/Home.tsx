@@ -26,7 +26,7 @@ import brandMark from "../assets/chever-logo.svg";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
-  const { activeUsers } = useActiveUsersCount();
+  const { activeUsers, isLoading: usersCountLoading } = useActiveUsersCount();
 
   const services = [
     {
@@ -115,7 +115,11 @@ const Home: React.FC = () => {
           <img
             src={brandMark}
             alt=""
-            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none opacity-10 brightness-0 invert select-none"
+            aria-hidden="true"
+            width={512}
+            height={512}
+            decoding="async"
+            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none object-contain opacity-10 brightness-0 invert select-none"
           />
         </div>
         <div className="absolute top-16 -left-10 w-64 h-64 bg-[#00BFA5]/25 rounded-full blur-3xl" aria-hidden="true" />
@@ -141,6 +145,9 @@ const Home: React.FC = () => {
                   src={brandMark}
                   alt=""
                   aria-hidden="true"
+                  width={20}
+                  height={20}
+                  decoding="async"
                   className="h-5 w-auto max-w-[5.5rem] object-contain object-center brightness-0 invert opacity-95"
                 />
                 <span className="text-xs font-semibold tracking-wide text-white/90 whitespace-nowrap">
@@ -158,40 +165,61 @@ const Home: React.FC = () => {
               deportes y bienes raíces en la palma de tu mano.
             </p>
 
-            <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
+            {/* Métricas con espacio reservado (evita CLS al llegar users-count) */}
+            <div
+              className="mt-12 grid grid-cols-2 gap-8 sm:grid-cols-4 min-h-[4.5rem] content-start"
+              aria-live="polite"
+            >
+              {stats.map((stat) => {
+                const showSkeleton =
+                  stat.label === "Usuarios activos" && usersCountLoading;
+                return (
+                  <div key={stat.label} className="flex flex-col items-center group">
+                    <div className="flex items-center justify-center text-violet-300 mb-2 min-h-[2rem] group-hover:scale-[1.02] transition-transform duration-300">
+                      <stat.icon className="w-5 h-5 mr-2 shrink-0" aria-hidden="true" />
+                      {showSkeleton ? (
+                        <span
+                          className="inline-block min-h-[2rem] min-w-[3rem] rounded-md bg-white/20 animate-pulse"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <span className="inline-flex items-center justify-center min-h-[2rem] min-w-[3rem] text-3xl font-extrabold text-white tabular-nums">
+                          {stat.value}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-violet-200/70">{stat.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div
+              className="mt-10 flex flex-col sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-4 min-h-[3.5rem] shrink-0 [contain-intrinsic-size:auto_3.5rem]"
+            >
               {isAuthenticated && (
-                <Link to="/dashboard" className="btn-primary px-10 py-4 text-lg">
+                <Link to="/dashboard" className="btn-primary px-10 py-4 text-lg shrink-0">
                   Ir al Dashboard
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               )}
               <Link
                 to={ROUTES.deportes}
-                className="inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
+                className="inline-flex shrink-0 items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
               >
                 <Trophy className="mr-2 w-5 h-5" />
                 Ir a deportes
               </Link>
               <Link
                 to={ROUTES.empleos}
-                className="inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
+                className="inline-flex shrink-0 items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
               >
                 <Briefcase className="mr-2 w-5 h-5" />
                 Ver empleos
               </Link>
-              <PwaInstallButton variant="hero" />
-            </div>
-
-            <div className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-4">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center group">
-                  <div className="flex items-center text-violet-300 mb-2 group-hover:scale-[1.02] transition-transform duration-300">
-                    <stat.icon className="w-5 h-5 mr-2" />
-                    <span className="text-3xl font-extrabold text-white">{stat.value}</span>
-                  </div>
-                  <span className="text-sm font-medium text-violet-200/70">{stat.label}</span>
-                </div>
-              ))}
+              <div className="shrink-0 min-h-[3.5rem] flex items-center">
+                <PwaInstallButton variant="hero" />
+              </div>
             </div>
           </div>
         </div>

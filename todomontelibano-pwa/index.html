@@ -2,11 +2,29 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- Preconnect al API (TLS/TCP mientras descarga el JS) -->
+    <link rel="preconnect" href="https://missingdigitalback.onrender.com" crossorigin />
+    <link rel="dns-prefetch" href="https://missingdigitalback.onrender.com" />
+    <!-- Tipografía Inter (self-host + swap) para reducir FOUT/CLS -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin-700-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin-400-normal.woff2"
+      crossorigin
+    />
     <link rel="icon" type="image/svg+xml" href="/chever_oficial.svg?v=1.2" />
     <link rel="apple-touch-icon" href="/chever-oficial-pwa.svg?v=1.2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#FFFFFF" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- manifest se inyecta tras load (no compite con el JS crítico) -->
     <script>
       (function () {
         // Solo marca versión + limpia Cache Storage. Sin location.reload() (evita bucles con el SW).
@@ -163,6 +181,25 @@
       }
     </style>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Manifest PWA diferido: no forma parte de la cadena crítica de LCP -->
+    <script>
+      (function () {
+        function injectManifest() {
+          if (document.querySelector('link[rel="manifest"]')) return;
+          var link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = '/manifest.webmanifest';
+          document.head.appendChild(link);
+        }
+        if (document.readyState === 'complete') {
+          setTimeout(injectManifest, 0);
+        } else {
+          window.addEventListener('load', function () {
+            setTimeout(injectManifest, 0);
+          });
+        }
+      })();
+    </script>
     <!-- Si React no monta en 8s, forzar una recarga con cache-bust (una sola vez) -->
     <script>
       (function () {
