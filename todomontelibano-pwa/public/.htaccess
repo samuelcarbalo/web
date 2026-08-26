@@ -5,6 +5,10 @@
 
   RewriteRule ^index\.html$ - [L]
 
+  # Verificación Google Search Console (archivo estático en raíz)
+  RewriteRule ^google[0-9a-f]+\.html$ - [L]
+
+  # No reescribir archivos ni directorios reales (public/*.html, assets, etc.)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]

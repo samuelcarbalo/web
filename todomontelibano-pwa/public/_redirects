@@ -1,3 +1,5 @@
 # SPA fallback — Netlify / Cloudflare Pages / Render static
-# Todas las rutas de cliente deben servir index.html (status 200).
-/*    /index.html   200
+# Archivos reales (p. ej. google-site-verification) se sirven primero.
+# Excluir verificación de Google del rewrite a index.html.
+/google*.html  200
+/*             /index.html   200
