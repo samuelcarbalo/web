@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        // Registro manual en src/lib/pwa.ts (evita doble registro)
         injectRegister: false,
         includeAssets: [
           'chever-logo.svg',
@@ -41,7 +42,6 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           orientation: 'portrait-primary',
           categories: ['business', 'productivity', 'lifestyle'],
-          // Ayuda a getInstalledRelatedApps() a detectar la PWA ya instalada
           related_applications: [
             {
               platform: 'webapp',
@@ -51,16 +51,15 @@ export default defineConfig(({ mode }) => {
           prefer_related_applications: false,
           icons: [
             {
-              src: '/chever-oficial-pwa.svg?v=1.1',
+              src: '/chever-oficial-pwa.svg?v=1.2',
               sizes: 'any',
               type: 'image/svg+xml',
               purpose: 'any maskable',
             },
-            // PNG de respaldo para plataformas que aún prefieren raster en install
-            { src: '/icon-192x192.png?v=1.1', sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: '/icon-512x512.png?v=1.1', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: '/icon-192x192.png?v=1.2', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: '/icon-512x512.png?v=1.2', sizes: '512x512', type: 'image/png', purpose: 'any' },
             {
-              src: '/icon-512x512.png?v=1.1',
+              src: '/icon-512x512.png?v=1.2',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -72,62 +71,56 @@ export default defineConfig(({ mode }) => {
               short_name: 'Empleos',
               description: 'Bolsa de trabajo y vacantes',
               url: '/empleos',
-              icons: [{ src: '/chever-oficial-pwa.svg?v=1.1', sizes: 'any', type: 'image/svg+xml' }],
+              icons: [{ src: '/chever-oficial-pwa.svg?v=1.2', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Deportes',
               short_name: 'Deportes',
               description: 'Torneos y ligas locales',
               url: '/deportes',
-              icons: [{ src: '/chever-oficial-pwa.svg?v=1.1', sizes: 'any', type: 'image/svg+xml' }],
+              icons: [{ src: '/chever-oficial-pwa.svg?v=1.2', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Bienes Raíces',
               short_name: 'Inmuebles',
               description: 'Propiedades en venta y alquiler',
               url: '/bienes-raices',
-              icons: [{ src: '/chever-oficial-pwa.svg?v=1.1', sizes: 'any', type: 'image/svg+xml' }],
+              icons: [{ src: '/chever-oficial-pwa.svg?v=1.2', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Tienda',
               short_name: 'Tienda',
               description: 'Catálogo y compras locales',
               url: '/tienda',
-              icons: [{ src: '/chever-oficial-pwa.svg?v=1.1', sizes: 'any', type: 'image/svg+xml' }],
+              icons: [{ src: '/chever-oficial-pwa.svg?v=1.2', sizes: 'any', type: 'image/svg+xml' }],
             },
             {
               name: 'Eventos',
               short_name: 'Eventos',
               description: 'Eventos publicitarios y agenda local',
               url: '/eventos',
-              icons: [{ src: '/chever-oficial-pwa.svg?v=1.1', sizes: 'any', type: 'image/svg+xml' }],
+              icons: [{ src: '/chever-oficial-pwa.svg?v=1.2', sizes: 'any', type: 'image/svg+xml' }],
             },
           ],
         },
         workbox: {
-          // autoUpdate: el SW nuevo reemplaza la caché vieja al detectar un build
           skipWaiting: true,
           clientsClaim: true,
           cleanupOutdatedCaches: true,
           importScripts: ['/notification-sw.js'],
+          // Precache hashed assets only — no HTML (navegación siempre desde red)
+          globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           runtimeCaching: [
             {
-              // HTML / navegación: siempre preferir red
+              // Evita servir index.html / rutas SPA desde Cache Storage
               urlPattern: ({ request }) => request.mode === 'navigate',
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'html-pages',
-                networkTimeoutSeconds: 3,
-                expiration: { maxEntries: 8, maxAgeSeconds: 60 },
-              },
+              handler: 'NetworkOnly',
             },
             {
-              // Logos estáticos en public/: revalidar con frecuencia
               urlPattern: ({ url }) =>
-                /\.(?:svg|png)$/i.test(url.pathname) &&
-                !url.pathname.startsWith('/assets/'),
+                /\.(?:svg|png)$/i.test(url.pathname) && !url.pathname.startsWith('/assets/'),
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'brand-assets',
@@ -144,7 +137,17 @@ export default defineConfig(({ mode }) => {
       Sitemap({
         hostname: siteUrl,
         generateRobotsTxt: false,
-        dynamicRoutes: ['/', '/empleos', '/deportes', '/bienes-raices', '/eventos', '/tienda', '/contact', '/privacy', '/terms'],
+        dynamicRoutes: [
+          '/',
+          '/empleos',
+          '/deportes',
+          '/bienes-raices',
+          '/eventos',
+          '/tienda',
+          '/contact',
+          '/privacy',
+          '/terms',
+        ],
         changefreq: 'daily',
         priority: {
           '*': 0.5,

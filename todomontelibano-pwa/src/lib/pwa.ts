@@ -4,28 +4,30 @@ import { APP_VERSION } from '../config/appVersion';
 type UpdateFn = (reloadPage?: boolean) => Promise<void>;
 
 let updateSW: UpdateFn | undefined;
-let refreshing = false;
+/** Evita doble reload cuando skipWaiting activa el SW nuevo. */
+let controllerReloadArmed = false;
 
 /**
- * Registro PWA en modo autoUpdate:
- * - skipWaiting + clientsClaim en workbox
- * - al detectar SW nuevo → aplica update y recarga sin bloquear al usuario
+ * Registro PWA en modo autoUpdate.
+ * - NO llamar updateSW(true) / location.reload() en onNeedRefresh (genera bucles).
+ * - Una sola recarga en controllerchange cuando el SW nuevo toma el control.
  */
 export function setupPwaUpdates(): void {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
+    if (!controllerReloadArmed) return;
+    controllerReloadArmed = false;
     window.location.reload();
   });
 
   updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
-      // autoUpdate: aplicar de inmediato (sin banner bloqueante)
+      // Activa el worker en waiting (skipWaiting). Sin reload forzado.
       window.dispatchEvent(new Event('pwa:need-refresh'));
-      void applyPwaUpdate();
+      controllerReloadArmed = true;
+      void updateSW?.(false);
     },
     onOfflineReady() {
       window.dispatchEvent(new Event('pwa:offline-ready'));
@@ -41,7 +43,6 @@ export function setupPwaUpdates(): void {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') checkForUpdate();
       });
-      // Poll cada 60s por si el hosting no empuja el SW al instante
       window.setInterval(checkForUpdate, 60_000);
     },
     onRegisterError(error) {
@@ -50,22 +51,26 @@ export function setupPwaUpdates(): void {
   });
 }
 
-/** Activa el SW nuevo y recarga con los assets recientes. */
-export async function applyPwaUpdate(): Promise<void> {
+/**
+ * Activa el SW en waiting. Por defecto NO recarga (evita bucles).
+ * Pasar `forceReload=true` solo desde UI explícita del usuario.
+ */
+export async function applyPwaUpdate(forceReload = false): Promise<void> {
   try {
     if (updateSW) {
-      await updateSW(true);
+      controllerReloadArmed = true;
+      await updateSW(forceReload);
       return;
     }
   } catch {
     /* fall through */
   }
-  window.location.reload();
+  if (forceReload) window.location.reload();
 }
 
 /**
- * Si APP_VERSION cambió respecto a localStorage, limpia Cache Storage
- * y fuerza una recarga única para servir el build nuevo.
+ * Si APP_VERSION cambió, limpia Cache Storage y actualiza la marca.
+ * Sin location.reload() — el autoUpdate del SW aplica el build nuevo.
  */
 export async function purgeCachesIfVersionChanged(): Promise<void> {
   if (typeof window === 'undefined') return;
@@ -76,20 +81,12 @@ export async function purgeCachesIfVersionChanged(): Promise<void> {
 
     localStorage.setItem(KEY, APP_VERSION);
 
-    if (prev == null) {
-      // Primera visita: solo persistir versión, no recargar
-      return;
-    }
+    if (prev == null) return;
 
     if ('caches' in window) {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
-
-    const flag = 'chever_version_reloaded';
-    if (sessionStorage.getItem(flag) === APP_VERSION) return;
-    sessionStorage.setItem(flag, APP_VERSION);
-    window.location.reload();
   } catch {
     /* ignore storage errors */
   }
@@ -97,17 +94,14 @@ export async function purgeCachesIfVersionChanged(): Promise<void> {
 
 /**
  * Si la app no monta (root vacío), limpia caches y recarga UNA vez.
- * No desregistra el Service Worker si la PWA ya está instalada: eso provoca
- * beforeinstallprompt otra vez y una “segunda descarga” de la app.
  */
 export function setupBlankScreenRecovery(): void {
   if (typeof window === 'undefined') return;
 
-  const flag = 'sw_blank_recovery_v1';
+  const flag = 'sw_blank_recovery_v2';
 
   window.setTimeout(() => {
     const root = document.getElementById('root');
-    // `#app-boot` vive dentro de #root hasta que React monta.
     const stillOnBoot = !!document.getElementById('app-boot');
     const mounted = !!(root && root.childElementCount > 0 && !stillOnBoot);
     if (mounted) {
@@ -132,20 +126,9 @@ export function setupBlankScreenRecovery(): void {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
         }
-        const standalone =
-          window.matchMedia('(display-mode: standalone)').matches ||
-          Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
-        if (!standalone && 'serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(
-            regs.map(async (r) => {
-              try {
-                await r.update();
-              } catch {
-                /* ignore */
-              }
-            }),
-          );
+          await Promise.all(regs.map((r) => r.update().catch(() => undefined)));
         }
       } finally {
         window.location.reload();

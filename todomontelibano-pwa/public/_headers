@@ -8,6 +8,7 @@
 
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
 
 /workbox-*.js
   Cache-Control: no-cache, no-store, must-revalidate
