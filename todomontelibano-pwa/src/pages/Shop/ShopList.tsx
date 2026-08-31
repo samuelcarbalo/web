@@ -7,18 +7,24 @@ import ProductCard from '../../components/Shop/ProductCard';
 import CatalogErrorState from '../../components/Shop/CatalogErrorState';
 import JsonLd from '../../components/SEO/JsonLd';
 
+const CategoryChipSkeleton: React.FC = () => (
+  <div className="h-8 w-20 rounded-full bg-white/30 dark:bg-gray-800 animate-pulse" />
+);
+
 const ShopList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [showFilters, setShowFilters] = useState(false);
-  const category = searchParams.get('category') || undefined;
+  const categoryId = searchParams.get('category_id') || undefined;
+  const categorySlug = searchParams.get('category') || undefined;
   const flashSale = searchParams.get('flash_sale') === '1';
   const minPrice = searchParams.get('min_price');
   const maxPrice = searchParams.get('max_price');
 
   const params = useMemo(
     () => ({
-      category,
+      category_id: categoryId,
+      category: categoryId ? undefined : categorySlug,
       search: searchParams.get('search') || undefined,
       min_price: minPrice ? Number(minPrice) : undefined,
       max_price: maxPrice ? Number(maxPrice) : undefined,
@@ -26,11 +32,12 @@ const ShopList: React.FC = () => {
       flash_sale: flashSale || undefined,
       ordering: '-is_featured',
     }),
-    [category, searchParams, minPrice, maxPrice, flashSale],
+    [categoryId, categorySlug, searchParams, minPrice, maxPrice, flashSale],
   );
 
   const {
     data: categoriesData,
+    isLoading: categoriesLoading,
     isError: categoriesError,
     refetch: refetchCategories,
   } = useShopCategories();
@@ -54,12 +61,20 @@ const ShopList: React.FC = () => {
     setSearchParams(next);
   };
 
-  const setCategory = (slug?: string) => {
+  /** Filtra por category_id (UUID del backend); limpia slug legado. */
+  const setCategory = (id?: string, slug?: string) => {
     const next = new URLSearchParams(searchParams);
-    if (slug) next.set('category', slug);
-    else next.delete('category');
+    next.delete('category');
+    if (id) {
+      next.set('category_id', id);
+      if (slug) next.set('category', slug);
+    } else {
+      next.delete('category_id');
+    }
     setSearchParams(next);
   };
+
+  const selectedAll = !categoryId && !categorySlug;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950/50 pb-16">
@@ -125,32 +140,54 @@ const ShopList: React.FC = () => {
       </div>
 
       <div className="page-container mt-10">
-        <div className={`flex flex-wrap gap-2 mb-8 ${showFilters ? '' : 'hidden md:flex'}`}>
+        <div
+          className={`flex flex-wrap gap-2 mb-8 min-h-[2.25rem] ${showFilters ? '' : 'hidden md:flex'}`}
+          role="tablist"
+          aria-label="Categorías de la tienda"
+        >
           <button
             type="button"
+            role="tab"
+            aria-selected={selectedAll}
             onClick={() => setCategory(undefined)}
-            className={`px-3 py-1.5 rounded-full text-sm font-bold ${
-              !category
+            className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${
+              selectedAll
                 ? 'bg-violet-600 text-white'
-                : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
+                : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
             }`}
           >
             Todas
           </button>
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategory(c.slug)}
-              className={`px-3 py-1.5 rounded-full text-sm font-bold ${
-                category === c.slug
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
+
+          {categoriesLoading &&
+            [1, 2, 3, 4].map((i) => <CategoryChipSkeleton key={`sk-${i}`} />)}
+
+          {!categoriesLoading &&
+            categories.map((c) => {
+              const active = categoryId === c.id || categorySlug === c.slug;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setCategory(c.id, c.slug)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${
+                    active
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
+                  }`}
+                >
+                  {c.name}
+                </button>
+              );
+            })}
+
+          {!categoriesLoading && categories.length === 0 && !categoriesError && (
+            <span className="text-sm text-gray-500 dark:text-gray-400 self-center">
+              Sin categorías publicadas aún
+            </span>
+          )}
         </div>
 
         {isLoading && (

@@ -48,7 +48,7 @@ const StoreSubNavbar: React.FC = () => {
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              to={`${ROUTES.tienda}?category=${encodeURIComponent(cat.slug)}`}
+              to={`${ROUTES.tienda}?category_id=${encodeURIComponent(cat.id)}&category=${encodeURIComponent(cat.slug)}`}
               className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-primary-900 transition-colors"
             >
               <Tag className="w-3 h-3 text-secondary-600" aria-hidden="true" />

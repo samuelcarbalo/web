@@ -4,6 +4,7 @@ import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct } from 
 
 export interface ProductListParams {
   category?: string;
+  category_id?: string;
   subcategory?: string;
   search?: string;
   min_price?: number;
