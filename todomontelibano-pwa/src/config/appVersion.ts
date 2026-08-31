@@ -1,8 +1,8 @@
 /** Versión de app para invalidar Cache Storage tras un deploy (sin reload loop). */
-export const APP_VERSION = '1.0.3';
+export const APP_VERSION = '1.0.4';
 
 /** Query param para assets estáticos en /public (SVG/PNG sin hash de Vite). */
-export const ASSET_VERSION = '1.2';
+export const ASSET_VERSION = '1.3';
 
 export const assetUrl = (path: string) => {
   const clean = path.startsWith('/') ? path : `/${path}`;

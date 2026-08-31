@@ -15,6 +15,7 @@ import {
   Bell,
   Coins,
   ShoppingBag,
+  type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import JsonLd from "../components/SEO/JsonLd";
@@ -24,20 +25,35 @@ import { useActiveUsersCount } from "../hooks/useActiveUsersCount";
 import PwaInstallButton from "../components/PWA/PwaInstallButton";
 import brandMark from "../assets/chever-logo.svg";
 
+type HomeService = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  gradient: string;
+  active: boolean;
+  path: string;
+  stats: string;
+  comingSoon?: boolean;
+  featured?: boolean;
+  badge?: string;
+};
+
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
   const { activeUsers, isLoading: usersCountLoading } = useActiveUsersCount();
 
-  const services = [
+  const services: HomeService[] = [
     {
-      icon: Briefcase,
-      title: "Empleos",
+      icon: ShoppingBag,
+      title: "Tienda",
       description:
-        "Encuentra oportunidades laborales en Chever y zona bananera. Publica vacantes si eres empresa.",
-      gradient: "from-violet-500 to-indigo-600",
+        "Catálogo de productos locales. Navega sin cuenta y paga con Mercado Pago.",
+      gradient: "from-indigo-500 to-violet-600",
       active: true,
-      path: ROUTES.empleos,
-      stats: "100+ empleos activos",
+      path: ROUTES.tienda,
+      stats: "Catálogo abierto",
+      featured: true,
+      badge: "Principal",
     },
     {
       icon: Trophy,
@@ -48,6 +64,16 @@ const Home: React.FC = () => {
       active: true,
       path: ROUTES.deportes,
       stats: "Ligas activas",
+    },
+    {
+      icon: Briefcase,
+      title: "Empleos",
+      description:
+        "Encuentra oportunidades laborales en Chever y zona bananera. Publica vacantes si eres empresa.",
+      gradient: "from-violet-500 to-indigo-600",
+      active: true,
+      path: ROUTES.empleos,
+      stats: "100+ empleos activos",
     },
     {
       icon: Calendar,
@@ -69,16 +95,6 @@ const Home: React.FC = () => {
       comingSoon: false,
       path: ROUTES.bienesRaices,
       stats: "Propiedades",
-    },
-    {
-      icon: ShoppingBag,
-      title: "Tienda",
-      description:
-        "Catálogo de productos locales. Navega sin cuenta y paga con Mercado Pago.",
-      gradient: "from-indigo-500 to-violet-600",
-      active: true,
-      path: ROUTES.tienda,
-      stats: "Catálogo abierto",
     },
   ];
 
@@ -251,9 +267,20 @@ const Home: React.FC = () => {
             {services.map((service) => (
               <div
                 key={service.title}
-                className={`group relative card-static hover-lift
-                  ${service.active ? "hover:border-violet-300 dark:hover:border-violet-700" : "opacity-75"}`}
+                className={`group relative card-static hover-lift flex flex-col h-full
+                  ${service.featured
+                    ? "border-2 border-emerald-500/50 shadow-[0_0_24px_rgba(16,185,129,0.12)]"
+                    : service.active
+                      ? "hover:border-violet-300 dark:hover:border-violet-700"
+                      : "opacity-75"}`}
               >
+                {service.badge && (
+                  <div className="absolute top-5 right-5">
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      {service.badge}
+                    </span>
+                  </div>
+                )}
                 {service.comingSoon && (
                   <div className="absolute top-5 right-5">
                     <span className="badge">Pronto</span>
@@ -269,24 +296,24 @@ const Home: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-6 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-6 leading-relaxed flex-1">
                   {service.description}
                 </p>
 
-                <div className="flex items-center justify-between pt-5 border-t border-gray-100 dark:border-gray-800">
-                  <span className="text-sm font-bold text-violet-600 dark:text-violet-400">
+                <div className="mt-auto pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 leading-tight min-w-0">
                     {service.stats}
                   </span>
                   {service.active ? (
                     <Link
                       to={service.path}
-                      className="flex items-center text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors group/link"
+                      className="inline-flex items-center text-sm font-bold text-gray-900 dark:text-white hover:text-emerald-500 dark:hover:text-emerald-400 shrink-0 transition-colors group/link"
                     >
                       Explorar
                       <ArrowRight className="ml-1 w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                     </Link>
                   ) : (
-                    <span className="text-sm font-medium text-gray-400 flex items-center">
+                    <span className="text-sm font-medium text-gray-400 inline-flex items-center shrink-0">
                       <Calendar className="w-3 h-3 mr-1" />
                       Próximamente
                     </span>
