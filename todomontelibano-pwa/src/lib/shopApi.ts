@@ -4,11 +4,13 @@ import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct } from 
 
 export interface ProductListParams {
   category?: string;
+  subcategory?: string;
   search?: string;
   min_price?: number;
   max_price?: number;
   featured?: boolean;
   in_stock?: boolean;
+  flash_sale?: boolean;
   page?: number;
   ordering?: string;
 }

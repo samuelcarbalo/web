@@ -22,7 +22,8 @@ export function setupPwaUpdates(): void {
   });
 
   updateSW = registerSW({
-    immediate: true,
+    // false = no registra en el arranque síncrono; se llama tras idle desde main.tsx
+    immediate: false,
     onNeedRefresh() {
       // Activa el worker en waiting (skipWaiting). Sin reload forzado.
       window.dispatchEvent(new Event('pwa:need-refresh'));
