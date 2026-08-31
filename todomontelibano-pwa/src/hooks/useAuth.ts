@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { clearSession, hasValidSessionHint, markSessionStart, purgeClientSession } from '../lib/session';
+import { hasValidSessionHint, markSessionStart, purgeClientSession } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
