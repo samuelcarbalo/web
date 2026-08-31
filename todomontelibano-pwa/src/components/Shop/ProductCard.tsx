@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Sparkles } from 'lucide-react';
+import { ShoppingBag, Sparkles, Timer, Zap } from 'lucide-react';
 import { getMediaUrl } from '../../lib/api';
 import { ROUTES } from '../../config/seo';
 import type { ShopProduct } from '../../types/shop';
+import FlashSaleCountdown from './FlashSaleCountdown';
 
 const formatCop = (value: number | string) =>
   new Intl.NumberFormat('es-CO', {
@@ -17,10 +18,20 @@ type Props = {
 };
 
 const ProductCard: React.FC<Props> = ({ product }) => {
+  const flash = product.active_discount;
   const hasDiscount =
-    !!product.compare_at_price_cop &&
-    Number(product.compare_at_price_cop) > Number(product.price_cop);
+    (!!product.compare_at_price_cop &&
+      Number(product.compare_at_price_cop) > Number(product.price_cop)) ||
+    !!flash;
   const outOfStock = Number(product.stock) < 1;
+  const pct =
+    flash?.discount_percentage != null
+      ? Math.round(Number(flash.discount_percentage))
+      : hasDiscount && product.compare_at_price_cop
+        ? Math.round(
+            (1 - Number(product.price_cop) / Number(product.compare_at_price_cop)) * 100,
+          )
+        : null;
 
   return (
     <Link
@@ -32,6 +43,8 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           <img
             src={getMediaUrl(product.image_url)}
             alt={product.name}
+            width={640}
+            height={400}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -40,14 +53,31 @@ const ProductCard: React.FC<Props> = ({ product }) => {
             <ShoppingBag className="w-16 h-16 text-gray-300" />
           </div>
         )}
-        {product.is_featured && (
-          <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold bg-amber-400 text-amber-900 rounded-full flex items-center gap-1">
-            <Sparkles className="w-3 h-3" /> Destacado
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {flash?.is_flash_sale && (
+            <span className="px-2.5 py-1 text-xs font-bold bg-rose-600 text-white rounded-full flex items-center gap-1">
+              <Zap className="w-3 h-3" /> Flash Sale
+            </span>
+          )}
+          {flash && !flash.is_flash_sale && (
+            <span className="px-2.5 py-1 text-xs font-bold bg-orange-500 text-white rounded-full">
+              Oferta por tiempo limitado
+            </span>
+          )}
+          {product.is_featured && (
+            <span className="px-2.5 py-1 text-xs font-bold bg-amber-400 text-amber-900 rounded-full flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Destacado
+            </span>
+          )}
+        </div>
+        <span className="absolute top-3 right-3 px-2.5 py-1 text-xs font-bold bg-white/90 dark:bg-gray-900/90 rounded-full">
+          {product.subcategory_name || product.category_name || 'General'}
+        </span>
+        {pct != null && pct > 0 && (
+          <span className="absolute bottom-3 right-3 px-2.5 py-1 text-xs font-extrabold bg-secondary-700 text-white rounded-full">
+            -{pct}%
           </span>
         )}
-        <span className="absolute top-3 right-3 px-2.5 py-1 text-xs font-bold bg-white/90 dark:bg-gray-900/90 rounded-full">
-          {product.category_name || 'General'}
-        </span>
         {outOfStock && (
           <span className="absolute bottom-3 left-3 px-2.5 py-1 text-xs font-bold bg-gray-900/80 text-white rounded-full">
             Agotado
@@ -65,12 +95,18 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
             {formatCop(product.price_cop)}
           </span>
-          {hasDiscount && (
+          {hasDiscount && product.compare_at_price_cop && (
             <span className="text-sm text-gray-400 line-through">
-              {formatCop(product.compare_at_price_cop!)}
+              {formatCop(product.compare_at_price_cop)}
             </span>
           )}
         </div>
+        {flash?.end_time && (
+          <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
+            <Timer className="w-3.5 h-3.5" aria-hidden="true" />
+            Termina en <FlashSaleCountdown endTime={flash.end_time} />
+          </div>
+        )}
       </div>
     </Link>
   );

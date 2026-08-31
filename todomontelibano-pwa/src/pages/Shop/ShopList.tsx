@@ -12,6 +12,7 @@ const ShopList: React.FC = () => {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [showFilters, setShowFilters] = useState(false);
   const category = searchParams.get('category') || undefined;
+  const flashSale = searchParams.get('flash_sale') === '1';
   const minPrice = searchParams.get('min_price');
   const maxPrice = searchParams.get('max_price');
 
@@ -22,9 +23,10 @@ const ShopList: React.FC = () => {
       min_price: minPrice ? Number(minPrice) : undefined,
       max_price: maxPrice ? Number(maxPrice) : undefined,
       in_stock: true,
+      flash_sale: flashSale || undefined,
       ordering: '-is_featured',
     }),
-    [category, searchParams, minPrice, maxPrice],
+    [category, searchParams, minPrice, maxPrice, flashSale],
   );
 
   const {

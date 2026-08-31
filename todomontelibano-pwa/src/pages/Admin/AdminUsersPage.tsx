@@ -9,6 +9,7 @@ import {
   useUpdateAdminUser,
 } from '../../hooks/useAdminUsers';
 import type { AdminUser } from '../../lib/adminApi';
+import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
 
 const AdminUsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -274,6 +275,8 @@ const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <AdminExcelImportPanel />
     </div>
   );
 };

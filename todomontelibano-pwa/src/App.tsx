@@ -7,14 +7,15 @@ import BrandLogo from './components/Brand/BrandLogo';
 // Layout
 import MainLayout from './components/Layout/MainLayout';
 import ScrollToTop from './components/UI/ScrollToTop';
-// Pages (Core estáticas)
-import Home from './pages/Home';
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
-import ForgotPassword from './pages/Auth/ForgotPassword';
-import Dashboard from './pages/Dashboard';
-import NotFoundPage from './pages/NotFoundPage';
+// Core: Home en chunk propio (no infla el entry; LCP carga en paralelo tras App shell)
 import { lazyWithRetry } from './lib/lazyWithRetry';
+
+const Home = lazyWithRetry(() => import('./pages/Home'));
+const Login = lazyWithRetry(() => import('./pages/Auth/Login'));
+const Register = lazyWithRetry(() => import('./pages/Auth/Register'));
+const ForgotPassword = lazyWithRetry(() => import('./pages/Auth/ForgotPassword'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage'));
 
 // Pages (Carga Perezosa / Lazy Loading)
 const JobsList = lazyWithRetry(() => import('./pages/Jobs/JobsList'));

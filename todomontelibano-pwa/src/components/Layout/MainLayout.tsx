@@ -28,6 +28,7 @@ import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
 import BrandLogo from "../Brand/BrandLogo";
 import { canManageContent } from "../../hooks/usePermissions";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
+import StoreSubNavbar from "../Shop/StoreSubNavbar";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -41,6 +42,14 @@ const MainLayout: React.FC = () => {
   useNotificationSocket(sessionActive);
 
   const services = [
+    {
+      name: "Tienda",
+      icon: ShoppingBag,
+      path: ROUTES.tienda,
+      active: true,
+      description: "Catálogo y compras con Mercado Pago",
+      comingSoon: false,
+    },
     {
       name: "Deportes",
       icon: Trophy,
@@ -70,14 +79,6 @@ const MainLayout: React.FC = () => {
       path: ROUTES.bienesRaices,
       active: true,
       description: "Propiedades en venta y alquiler",
-      comingSoon: false,
-    },
-    {
-      name: "Tienda",
-      icon: ShoppingBag,
-      path: ROUTES.tienda,
-      active: true,
-      description: "Catálogo y compras con Mercado Pago",
       comingSoon: false,
     },
   ];
@@ -377,6 +378,8 @@ const MainLayout: React.FC = () => {
         )}
       </header>
 
+      <StoreSubNavbar />
+
       <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
       </main>
@@ -399,11 +402,11 @@ const MainLayout: React.FC = () => {
                 Servicios
               </h3>
               <ul className="space-y-3 text-sm font-medium text-gray-600 dark:text-gray-400">
+                <li><Link to={ROUTES.tienda} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Tienda</Link></li>
                 <li><Link to={ROUTES.deportes} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Deportes</Link></li>
                 <li><Link to={ROUTES.empleos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Empleos</Link></li>
                 <li><Link to={ROUTES.eventos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Eventos</Link></li>
                 <li><Link to={ROUTES.bienesRaices} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Bienes Raíces</Link></li>
-                <li><Link to={ROUTES.tienda} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Tienda</Link></li>
               </ul>
             </div>
 

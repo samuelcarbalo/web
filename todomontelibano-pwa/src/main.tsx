@@ -10,9 +10,36 @@ import { recoverFromStaleChunks, setupChunkLoadRecovery } from './lib/chunkRecov
 
 initTheme()
 void purgeCachesIfVersionChanged()
-setupPwaUpdates()
 setupBlankScreenRecovery()
 setupChunkLoadRecovery()
+
+/** Registra el SW fuera de la critical path (después de load + idle). */
+function deferPwaRegistration(): void {
+  const run = () => {
+    try {
+      setupPwaUpdates()
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const afterLoad = () => {
+    const ric = window.requestIdleCallback?.bind(window)
+    if (ric) {
+      ric(() => run(), { timeout: 4000 })
+      return
+    }
+    window.setTimeout(run, 1500)
+  }
+
+  if (document.readyState === 'complete') {
+    afterLoad()
+  } else {
+    window.addEventListener('load', afterLoad, { once: true })
+  }
+}
+
+deferPwaRegistration()
 
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason as { message?: string; name?: string } | undefined

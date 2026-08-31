@@ -6,6 +6,17 @@ export interface ShopCategory {
   sort_order?: number;
 }
 
+export interface ShopProductDiscount {
+  id: string;
+  name: string;
+  discount_type: string;
+  discount_percentage?: string | null;
+  discount_price?: string | null;
+  start_time: string;
+  end_time: string;
+  is_flash_sale?: boolean;
+}
+
 export interface ShopProduct {
   id: string;
   name: string;
@@ -21,6 +32,10 @@ export interface ShopProduct {
   category?: string | null;
   category_name?: string | null;
   category_slug?: string | null;
+  subcategory?: string | null;
+  subcategory_name?: string | null;
+  subcategory_slug?: string | null;
+  active_discount?: ShopProductDiscount | null;
   created_at?: string;
 }
 
