@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { clearSession, hasValidSessionHint } from '../lib/session';
+import { clearSession, hasValidSessionHint, markSessionStart, purgeClientSession } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
@@ -68,7 +68,7 @@ export const useMe = () => {
       } catch (error: unknown) {
         const status = (error as { response?: { status?: number } })?.response?.status;
         if (status === 401) {
-          clearSession();
+          void purgeClientSession({ redirectToLogin: true });
           return null;
         }
         // 500 / CORS / red: no tumbar sesión persistida; solo liberar loading en finally
@@ -141,6 +141,7 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
+      markSessionStart();
       
       // Después de login, fetch el perfil completo
       const profileRes = await api.get<Profile>('/profiles/me/');
@@ -193,6 +194,7 @@ export const useRegister = () => {
       
       localStorage.setItem('access_token', accessToken);
       localStorage.setItem('refresh_token', refreshToken);
+      markSessionStart();
       
       // Fetch perfil y usuario después de registro
       const [profileRes, userRes] = await Promise.all([
@@ -236,10 +238,11 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return () => {
-    clearSession();
-    logout();
-    queryClient.clear();
-    navigate('/login', { replace: true });
+    void purgeClientSession({ redirectToLogin: false }).then(() => {
+      logout();
+      queryClient.clear();
+      navigate('/login', { replace: true });
+    });
   };
 };
 

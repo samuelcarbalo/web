@@ -1,6 +1,11 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { TENANT_CONFIG } from '../config/tenant';
-import { clearSession, getAccessToken } from './session';
+import {
+  enforceSessionMaxAge,
+  getAccessToken,
+  markSessionStart,
+  purgeClientSession,
+} from './session';
 import { getApiBaseUrl, getApiOrigin, subscribeApiBaseUrl } from '../api/config';
 
 const PUBLIC_ENDPOINTS = [
@@ -33,9 +38,17 @@ subscribeApiBaseUrl((baseUrl) => {
   api.defaults.baseURL = baseUrl;
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   // Keep in sync if LocalStorage switch changed without reload.
   config.baseURL = getApiBaseUrl();
+
+  // TTL 24h: si expiró, limpia todo antes de disparar la petición.
+  if (getAccessToken()) {
+    const expired = await enforceSessionMaxAge();
+    if (expired) {
+      return Promise.reject(new Error('Sesión expirada (24h)'));
+    }
+  }
 
   const token = getAccessToken();
   if (token) {
@@ -70,6 +83,8 @@ async function refreshAccessToken(): Promise<string> {
     .then((response) => {
       const { access } = response.data;
       localStorage.setItem('access_token', access);
+      // Renovar marca de sesión al refrescar token con éxito
+      markSessionStart();
       return access as string;
     })
     .finally(() => {
@@ -84,35 +99,44 @@ type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    if (axios.isCancel(error) || error.message === 'Sesión expirada (24h)') {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as RetriableConfig | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
+
+      // No intentar refresh en el propio endpoint de refresh/login
+      const url = originalRequest.url || '';
+      if (url.includes('/auth/refresh/') || url.includes('/auth/login/')) {
+        await purgeClientSession({ redirectToLogin: true });
+        return Promise.reject(error);
+      }
 
       try {
         const access = await refreshAccessToken();
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
       } catch {
-        clearSession();
-
-        const isAuthRoute =
-          window.location.pathname === '/login' ||
-          window.location.pathname === '/register';
-        const isProtectedPage =
-          !isPublicEndpoint(originalRequest.url) &&
-          !originalRequest.url?.includes('/auth/');
-
-        if (isProtectedPage && !isAuthRoute) {
-          window.location.replace('/login');
-        }
-
+        await purgeClientSession({ redirectToLogin: true });
         return Promise.reject(error);
       }
     }
 
+    // 401 sin config reintentable → limpieza igual
+    if (error.response?.status === 401) {
+      const isAuthRoute =
+        window.location.pathname === '/login' ||
+        window.location.pathname === '/register';
+      if (!isAuthRoute && !isPublicEndpoint(originalRequest?.url)) {
+        await purgeClientSession({ redirectToLogin: true });
+      }
+    }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export const getMediaUrl = (path?: string | null): string | undefined => {

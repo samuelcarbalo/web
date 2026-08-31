@@ -7,9 +7,11 @@ import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary'
 import { setupBlankScreenRecovery, setupPwaUpdates, purgeCachesIfVersionChanged } from './lib/pwa'
 import { recoverFromStaleChunks, setupChunkLoadRecovery } from './lib/chunkRecovery'
+import { enforceSessionMaxAge } from './lib/session'
 
 initTheme()
 void purgeCachesIfVersionChanged()
+void enforceSessionMaxAge()
 setupBlankScreenRecovery()
 setupChunkLoadRecovery()
 
