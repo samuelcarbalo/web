@@ -109,10 +109,27 @@ export const useApplyJob = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ jobId, data }: { jobId: string; data: { cover_letter: string; resume?: File } }) => {
+    mutationFn: async ({
+      jobId,
+      data,
+      external,
+    }: {
+      jobId: string;
+      data?: { cover_letter?: string; resume?: File };
+      external?: boolean;
+    }) => {
+      if (external) {
+        const response = await api.post(`/jobs/offers/${jobId}/apply/`, {});
+        return response.data as {
+          success: boolean;
+          redirected: boolean;
+          external_apply_url?: string;
+          message?: string;
+        };
+      }
       const formData = new FormData();
-      formData.append('cover_letter', data.cover_letter);
-      if (data.resume) {
+      formData.append('cover_letter', data?.cover_letter || '');
+      if (data?.resume) {
         formData.append('cv_file', data.resume);
       }
       

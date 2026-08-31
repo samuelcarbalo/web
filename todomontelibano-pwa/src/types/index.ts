@@ -109,6 +109,10 @@ export interface Job {
   skills?: string[];
   posted_at: string;
   logo?: string;
+  is_external?: boolean;
+  external_apply_url?: string | null;
+  can_apply?: boolean;
+  has_applied?: boolean;
 }
 
 export interface RealEstateOffer {
@@ -145,7 +149,7 @@ export interface JobApplication {
   applicant: User;
   cover_letter?: string;
   resume?: string;
-  status: 'applied' | 'pending' | 'reviewing' | 'shortlisted' | 'rejected' | 'hired' | 'interview';
+  status: 'applied' | 'pending' | 'reviewing' | 'shortlisted' | 'rejected' | 'hired' | 'interview' | 'redirected';
   applied_at: string;
 }
 
@@ -183,7 +187,7 @@ export interface Application {
   applicant_email: string;  // Email de contacto
   cv_file: string;          // URL completa al archivo PDF
   cover_letter: string;     // Texto de presentación
-  status: "applied" | "interview" | "hired" | "rejected" | "pending" | "reviewing" | "shortlisted";// Union type para los estados
+  status: "applied" | "interview" | "hired" | "rejected" | "pending" | "reviewing" | "shortlisted" | "redirected";// Union type para los estados
   recruiter_notes: string | null; // Notas internas (puede ser nulo)
   applied_at: string;       // Timestamp en formato ISO
 }

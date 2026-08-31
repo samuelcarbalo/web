@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   Send,
   FileText,
+  ExternalLink,
 } from "lucide-react";
 import { useJob, useApplyJob, useDeleteJob } from "../../hooks/useJobs";
 import { useAuthStore } from "../../store/authStore";
@@ -42,7 +43,28 @@ const JobDetail: React.FC = () => {
   const deleteMutation = useDeleteJob();
 
   const isOwner = checkIsOwner(job);
-  const hasApplied = false; // TODO: Check if user already applied
+  const hasApplied = Boolean(job?.has_applied);
+  const isExternal = Boolean(job?.is_external && job?.external_apply_url);
+
+  const openExternalApply = () => {
+    if (!job?.external_apply_url) return;
+    applyMutation.mutate(
+      { jobId, external: true },
+      {
+        onSuccess: (payload) => {
+          const url = payload?.external_apply_url || job.external_apply_url;
+          if (url) {
+            window.open(url, "_blank", "noopener,noreferrer");
+          }
+        },
+        onError: () => {
+          if (job.external_apply_url) {
+            window.open(job.external_apply_url, "_blank", "noopener,noreferrer");
+          }
+        },
+      },
+    );
+  };
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +208,12 @@ const JobDetail: React.FC = () => {
                   <span className={`px-2.5 py-0.5 text-xs font-bold rounded-md ${getJobTypeStyle(job.job_type)}`}>
                     {getJobTypeLabel(job.job_type)}
                   </span>
+                  {job.is_external && (
+                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                      <ExternalLink className="w-3 h-3" />
+                      Externa
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
                   {job.title}
@@ -313,7 +341,7 @@ const JobDetail: React.FC = () => {
                         Ver aplicaciones ({job.applications_count})
                       </Link>
                     </div>
-                  ) : hasApplied ? (
+                  ) : hasApplied && !isExternal ? (
                     <div className="text-center py-4 bg-white dark:bg-gray-900 rounded-3xl border border-green-100 dark:border-green-900/50 shadow-sm">
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Send className="w-6 h-6 text-green-600" />
@@ -325,6 +353,16 @@ const JobDetail: React.FC = () => {
                         La empresa revisará tu aplicación
                       </p>
                     </div>
+                  ) : isExternal ? (
+                    <button
+                      type="button"
+                      onClick={openExternalApply}
+                      disabled={applyMutation.isPending}
+                      className="w-full btn-primary font-bold py-3 text-sm rounded-3xl cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      {applyMutation.isPending ? "Redirigiendo..." : "Aplicar externamente"}
+                    </button>
                   ) : (
                     <button
                       onClick={() => setShowApplyModal(true)}

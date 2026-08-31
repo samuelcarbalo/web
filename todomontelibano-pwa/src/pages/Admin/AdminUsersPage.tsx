@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X } from 'lucide-react';
+import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X, Users, Briefcase } from 'lucide-react';
 import {
   useAdminUsers,
   useDeleteAdminUser,
@@ -10,6 +10,7 @@ import {
 } from '../../hooks/useAdminUsers';
 import type { AdminUser } from '../../lib/adminApi';
 import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
+import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
 
 const AdminUsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,7 @@ const AdminUsersPage: React.FC = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
+  const [tab, setTab] = useState<'users' | 'jobs'>('users');
 
   const { data, isLoading, isError } = useAdminUsers({
     search: search.trim() || undefined,
@@ -78,6 +80,34 @@ const AdminUsersPage: React.FC = () => {
       </div>
 
       <div className="page-container mt-8">
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setTab('users')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+              tab === 'users'
+                ? 'bg-violet-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Usuarios
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('jobs')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+              tab === 'jobs'
+                ? 'bg-violet-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+            }`}
+          >
+            <Briefcase className="w-4 h-4" />
+            Empleos
+          </button>
+        </div>
+      {tab === 'users' && (
+      <>
         <form
           className="card-static mb-6 flex flex-col sm:flex-row gap-3"
           onSubmit={(e) => {
@@ -206,6 +236,15 @@ const AdminUsersPage: React.FC = () => {
             </button>
           </div>
         )}
+      </>
+      )}
+
+      {tab === 'jobs' && (
+        <>
+          <AdminJobsHistoryPanel />
+          <AdminExcelImportPanel />
+        </>
+      )}
       </div>
 
       {editing && (
@@ -275,8 +314,6 @@ const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      <AdminExcelImportPanel />
     </div>
   );
 };

@@ -10,7 +10,8 @@ import {
   Plus,
   Building2,
   DollarSign,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
@@ -266,6 +267,12 @@ const JobsList: React.FC = () => {
                         <span className="px-2.5 py-1 text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60 rounded-3xl flex items-center gap-1">
                           <Sparkles className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                           Destacado
+                        </span>
+                      )}
+                      {job.is_external && (
+                        <span className="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-3xl flex items-center gap-1">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Externa
                         </span>
                       )}
                     </div>
