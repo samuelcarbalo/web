@@ -560,8 +560,6 @@ const EditJob: React.FC = () => {
             </div>
           </div>
 
-          </div>
-
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-950/40 rounded-3xl">

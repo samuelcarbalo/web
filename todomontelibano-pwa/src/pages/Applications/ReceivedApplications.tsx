@@ -68,8 +68,9 @@ const ReceivedApplications: React.FC = () => {
         shortlisted: 'bg-green-50 text-green-700 border-green-200',
         rejected: 'bg-red-50 text-red-700 border-red-200',
         hired: 'bg-green-100 text-green-800 border-green-300',
-        applied: 'bg-purple-50 text-purple-700 border-purple-200', 
-        interview: 'bg-indigo-50 text-indigo-700 border-indigo-200' 
+        applied: 'bg-purple-50 text-purple-700 border-purple-200',
+        interview: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        redirected: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       };
       
       return colorMap[status] || 'bg-gray-50 dark:bg-gray-900/50 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-800';
