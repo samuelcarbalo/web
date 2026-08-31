@@ -32,6 +32,32 @@ export interface AdminUserList {
   results: AdminUser[];
 }
 
+export interface JobOfferHistoryRow {
+  id: string;
+  original_job_id: string;
+  title: string;
+  company_name: string;
+  published_by: string | null;
+  published_by_name?: string;
+  published_by_email?: string;
+  created_at: string;
+  expired_at: string | null;
+  is_external: boolean;
+  offer_type: 'Interna' | 'Externa';
+  external_apply_url?: string | null;
+  total_applications_count: number;
+  metadata?: Record<string, unknown>;
+  is_purged: boolean;
+  recorded_at: string;
+}
+
+export interface JobOfferHistoryList {
+  count: number;
+  total_pages: number;
+  current_page: number;
+  results: JobOfferHistoryRow[];
+}
+
 export const adminApi = {
   listUsers: (params?: { search?: string; page?: number; is_active?: string }) =>
     api.get<AdminUserList>('/admin/users/', { params }),
@@ -50,4 +76,11 @@ export const adminApi = {
     api.post<AdminUser>(`/admin/users/${id}/set-active/`, { is_active }),
 
   deleteUser: (id: string) => api.delete(`/admin/users/${id}/`),
+
+  listJobHistory: (params?: {
+    search?: string;
+    page?: number;
+    is_external?: string;
+    is_purged?: string;
+  }) => api.get<JobOfferHistoryList>('/admin/jobs/history/', { params }),
 };

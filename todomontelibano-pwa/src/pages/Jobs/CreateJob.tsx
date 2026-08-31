@@ -9,7 +9,8 @@ import {
   List,
   ChevronLeft,
   Plus,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { useCreateJob } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
@@ -38,6 +39,8 @@ const CreateJob: React.FC = () => {
     category: '',
     expires_at: '',
     skills: [] as string[],
+    is_external: false,
+    external_apply_url: '',
   });
   const [newSkill, setNewSkill] = useState('');
   const [benefits, setBenefits] = useState<string[]>([]);
@@ -100,12 +103,19 @@ const CreateJob: React.FC = () => {
       return;
     }
     
+    if (formData.is_external && !formData.external_apply_url.trim()) {
+      return;
+    }
+
     const jobData = {
       ...formData,
       salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
       salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
       benefits: benefits.length > 0 ? benefits : undefined,
-      skills: formData.skills.length > 0 ? formData.skills : undefined,  // ← AGREGAR
+      skills: formData.skills.length > 0 ? formData.skills : undefined,
+      expires_at: formData.expires_at || undefined,
+      is_external: formData.is_external,
+      external_apply_url: formData.is_external ? formData.external_apply_url.trim() : null,
       status: 'published' as const,
     };
 
@@ -455,6 +465,56 @@ const CreateJob: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          </div>
+
+          {/* Oferta externa */}
+          <div className="card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-950/40 rounded-3xl">
+                <ExternalLink className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Postulación externa</h2>
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.is_external}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    is_external: e.target.checked,
+                    external_apply_url: e.target.checked ? formData.external_apply_url : '',
+                  })
+                }
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600"
+              />
+              <span>
+                <span className="block text-sm font-bold text-gray-900 dark:text-white">
+                  ¿Es una oferta externa?
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  El candidato será redirigido al sitio de la empresa para postularse.
+                </span>
+              </span>
+            </label>
+            {formData.is_external && (
+              <div className="mt-5">
+                <label htmlFor="external_apply_url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Enlace / URL de postulación externa *
+                </label>
+                <input
+                  type="url"
+                  id="external_apply_url"
+                  required={formData.is_external}
+                  value={formData.external_apply_url}
+                  onChange={(e) => setFormData({ ...formData, external_apply_url: e.target.value })}
+                  className="input-field"
+                  placeholder="https://empresa.com/vacantes/aplicar"
+                />
+              </div>
+            )}
           </div>
 
           {/* Fecha de expiración */}
