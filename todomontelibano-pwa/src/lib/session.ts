@@ -98,12 +98,13 @@ export async function clearServiceWorkerCaches(): Promise<void> {
 
 /**
  * Limpieza total de cliente: tokens, storages, cookies de auth y caches SW.
- * Usar en 401 definitivo o TTL de 24h.
+ * Tras expirar o cerrar sesión se va al home público (`/`), no a `/login`.
+ * `/login` queda para quien intenta entrar a una ruta protegida (ProtectedRoute).
  */
 export async function purgeClientSession(options?: {
-  redirectToLogin?: boolean;
+  redirectToHome?: boolean;
 }): Promise<void> {
-  const redirect = options?.redirectToLogin !== false;
+  const redirect = options?.redirectToHome !== false;
   const onAuthPage =
     typeof window !== 'undefined' &&
     (window.location.pathname === '/login' ||
@@ -134,19 +135,16 @@ export async function purgeClientSession(options?: {
   await clearServiceWorkerCaches();
 
   if (redirect && typeof window !== 'undefined' && !onAuthPage) {
-    const next = `${window.location.pathname}${window.location.search}`;
-    const login =
-      next && next !== '/' && !next.startsWith('/login')
-        ? `/login?next=${encodeURIComponent(next)}`
-        : '/login';
-    window.location.replace(login);
+    if (window.location.pathname !== '/') {
+      window.location.replace('/');
+    }
   }
 }
 
-/** Si la sesión supera 24h, purga y redirige. Retorna true si expulsó. */
+/** Si la sesión supera 24h, purga y redirige al inicio. Retorna true si expulsó. */
 export async function enforceSessionMaxAge(): Promise<boolean> {
   if (!getAccessToken()) return false;
   if (!isSessionExpired()) return false;
-  await purgeClientSession({ redirectToLogin: true });
+  await purgeClientSession({ redirectToHome: true });
   return true;
 }

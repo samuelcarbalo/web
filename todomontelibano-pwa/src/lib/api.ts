@@ -24,6 +24,7 @@ const PUBLIC_ENDPOINTS = [
   '/sports/banners/config/',
   '/contact/messages/',
   '/auth/users-count/',
+  '/auth/password/',
   '/sports/player-suspensions/',
 ];
 
@@ -112,7 +113,7 @@ api.interceptors.response.use(
       // No intentar refresh en el propio endpoint de refresh/login
       const url = originalRequest.url || '';
       if (url.includes('/auth/refresh/') || url.includes('/auth/login/')) {
-        await purgeClientSession({ redirectToLogin: true });
+        await purgeClientSession({ redirectToHome: true });
         return Promise.reject(error);
       }
 
@@ -121,18 +122,18 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
       } catch {
-        await purgeClientSession({ redirectToLogin: true });
+        await purgeClientSession({ redirectToHome: true });
         return Promise.reject(error);
       }
     }
 
-    // 401 sin config reintentable → limpieza igual
+    // 401 sin config reintentable → inicio público (no /login)
     if (error.response?.status === 401) {
       const isAuthRoute =
         window.location.pathname === '/login' ||
         window.location.pathname === '/register';
       if (!isAuthRoute && !isPublicEndpoint(originalRequest?.url)) {
-        await purgeClientSession({ redirectToLogin: true });
+        await purgeClientSession({ redirectToHome: true });
       }
     }
 
