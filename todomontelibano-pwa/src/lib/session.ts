@@ -110,7 +110,8 @@ export async function purgeClientSession(options?: {
     (window.location.pathname === '/login' ||
       window.location.pathname === '/register' ||
       window.location.pathname === '/forgot-password' ||
-      window.location.pathname === '/recuperar-contrasena');
+      window.location.pathname === '/recuperar-contrasena' ||
+      window.location.pathname.startsWith('/reset-password'));
 
   clearSession();
   clearAuthCookies();

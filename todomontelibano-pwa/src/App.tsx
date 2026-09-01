@@ -440,6 +440,8 @@ const App: React.FC = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
+              <Route path="/reset-password/:uid/:token/" element={<ForgotPassword />} />
+              <Route path="/reset-password/:uid/:token" element={<ForgotPassword />} />
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
