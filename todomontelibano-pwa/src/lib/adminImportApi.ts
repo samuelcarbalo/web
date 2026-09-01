@@ -77,6 +77,18 @@ export const IMPORT_MODULE_HEADERS: Record<AdminImportModule, readonly string[]>
   ],
 };
 
+/** Columnas clave para detectar si la plantilla es del módulo correcto. */
+export const IMPORT_MODULE_SIGNATURES: Record<AdminImportModule, readonly string[]> = {
+  schedule: ['tournament_slug', 'home_team', 'away_team'],
+  players: ['team_name', 'first_name', 'last_name'],
+  jobs: ['title', 'company_name'],
+  products: ['name', 'sku', 'price_cop'],
+  discounts: ['discount_type', 'start_date', 'end_date'],
+};
+
+export const WRONG_TEMPLATE_MESSAGE =
+  'La plantilla subida no corresponde a la categoría seleccionada.';
+
 export type AdminImportResult = {
   success: boolean;
   module: string;
