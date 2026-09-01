@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { shopApi, type ProductListParams } from '../lib/shopApi';
-import type { ShopCategory, ShopOrder, ShopProduct } from '../types/shop';
+import type { ShopCategory, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
 
 function normalizeList<T>(data: T[] | { results: T[] } | undefined): T[] {
   if (!data) return [];
@@ -14,6 +15,7 @@ export const shopKeys = {
   products: (params?: ProductListParams) => [...shopKeys.all, 'products', params] as const,
   product: (slug: string) => [...shopKeys.all, 'product', slug] as const,
   orders: () => [...shopKeys.all, 'orders'] as const,
+  settings: () => [...shopKeys.all, 'settings'] as const,
 };
 
 export const useShopCategories = () =>
@@ -97,3 +99,55 @@ export const useMyShopOrders = (enabled = true) =>
     enabled,
     staleTime: 30 * 1000,
   });
+
+export const useShopSettings = () =>
+  useQuery({
+    queryKey: shopKeys.settings(),
+    queryFn: async () => {
+      const soft = await shopApi.getSettings();
+      return {
+        settings: soft.data,
+        warning: soft.warning,
+        degraded: soft.degraded,
+      };
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    throwOnError: false,
+  });
+
+function cacheStoreSettings(qc: QueryClient, settings: StoreSettings) {
+  qc.setQueryData(shopKeys.settings(), {
+    settings,
+    warning: undefined,
+    degraded: false,
+  });
+}
+
+export const useUpdateStoreLogo = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (store_logo: string) => {
+      const { data } = await shopApi.uploadLogo({ store_logo });
+      return data;
+    },
+    onSuccess: (data) => {
+      cacheStoreSettings(qc, data);
+      void qc.invalidateQueries({ queryKey: shopKeys.settings() });
+    },
+  });
+};
+
+export const useDeleteStoreLogo = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await shopApi.deleteLogo();
+      return data;
+    },
+    onSuccess: (data) => {
+      cacheStoreSettings(qc, data);
+      void qc.invalidateQueries({ queryKey: shopKeys.settings() });
+    },
+  });
+};

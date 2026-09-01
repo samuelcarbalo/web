@@ -16,6 +16,7 @@ const PUBLIC_ENDPOINTS = [
   '/payments/packages/',
   '/payments/config/',
   '/ecommerce/',
+  '/store/',
   '/events/',
   '/advertising/sponsorships/plans/',
   '/advertising/sponsorships/availability/',

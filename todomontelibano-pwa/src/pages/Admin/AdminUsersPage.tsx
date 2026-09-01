@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X, Users, Briefcase } from 'lucide-react';
+import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X, Users, Briefcase, Store } from 'lucide-react';
 import {
   useAdminUsers,
   useDeleteAdminUser,
@@ -11,6 +11,7 @@ import {
 import type { AdminUser } from '../../lib/adminApi';
 import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
 import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
+import AdminStoreVisualSettings from '../../components/Admin/AdminStoreVisualSettings';
 
 const AdminUsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +21,7 @@ const AdminUsersPage: React.FC = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
-  const [tab, setTab] = useState<'users' | 'jobs'>('users');
+  const [tab, setTab] = useState<'users' | 'jobs' | 'store'>('users');
 
   const { data, isLoading, isError } = useAdminUsers({
     search: search.trim() || undefined,
@@ -68,7 +69,8 @@ const AdminUsersPage: React.FC = () => {
             <Shield className="w-8 h-8" /> Panel de administración
           </h1>
           <p className="mt-2 text-violet-100 max-w-2xl font-light">
-            Gestiona usuarios, créditos y estado de cuentas. Solo visible para staff / superusuario.
+            Gestiona usuarios, créditos, empleos y la configuración visual de la tienda. Solo visible
+            para staff / superusuario.
           </p>
           {focusCredits && (
             <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-amber-400/20 border border-amber-200/50 px-4 py-2 text-sm font-bold text-amber-50">
@@ -104,6 +106,18 @@ const AdminUsersPage: React.FC = () => {
           >
             <Briefcase className="w-4 h-4" />
             Empleos
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('store')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+              tab === 'store'
+                ? 'bg-violet-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+            }`}
+          >
+            <Store className="w-4 h-4" />
+            Tienda
           </button>
         </div>
       {tab === 'users' && (
@@ -245,6 +259,8 @@ const AdminUsersPage: React.FC = () => {
           <AdminExcelImportPanel />
         </>
       )}
+
+      {tab === 'store' && <AdminStoreVisualSettings />}
       </div>
 
       {editing && (

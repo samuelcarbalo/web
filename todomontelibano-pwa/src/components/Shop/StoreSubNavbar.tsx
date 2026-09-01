@@ -2,17 +2,20 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Tag, Timer } from 'lucide-react';
 import { ROUTES } from '../../config/seo';
-import { useShopCategories } from '../../hooks/useShop';
+import { getMediaUrl } from '../../lib/api';
+import { useShopCategories, useShopSettings } from '../../hooks/useShop';
 
 /**
  * Sub-navbar fijo (no colapsable) bajo el header principal.
- * Prioriza la Tienda Chéver y deja espacio para un logo exclusivo futuro.
+ * El logo se consulta de la configuración de tienda; la edición vive solo en Admin.
  */
 const StoreSubNavbar: React.FC = () => {
   const { pathname } = useLocation();
   const { data } = useShopCategories();
+  const { data: settingsData } = useShopSettings();
   const categories = (data?.items ?? []).slice(0, 5);
   const onShop = pathname === ROUTES.tienda || pathname.startsWith(`${ROUTES.tienda}/`);
+  const logoUrl = getMediaUrl(settingsData?.settings.store_logo);
 
   return (
     <div
@@ -33,13 +36,19 @@ const StoreSubNavbar: React.FC = () => {
           <span className="whitespace-nowrap">Ir a la Tienda</span>
         </Link>
 
-        {/* Espacio reservado para logo exclusivo de Tienda */}
         <div
           className="hidden sm:flex items-center justify-center shrink-0 min-w-[7.5rem] min-h-[2rem] px-3 rounded-xl border border-dashed border-secondary-300/80 dark:border-secondary-700/80 text-[10px] font-semibold uppercase tracking-wide text-secondary-600/70 dark:text-secondary-400/70"
-          aria-hidden="true"
-          title="Logo Tienda Chéver (próximamente)"
+          title={logoUrl ? 'Logo de la tienda' : 'Logo Tienda Chéver'}
         >
-          Logo Tienda
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Logo de la tienda"
+              className="h-8 w-auto max-w-[7.5rem] object-contain"
+            />
+          ) : (
+            <span aria-hidden="true">Logo Tienda</span>
+          )}
         </div>
 
         <div className="h-6 w-px bg-secondary-200 dark:bg-secondary-800 shrink-0 hidden md:block" />
