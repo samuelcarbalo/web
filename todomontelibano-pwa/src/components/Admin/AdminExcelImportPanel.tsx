@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
   Download,
@@ -14,6 +14,12 @@ import {
   type AdminImportModule,
   type AdminImportResult,
 } from '../../lib/adminImportApi';
+import {
+  fallbackImportModules,
+  guessImportModule,
+  missingExcelHeaders,
+  readXlsxHeaders,
+} from '../../lib/xlsxHeaders';
 import { useQuery } from '@tanstack/react-query';
 
 const MODULE_LABELS: Record<AdminImportModule, string> = {
@@ -27,10 +33,15 @@ const MODULE_LABELS: Record<AdminImportModule, string> = {
 const AdminExcelImportPanel: React.FC = () => {
   const [module, setModule] = useState<AdminImportModule>('products');
   const [file, setFile] = useState<File | null>(null);
+  const [fileHeaders, setFileHeaders] = useState<string[] | null>(null);
+  const [readError, setReadError] = useState('');
+  const [readingHeaders, setReadingHeaders] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [result, setResult] = useState<AdminImportResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const readGenRef = useRef(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modulesQuery = useQuery({
     queryKey: ['admin-import-modules'],
@@ -38,24 +49,69 @@ const AdminExcelImportPanel: React.FC = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const headers = useMemo(() => {
-    const found = modulesQuery.data?.modules.find((m) => m.key === module);
-    return found?.headers ?? [];
-  }, [modulesQuery.data, module]);
+  const allModules = useMemo(() => {
+    if (modulesQuery.data?.modules?.length) return modulesQuery.data.modules;
+    return fallbackImportModules();
+  }, [modulesQuery.data]);
 
-  const onFile = (f: File | null) => {
+  const headers = useMemo(() => {
+    const found = allModules.find((m) => m.key === module);
+    return found?.headers ?? [];
+  }, [allModules, module]);
+
+  const headerMismatch = useMemo(() => {
+    if (readError) return readError;
+    if (!fileHeaders) return '';
+    const expected = allModules.find((m) => m.key === module)?.headers ?? [];
+    if (expected.length === 0) return '';
+    if (missingExcelHeaders(expected, fileHeaders).length === 0) return '';
+    const guessed = guessImportModule(fileHeaders, allModules);
+    const selectedLabel = MODULE_LABELS[module];
+    if (guessed && guessed !== module) {
+      return `El archivo seleccionado corresponde a ${MODULE_LABELS[guessed]}, pero tienes seleccionado ${selectedLabel}. Por favor cambia la opción en el selector.`;
+    }
+    return `El archivo seleccionado no coincide con las columnas de ${selectedLabel}. Por favor verifica la plantilla o cambia la opción en el selector.`;
+  }, [allModules, fileHeaders, module, readError]);
+
+  const onFile = useCallback((f: File | null) => {
+    const gen = ++readGenRef.current;
     setFile(f);
+    setFileHeaders(null);
+    setReadError('');
     setResult(null);
     setStatus('idle');
     setErrorMsg('');
-  };
-
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) onFile(f);
+    if (!f) {
+      setReadingHeaders(false);
+      return;
+    }
+    setReadingHeaders(true);
+    void readXlsxHeaders(f)
+      .then((received) => {
+        if (gen !== readGenRef.current) return;
+        setFileHeaders(received);
+      })
+      .catch(() => {
+        if (gen !== readGenRef.current) return;
+        setReadError(
+          'No se pudieron leer los encabezados del archivo. Usa un Excel .xlsx exportado desde la plantilla.',
+        );
+      })
+      .finally(() => {
+        if (gen !== readGenRef.current) return;
+        setReadingHeaders(false);
+      });
   }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      const f = e.dataTransfer.files?.[0];
+      if (f) onFile(f);
+    },
+    [onFile],
+  );
 
   const handleDownload = async () => {
     try {
@@ -72,6 +128,7 @@ const AdminExcelImportPanel: React.FC = () => {
       setStatus('error');
       return;
     }
+    if (headerMismatch || readingHeaders) return;
     setStatus('loading');
     setErrorMsg('');
     try {
@@ -80,7 +137,13 @@ const AdminExcelImportPanel: React.FC = () => {
       setStatus(res.error_count > 0 && res.created + res.updated === 0 ? 'error' : 'success');
     } catch (err) {
       setResult(null);
-      setErrorMsg(err instanceof Error ? err.message : 'Error al importar');
+      const axiosData = (err as { response?: { data?: { detail?: string; message?: string } } })
+        ?.response?.data;
+      setErrorMsg(
+        axiosData?.detail ||
+          axiosData?.message ||
+          (err instanceof Error ? err.message : 'Error al importar'),
+      );
       setStatus('error');
     }
   };
@@ -108,7 +171,9 @@ const AdminExcelImportPanel: React.FC = () => {
         value={module}
         onChange={(e) => {
           setModule(e.target.value as AdminImportModule);
-          onFile(null);
+          setResult(null);
+          setStatus('idle');
+          setErrorMsg('');
         }}
         className="w-full sm:max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 text-sm font-semibold"
       >
@@ -137,7 +202,7 @@ const AdminExcelImportPanel: React.FC = () => {
         <button
           type="button"
           onClick={() => void handleUpload()}
-          disabled={status === 'loading' || !file}
+          disabled={status === 'loading' || !file || Boolean(headerMismatch) || readingHeaders}
           className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {status === 'loading' ? (
@@ -149,14 +214,37 @@ const AdminExcelImportPanel: React.FC = () => {
         </button>
       </div>
 
+      {headerMismatch && (
+        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>{headerMismatch}</p>
+        </div>
+      )}
+
+      {readingHeaders && (
+        <p className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Revisando encabezados del Excel…
+        </p>
+      )}
+
       <div
+        role="button"
+        tabIndex={0}
+        onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={`mt-6 rounded-3xl border-2 border-dashed p-8 text-center transition-colors ${
+        className={`mt-6 cursor-pointer rounded-3xl border-2 border-dashed p-8 text-center transition-colors ${
           dragOver
             ? 'border-secondary-600 bg-secondary-50 dark:bg-secondary-950/30'
             : 'border-gray-300 dark:border-gray-700'
@@ -167,11 +255,16 @@ const AdminExcelImportPanel: React.FC = () => {
           Arrastra el Excel aquí o selecciona un archivo
         </p>
         <input
+          ref={fileInputRef}
           type="file"
-          accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          className="mt-4 text-sm"
+          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          className="hidden"
           onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+          onClick={(e) => e.stopPropagation()}
         />
+        <span className="mt-4 inline-block text-sm font-bold text-secondary-700 dark:text-secondary-300">
+          Browse...
+        </span>
         {file && (
           <p className="mt-2 text-xs font-medium text-secondary-700 dark:text-secondary-300">
             Seleccionado: {file.name}
