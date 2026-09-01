@@ -75,7 +75,12 @@ const ForgotPassword: React.FC = () => {
 
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="flex justify-center">
-          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" linkToHome />
+          <BrandLogo
+            className="h-14 w-auto max-w-[220px]"
+            variant="oficial"
+            linkToHome
+            title="Ir al inicio"
+          />
         </div>
         <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           {isConfirm ? 'Nueva contraseña' : 'Recuperar contraseña'}
@@ -89,6 +94,9 @@ const ForgotPassword: React.FC = () => {
 
       <div className="relative z-10 mt-10 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="auth-card">
+          <div className="mb-4">
+            <AuthBackHomeLink />
+          </div>
           {isConfirm && resetOk ? (
             <div className="space-y-4 text-center">
               <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">

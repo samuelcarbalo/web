@@ -74,7 +74,12 @@ const Register: React.FC = () => {
 
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-lg px-4">
         <div className="flex justify-center">
-          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" linkToHome />
+          <BrandLogo
+            className="h-14 w-auto max-w-[220px]"
+            variant="oficial"
+            linkToHome
+            title="Ir al inicio"
+          />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Crea tu cuenta
@@ -118,6 +123,9 @@ const Register: React.FC = () => {
         </div>
 
         <div className="auth-card">
+          <div className="mb-4">
+            <AuthBackHomeLink />
+          </div>
           <form onSubmit={handleSubmit}>
             {step === 1 && (
               <div className="space-y-6">
