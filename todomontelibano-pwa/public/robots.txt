@@ -1,12 +1,6 @@
 User-agent: *
 Allow: /
-
-Disallow: /login
-Disallow: /register
-Disallow: /dashboard
-Disallow: /profile
-Disallow: /applications
-Disallow: /messages
-Disallow: /creditos
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://chever.co/sitemap.xml

@@ -1,7 +1,10 @@
 import { BRAND_DISPLAY_NAME } from './brand';
 
+/** Origen canónico oficial (HTTPS, sin www). Las etiquetas SEO siempre apuntan aquí. */
+export const CANONICAL_ORIGIN = 'https://chever.co';
+
 /** URL base del sitio (producción). Configurar en .env: VITE_SITE_URL */
-export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://chever.co';
+export const SITE_URL = CANONICAL_ORIGIN;
 export const SITE_NAME = BRAND_DISPLAY_NAME;
 export const SITE_LOCALE = 'es_CO';
 
@@ -16,7 +19,7 @@ export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — Empleos, deportes, bienes raíces y eventos en Córdoba`;
 
 export const DEFAULT_SEO_DESCRIPTION =
-  `Plataforma integral ${SITE_NAME}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia. No afiliada a Chevrolet.`;
+  'Explora productos en la tienda, encuentra oportunidades laborales y participa en torneos deportivos en Montelíbano y Córdoba.';
 
 export const SEO_KEYWORDS =
   'Chéver, Chever deportes, torneos Córdoba, empleos Córdoba, Chéver app, plataforma Córdoba Colombia';
@@ -82,9 +85,8 @@ const brand = BRAND_DISPLAY_NAME;
 
 export const SEO_PAGES: Record<string, SeoMeta> = {
   '/': {
-    title: `${brand} - Plataforma Deportiva y Comunitaria en Córdoba`,
-    description:
-      `Plataforma integral ${brand}: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba. Publica ferias, conciertos y activaciones de marca con visibilidad local.`,
+    title: `${brand} | Comercio, Empleos y Deportes en Córdoba`,
+    description: DEFAULT_SEO_DESCRIPTION,
     path: '/',
     ogType: 'website',
   },
@@ -219,21 +221,67 @@ export const SEO_PAGES: Record<string, SeoMeta> = {
   },
 };
 
-/** Rutas del sitemap con prioridad */
+/** Rutas del sitemap con prioridad (solo URLs canónicas indexables). */
 export const SITEMAP_ROUTES = [
   { path: '/', priority: 1.0, changefreq: 'daily' as const },
-  { path: ROUTES.empleos, priority: 0.9, changefreq: 'daily' as const },
-  { path: ROUTES.deportes, priority: 0.9, changefreq: 'daily' as const },
-  { path: ROUTES.bienesRaices, priority: 0.9, changefreq: 'daily' as const },
-  { path: ROUTES.eventos, priority: 0.9, changefreq: 'daily' as const },
   { path: ROUTES.tienda, priority: 0.9, changefreq: 'daily' as const },
+  { path: ROUTES.deportes, priority: 0.9, changefreq: 'daily' as const },
+  { path: ROUTES.empleos, priority: 0.9, changefreq: 'daily' as const },
+  { path: ROUTES.bienesRaices, priority: 0.8, changefreq: 'daily' as const },
+  { path: ROUTES.eventos, priority: 0.8, changefreq: 'weekly' as const },
   { path: ROUTES.contact, priority: 0.5, changefreq: 'monthly' as const },
   { path: ROUTES.privacy, priority: 0.3, changefreq: 'yearly' as const },
   { path: ROUTES.terms, priority: 0.3, changefreq: 'yearly' as const },
 ];
 
-export const absoluteUrl = (path: string) =>
-  `${SITE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+const NOINDEX_PREFIXES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/recuperar-contrasena',
+  '/dashboard',
+  '/profile',
+  '/applications',
+  '/messages',
+  '/creditos',
+  '/admin',
+  '/api',
+  '/empleos/publicar',
+  '/empleos/editar',
+  '/empleos/mis-ofertas',
+  '/tienda/publicar',
+  '/tienda/carrito',
+  '/tienda/checkout',
+  '/tienda/resultado',
+  '/tienda/pedidos',
+  '/deportes/my_tournaments',
+  '/deportes/tournaments/create',
+  '/eventos/publicar',
+  '/eventos/mis-eventos',
+  '/bienes-raices/publicar',
+  '/bienes-raices/editar',
+  '/bienes-raices/mis-publicaciones',
+] as const;
+
+export const canonicalizePath = (pathname: string): string => {
+  const raw = (pathname || '/').split('?')[0].split('#')[0];
+  if (!raw || raw === '/') return '/';
+  return raw.replace(/\/+$/, '') || '/';
+};
+
+export const buildCanonicalUrl = (pathname: string): string => {
+  const path = canonicalizePath(pathname);
+  return path === '/' ? `${CANONICAL_ORIGIN}/` : `${CANONICAL_ORIGIN}${path}`;
+};
+
+export const isNoindexPath = (pathname: string): boolean => {
+  const path = canonicalizePath(pathname);
+  if (SEO_PAGES[path]?.noindex) return true;
+  if (path.includes('/editar/') || path.endsWith('/edit') || path.includes('/edit/')) return true;
+  return NOINDEX_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+};
+
+export const absoluteUrl = (path: string) => buildCanonicalUrl(path);
 
 /** Quita sufijo " | MARCA" o prefijo "MARCA - " para pasar title base a SeoHead. */
 export const stripSiteSuffix = (title: string) => {

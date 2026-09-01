@@ -1,29 +1,17 @@
-# Netlify / Cloudflare Pages — cache headers
-/index.html
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/sw.js
   Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
 
 /
   Cache-Control: no-cache, no-store, must-revalidate
 
-/sw.js
+/*.html
   Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
-
-/workbox-*.js
-  Cache-Control: no-cache, no-store, must-revalidate
-
-/manifest.webmanifest
-  Cache-Control: no-cache, no-store, must-revalidate
-
-/notification-sw.js
-  Cache-Control: no-cache, no-store, must-revalidate
-
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/chever*.svg
-  Cache-Control: public, max-age=3600, must-revalidate
-
-/icon-*.png
-  Cache-Control: public, max-age=3600, must-revalidate

@@ -52,26 +52,20 @@
       })();
     </script>
 
-    <!-- SEO base (crítico para crawlers que no ejecutan JS: WhatsApp, Facebook, Slack, Googlebot) -->
-    <title>Chéver - Plataforma Deportiva y Comunitaria en Córdoba</title>
-    <meta
-      name="description"
-      content="Plataforma integral Chéver: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia. No afiliada a Chevrolet."
-    />
+    <!-- SEO base (HTML estático: Googlebot lo ve antes de hidratar React) -->
+    <title>Chéver | Comercio, Empleos y Deportes en Córdoba</title>
+    <meta name="description" content="Explora productos en la tienda, encuentra oportunidades laborales y participa en torneos deportivos en Montelíbano y Córdoba." />
     <meta
       name="keywords"
       content="Chéver, Chever deportes, torneos Córdoba, empleos Córdoba, Chéver app, plataforma Córdoba Colombia"
     />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://chever.co/" />
 
     <!-- Open Graph -->
     <meta property="og:site_name" content="Chéver" />
-    <meta property="og:title" content="Chéver - Plataforma Deportiva y Comunitaria en Córdoba" />
-    <meta
-      property="og:description"
-      content="Plataforma integral Chéver: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia."
-    />
+    <meta property="og:title" content="Chéver | Comercio, Empleos y Deportes en Córdoba" />
+    <meta property="og:description" content="Explora productos en la tienda, encuentra oportunidades laborales y participa en torneos deportivos en Montelíbano y Córdoba." />
     <meta property="og:url" content="https://chever.co/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
@@ -84,11 +78,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Chéver - Plataforma Deportiva y Comunitaria en Córdoba" />
-    <meta
-      name="twitter:description"
-      content="Plataforma integral Chéver: bolsa de empleo, torneos deportivos, propiedades inmobiliarias y eventos publicitarios en Córdoba, Colombia."
-    />
+    <meta name="twitter:title" content="Chéver | Comercio, Empleos y Deportes en Córdoba" />
+    <meta name="twitter:description" content="Explora productos en la tienda, encuentra oportunidades laborales y participa en torneos deportivos en Montelíbano y Córdoba." />
     <meta name="twitter:image" content="https://chever.co/chever_oficial.svg?v=1.2" />
     <meta name="twitter:image:alt" content="Chéver — Empleos, deportes, bienes raíces y eventos en Córdoba" />
 
@@ -104,7 +95,7 @@
           "alternateName": ["Chever", "Chéver Colombia", "Chever App", "Chéver App"],
           "url": "https://chever.co",
           "logo": "https://chever.co/chever_oficial.svg",
-          "description": "Plataforma digital integral para el Departamento de Córdoba: deportes, torneos, empleos, eventos y bienes raíces.",
+          "description": "Plataforma de comercio local, empleos y torneos deportivos en Córdoba, Colombia.",
           "disambiguatingDescription": "Plataforma digital comunitaria de Córdoba (Colombia). No es Chevrolet ni está afiliada a General Motors.",
           "areaServed": {
             "@type": "AdministrativeArea",
@@ -134,7 +125,7 @@
             "priceCurrency": "COP"
           },
           "publisher": { "@id": "https://chever.co/#organization" },
-          "description": "Plataforma digital integral para el Departamento de Córdoba: deportes, torneos, empleos, eventos y bienes raíces."
+          "description": "Plataforma de comercio local, empleos y torneos deportivos en Córdoba, Colombia."
         }
       ]
     }
@@ -145,28 +136,30 @@
     <meta name="apple-mobile-web-app-title" content="Chéver" />
   </head>
   <body>
-    <noscript>
-      <div style="padding:1.5rem;font-family:system-ui,sans-serif;max-width:48rem;margin:0 auto">
-        <h1>Chéver</h1>
-        <p>Plataforma de empleos, deportes, bienes raíces y eventos en Córdoba, Colombia.</p>
-        <p>Activa JavaScript para usar la aplicación completa, o visita nuestras secciones principales:</p>
-        <ul>
-          <li><a href="/empleos">Empleos</a></li>
-          <li><a href="/deportes">Deportes</a></li>
-          <li><a href="/bienes-raices">Bienes Raíces</a></li>
-          <li><a href="/eventos">Eventos</a></li>
-        </ul>
-      </div>
-    </noscript>
     <div id="root">
+      <!--prerender-start-->
+      <main id="prerender-shell" style="font-family:system-ui,sans-serif;max-width:48rem;margin:0 auto;padding:2.5rem 1.25rem;color:#0f172a;line-height:1.6">
+        <p style="font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.75rem;color:#0f766e;margin:0 0 .75rem">Chéver · Montelíbano, Córdoba</p>
+        <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);line-height:1.15;margin:0 0 1rem">Conectamos el talento, el comercio y el deporte de Córdoba en un solo lugar.</h1>
+        <h2 style="font-size:1.15rem;font-weight:700;margin:0 0 .75rem;color:#334155">La plataforma de la comunidad en Montelíbano</h2>
+        <p style="margin:0 0 1.5rem;font-size:1.05rem">Explora productos en la tienda, encuentra oportunidades laborales y participa en torneos deportivos en Montelíbano y Córdoba.</p>
+        <nav aria-label="Secciones principales">
+          <ul style="padding-left:1.2rem">
+            <li><a href="/tienda">Tienda</a></li>
+            <li><a href="/empleos">Empleos</a></li>
+            <li><a href="/deportes">Deportes</a></li>
+            <li><a href="/bienes-raices">Bienes raíces</a></li>
+            <li><a href="/eventos">Eventos</a></li>
+          </ul>
+        </nav>
+      </main>
+      <!--prerender-end-->
       <div
         id="app-boot"
-        style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;background:#f8fafc;color:#334155;gap:1rem;padding:1.5rem;text-align:center"
+        style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"
+        aria-hidden="true"
       >
-        <div
-          style="width:2.5rem;height:2.5rem;border:3px solid #ddd6fe;border-top-color:#7c3aed;border-radius:9999px;animation:boot-spin .8s linear infinite"
-        ></div>
-        <p style="margin:0;font-weight:600">Cargando Chéver…</p>
+        Cargando Chéver
       </div>
     </div>
     <style>
@@ -200,9 +193,10 @@
         }
       })();
     </script>
-    <!-- Si React no monta en 8s, forzar una recarga con cache-bust (una sola vez) -->
+    <!-- Si React no monta en 8s, recargar una vez. No añadir ?_boot= (ensucia Search Console). -->
     <script>
       (function () {
+        if (/Googlebot|bingbot|Slurp|DuckDuckBot|Baiduspider/i.test(navigator.userAgent || '')) return;
         var KEY = 'boot_watchdog_v1';
         setTimeout(function () {
           if (!document.getElementById('app-boot')) return;
@@ -210,9 +204,7 @@
             if (sessionStorage.getItem(KEY) === '1') return;
             sessionStorage.setItem(KEY, '1');
           } catch (e) {}
-          var u = new URL(location.href);
-          u.searchParams.set('_boot', String(Date.now()));
-          location.replace(u.toString());
+          location.reload();
         }, 8000);
       })();
     </script>
