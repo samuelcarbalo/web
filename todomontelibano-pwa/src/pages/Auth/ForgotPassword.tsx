@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Mail } from 'lucide-react';
 import { api } from '../../lib/api';
 import ThemeToggle from '../../components/UI/ThemeToggle';
@@ -8,9 +8,10 @@ import AuthBackHomeLink from '../../components/Auth/AuthBackHomeLink';
 import SeoHead from '../../components/SEO/SeoHead';
 
 const ForgotPassword: React.FC = () => {
+  const { uid: uidParam, token: tokenParam } = useParams();
   const [searchParams] = useSearchParams();
-  const uid = searchParams.get('uid') || '';
-  const token = searchParams.get('token') || '';
+  const uid = uidParam || searchParams.get('uid') || '';
+  const token = tokenParam || searchParams.get('token') || '';
   const isConfirm = Boolean(uid && token);
 
   const [email, setEmail] = useState('');
