@@ -68,7 +68,7 @@ export const useMe = () => {
       } catch (error: unknown) {
         const status = (error as { response?: { status?: number } })?.response?.status;
         if (status === 401) {
-          void purgeClientSession({ redirectToLogin: true });
+          void purgeClientSession({ redirectToHome: true });
           return null;
         }
         // 500 / CORS / red: no tumbar sesión persistida; solo liberar loading en finally
@@ -238,10 +238,10 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return () => {
-    void purgeClientSession({ redirectToLogin: false }).then(() => {
+    void purgeClientSession({ redirectToHome: false }).then(() => {
       logout();
       queryClient.clear();
-      navigate('/login', { replace: true });
+      navigate('/', { replace: true });
     });
   };
 };

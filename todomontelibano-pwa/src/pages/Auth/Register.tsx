@@ -13,6 +13,7 @@ import {
 import { useRegister } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/UI/ThemeToggle";
 import BrandLogo from "../../components/Brand/BrandLogo";
+import AuthBackHomeLink from "../../components/Auth/AuthBackHomeLink";
 import SeoHead from "../../components/SEO/SeoHead";
 import { buildLoginUrl, isSafeInternalPath, setAuthRedirect } from "../../lib/authRedirect";
 
@@ -66,13 +67,14 @@ const Register: React.FC = () => {
         className="pointer-events-none absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"
         aria-hidden
       />
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between gap-3">
+        <AuthBackHomeLink />
         <ThemeToggle />
       </div>
 
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-lg px-4">
         <div className="flex justify-center">
-          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" />
+          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" linkToHome />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Crea tu cuenta
