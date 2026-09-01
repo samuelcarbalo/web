@@ -241,7 +241,7 @@ const HeroSection: React.FC = () => {
                     aria-hidden="true"
                   />
 
-                  <div className="relative z-10 flex h-full flex-col justify-end page-container pb-20 pt-16 sm:pb-24">
+                  <div className="relative z-10 flex h-full flex-col justify-end page-container max-md:!px-14 pb-20 pt-16 sm:pb-24">
                     <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-200 backdrop-blur-md">
                       {slide.kicker} · Montelíbano
                     </p>
@@ -307,7 +307,7 @@ const HeroSection: React.FC = () => {
         <button
           type="button"
           onClick={goPrev}
-          className="absolute left-3 top-1/2 z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:left-5 sm:h-14 sm:w-14"
+          className="absolute left-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:left-5 md:top-1/2 md:h-14 md:w-14"
           aria-label="Diapositiva anterior"
         >
           <ChevronLeft className="h-6 w-6" aria-hidden="true" />
@@ -315,7 +315,7 @@ const HeroSection: React.FC = () => {
         <button
           type="button"
           onClick={goNext}
-          className="absolute right-3 top-1/2 z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:right-5 sm:h-14 sm:w-14"
+          className="absolute right-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:right-5 md:top-1/2 md:h-14 md:w-14"
           aria-label="Diapositiva siguiente"
         >
           <ChevronRight className="h-6 w-6" aria-hidden="true" />
