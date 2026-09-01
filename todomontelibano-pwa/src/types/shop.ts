@@ -73,3 +73,9 @@ export interface ShopCheckoutResponse {
   init_point?: string;
   sandbox_init_point?: string;
 }
+
+export interface StoreSettings {
+  id: string | null;
+  store_logo: string;
+  updated_at: string | null;
+}

@@ -2,7 +2,6 @@ import { defineConfig, loadEnv, type UserConfig, type PluginOption } from 'vite'
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import Sitemap from 'vite-plugin-sitemap';
 
 function manualChunks(id: string): string | undefined {
   if (!id.includes('node_modules')) return;
@@ -61,6 +60,7 @@ export default defineConfig(({ mode }): UserConfig => {
         'icon-192x192.png',
         'icon-512x512.png',
         'robots.txt',
+        'sitemap.xml',
         'fonts/*.woff2',
       ],
       manifest: {
@@ -149,9 +149,11 @@ export default defineConfig(({ mode }): UserConfig => {
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           /^\/api\//,
+          /^\/admin\//,
           /^\/google[^/]+\.html$/,
           /^\/llms\.txt$/,
           /^\/robots\.txt$/,
+          /^\/sitemap\.xml$/,
         ],
         runtimeCaching: [
           {
@@ -172,34 +174,6 @@ export default defineConfig(({ mode }): UserConfig => {
       },
       devOptions: {
         enabled: false,
-      },
-    }),
-    Sitemap({
-      hostname: siteUrl,
-      generateRobotsTxt: false,
-      dynamicRoutes: [
-        '/',
-        '/empleos',
-        '/deportes',
-        '/bienes-raices',
-        '/eventos',
-        '/tienda',
-        '/contact',
-        '/privacy',
-        '/terms',
-      ],
-      changefreq: 'daily',
-      priority: {
-        '*': 0.5,
-        '/': 1.0,
-        '/empleos': 0.9,
-        '/deportes': 0.9,
-        '/bienes-raices': 0.9,
-        '/eventos': 0.9,
-        '/tienda': 0.9,
-        '/contact': 0.5,
-        '/privacy': 0.3,
-        '/terms': 0.3,
       },
     }),
   ];

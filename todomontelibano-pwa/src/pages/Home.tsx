@@ -8,7 +8,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Users,
-  Building2,
   Star,
   Zap,
   Shield,
@@ -17,13 +16,11 @@ import {
   ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
-import { useAuthStore } from "../store/authStore";
 import JsonLd from "../components/SEO/JsonLd";
 import { buildHomeSchema } from "../components/SEO/schemas/seoSchemas";
 import { ROUTES } from "../config/seo";
-import { useActiveUsersCount } from "../hooks/useActiveUsersCount";
 import PwaInstallButton from "../components/PWA/PwaInstallButton";
-import brandMark from "../assets/chever-logo.svg";
+import HeroSection from "../components/Home/HeroSection";
 
 type HomeService = {
   icon: LucideIcon;
@@ -39,9 +36,6 @@ type HomeService = {
 };
 
 const Home: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
-  const { activeUsers, isLoading: usersCountLoading } = useActiveUsersCount();
-
   const services: HomeService[] = [
     {
       icon: ShoppingBag,
@@ -107,148 +101,10 @@ const Home: React.FC = () => {
     { icon: CheckCircle2, text: "Optimizado para velocidad" },
   ];
 
-  const stats = [
-    { icon: Users, value: activeUsers, label: "Usuarios activos" },
-    { icon: Building2, value: "50+", label: "Empresas" },
-    { icon: Briefcase, value: "100+", label: "Empleos activos" },
-    { icon: Star, value: "4.8", label: "Calificación" },
-  ];
-
   return (
     <div className="bg-white dark:bg-gray-950 transition-colors duration-300">
       <JsonLd data={buildHomeSchema()} />
-      {/* Hero */}
-      <div className="relative overflow-hidden hero-gradient">
-        {/* Marca de agua + glow turquesa (sin patrón de cruces) */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-          <div
-            className="absolute h-[32rem] w-[32rem] sm:h-[42rem] sm:w-[42rem] rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(0,191,165,0.55) 0%, rgba(4,174,157,0.28) 32%, rgba(2,20,51,0) 68%)",
-            }}
-          />
-          <img
-            src={brandMark}
-            alt=""
-            aria-hidden="true"
-            width={512}
-            height={512}
-            decoding="async"
-            className="relative w-[min(92vw,30rem)] sm:w-[32rem] md:w-[34rem] h-auto max-w-none object-contain opacity-10 brightness-0 invert select-none"
-          />
-        </div>
-        <div className="absolute top-16 -left-10 w-64 h-64 bg-[#00BFA5]/25 rounded-full blur-3xl" aria-hidden="true" />
-        <div className="absolute bottom-8 -right-10 w-80 h-80 bg-[#0495de]/18 rounded-full blur-3xl" aria-hidden="true" />
-
-        <div className="relative page-container pt-24 pb-20 sm:pt-28 sm:pb-24">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Badge estado */}
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-5 sm:mb-6">
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <span className="text-sm font-bold text-white/90">
-                Plataforma activa en Chever
-              </span>
-            </div>
-
-            {/* Insignia oficial + título */}
-            <div className="relative mx-auto mb-6 sm:mb-8">
-              <div className="mb-5 inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-md">
-                <img
-                  src={brandMark}
-                  alt=""
-                  aria-hidden="true"
-                  width={20}
-                  height={20}
-                  decoding="async"
-                  className="h-5 w-auto max-w-[5.5rem] object-contain object-center brightness-0 invert opacity-95"
-                />
-                <span className="text-xs font-semibold tracking-wide text-white/90 whitespace-nowrap">
-                  Plataforma Oficial de Córdoba
-                </span>
-              </div>
-              <h1 className="relative text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]">
-                Todo lo que necesitas
-                <span className="block text-gradient mt-3">en un solo lugar</span>
-              </h1>
-            </div>
-
-            <p className="mt-8 text-lg sm:text-xl text-violet-100/90 font-medium max-w-2xl mx-auto leading-relaxed">
-              La plataforma integral de todo el Departamento de Córdoba. Encuentra empleos, eventos,
-              deportes y bienes raíces en la palma de tu mano.
-            </p>
-
-            {/* Métricas con espacio reservado (evita CLS al llegar users-count) */}
-            <div
-              className="mt-12 grid grid-cols-2 gap-8 sm:grid-cols-4 min-h-[4.5rem] content-start"
-              aria-live="polite"
-            >
-              {stats.map((stat) => {
-                const showSkeleton =
-                  stat.label === "Usuarios activos" && usersCountLoading;
-                return (
-                  <div key={stat.label} className="flex flex-col items-center group">
-                    <div className="flex items-center justify-center text-violet-300 mb-2 min-h-[2rem] group-hover:scale-[1.02] transition-transform duration-300">
-                      <stat.icon className="w-5 h-5 mr-2 shrink-0" aria-hidden="true" />
-                      {showSkeleton ? (
-                        <span
-                          className="inline-block min-h-[2rem] min-w-[3rem] rounded-md bg-white/20 animate-pulse"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <span className="inline-flex items-center justify-center min-h-[2rem] min-w-[3rem] text-3xl font-extrabold text-white tabular-nums">
-                          {stat.value}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-violet-200/70">{stat.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div
-              className="mt-10 flex flex-col sm:flex-row flex-wrap justify-center items-stretch sm:items-center gap-4 min-h-[3.5rem] shrink-0 [contain-intrinsic-size:auto_3.5rem]"
-            >
-              {isAuthenticated && (
-                <Link to="/dashboard" className="btn-primary px-10 py-4 text-lg shrink-0">
-                  Ir al Dashboard
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-              )}
-              <Link
-                to={ROUTES.deportes}
-                className="inline-flex shrink-0 items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
-              >
-                <Trophy className="mr-2 w-5 h-5" />
-                Ir a deportes
-              </Link>
-              <Link
-                to={ROUTES.empleos}
-                className="inline-flex shrink-0 items-center justify-center px-10 py-4 text-lg font-bold text-white border-2 border-white/30 rounded-3xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] hover:shadow-2xl"
-              >
-                <Briefcase className="mr-2 w-5 h-5" />
-                Ver empleos
-              </Link>
-              <div className="shrink-0 min-h-[3.5rem] flex items-center">
-                <PwaInstallButton variant="hero" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              className="fill-gray-50 dark:fill-gray-950"
-            />
-          </svg>
-        </div>
-      </div>
+      <HeroSection />
 
       {/* Services */}
       <div className="page-section bg-gray-50 dark:bg-gray-950">

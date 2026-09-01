@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useCanonicalUrl } from '../../hooks/useCanonicalUrl';
 import {
   absoluteUrl,
   DEFAULT_OG_IMAGE,
@@ -32,8 +33,8 @@ const SeoHead: React.FC<SeoHeadProps> = ({
   noindex = false,
   children,
 }) => {
+  const { href: canonical } = useCanonicalUrl(path);
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
-  const canonical = absoluteUrl(path);
   const image = ogImage.startsWith('http') ? ogImage : absoluteUrl(ogImage);
 
   return (
@@ -47,7 +48,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({
       {noindex ? (
         <meta name="robots" content="noindex, nofollow" />
       ) : (
-        <meta name="robots" content="index, follow, max-image-preview:large" />
+        <meta name="robots" content="index, follow" />
       )}
 
       {/* Open Graph */}

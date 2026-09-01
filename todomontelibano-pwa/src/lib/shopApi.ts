@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from 'axios';
 import { api } from './api';
-import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct } from '../types/shop';
+import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
 
 export interface ProductListParams {
   category?: string;
@@ -104,4 +104,33 @@ export const shopApi = {
   }) => api.post<ShopCheckoutResponse>('/ecommerce/orders/checkout/', payload),
 
   getMyOrders: () => api.get<ShopOrder[] | { results: ShopOrder[] }>('/ecommerce/orders/'),
+
+  getSettings: async (): Promise<SoftListResult<StoreSettings>> => {
+    try {
+      const { data } = await api.get<StoreSettings>('/store/settings/');
+      return {
+        data: {
+          id: data?.id ?? null,
+          store_logo: data?.store_logo ?? '',
+          updated_at: data?.updated_at ?? null,
+        },
+        degraded: false,
+      };
+    } catch (error) {
+      console.warn('[shopApi] store settings degraded:', serverErrorMessage(error));
+      return {
+        data: { id: null, store_logo: '', updated_at: null },
+        warning: 'No se pudo cargar la configuración visual de la tienda',
+        degraded: true,
+      };
+    }
+  },
+
+  updateSettings: (payload: { store_logo: string }) =>
+    api.patch<StoreSettings>('/store/settings/', payload),
+
+  uploadLogo: (payload: { store_logo: string }) =>
+    api.post<StoreSettings>('/store/logo/', payload),
+
+  deleteLogo: () => api.delete<StoreSettings>('/store/logo/'),
 };

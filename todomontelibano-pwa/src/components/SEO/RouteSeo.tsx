@@ -2,7 +2,9 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import SeoHead from './SeoHead';
 import {
+  canonicalizePath,
   DEFAULT_SEO_DESCRIPTION,
+  isNoindexPath,
   ROUTES,
   SEO_PAGES,
   SITE_NAME,
@@ -12,11 +14,7 @@ import {
 /** Aplica metadatos según la ruta actual. Nunca deja una pestaña sin title/description. */
 const RouteSeo: React.FC = () => {
   const { pathname } = useLocation();
-
-  const path =
-    pathname.length > 1 && pathname.endsWith('/')
-      ? pathname.slice(0, -1)
-      : pathname;
+  const path = canonicalizePath(pathname);
 
   const exact = SEO_PAGES[path];
   if (exact) {
@@ -54,7 +52,7 @@ const RouteSeo: React.FC = () => {
           description={meta.description}
           path={path}
           ogType={meta.ogType}
-          noindex={meta.noindex || path !== prefix}
+          noindex={meta.noindex || isNoindexPath(path)}
         />
       );
     }

@@ -17,7 +17,7 @@ export const BRAND_TAGLINE = 'Plataforma deportiva y comunitaria';
 export const BRAND_REGION = 'Córdoba, Colombia';
 
 export const BRAND_ENTITY_DESCRIPTION =
-  'Plataforma digital integral para el Departamento de Córdoba: deportes, torneos, empleos, eventos y bienes raíces.';
+  'Plataforma de comercio local, empleos y torneos deportivos en Córdoba, Colombia.';
 
 /** Clases para el SVG negro: en oscuro se invierte a blanco. */
 export const BRAND_LOGO_IMG_CLASS =

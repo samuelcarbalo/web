@@ -1,6 +1,7 @@
 # SPA fallback — Netlify / Cloudflare Pages / Render static
-# Archivos reales se sirven primero (no rewrite a index.html).
+# Archivos reales (tienda/index.html, sitemap.xml, google*.html) se sirven primero.
 /google*.html  200
 /llms.txt      200
 /robots.txt    200
+/sitemap.xml   200
 /*             /index.html   200
