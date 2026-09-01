@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Mail } from 'lucide-react';
 import { api } from '../../lib/api';
 import ThemeToggle from '../../components/UI/ThemeToggle';
 import BrandLogo from '../../components/Brand/BrandLogo';
@@ -17,6 +17,8 @@ const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [sent, setSent] = useState(false);
   const [resetOk, setResetOk] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,31 +115,80 @@ const ForgotPassword: React.FC = () => {
                 <label htmlFor="new-password" className="auth-label">
                   Nueva contraseña
                 </label>
-                <input
-                  id="new-password"
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field"
-                />
+                <div className="relative">
+                  <input
+                    id="new-password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-field pr-12"
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 auth-icon-btn" />
+                    ) : (
+                      <Eye className="h-5 w-5 auth-icon-btn" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <label htmlFor="new-password-confirm" className="auth-label">
                   Confirmar contraseña
                 </label>
-                <input
-                  id="new-password-confirm"
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  className="input-field"
-                />
+                <div className="relative">
+                  <input
+                    id="new-password-confirm"
+                    type={showPasswordConfirm ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    className="input-field pr-12"
+                    placeholder="Repite la contraseña"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    onClick={() => setShowPasswordConfirm((v) => !v)}
+                    aria-label={
+                      showPasswordConfirm
+                        ? 'Ocultar confirmación de contraseña'
+                        : 'Mostrar confirmación de contraseña'
+                    }
+                    aria-pressed={showPasswordConfirm}
+                  >
+                    {showPasswordConfirm ? (
+                      <EyeOff className="h-5 w-5 auth-icon-btn" />
+                    ) : (
+                      <Eye className="h-5 w-5 auth-icon-btn" />
+                    )}
+                  </button>
+                </div>
+                {password.length > 0 && passwordConfirm.length > 0 && (
+                  <p
+                    className={`mt-2 text-sm font-semibold ${
+                      password === passwordConfirm
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}
+                  >
+                    {password === passwordConfirm
+                      ? 'Las contraseñas coinciden'
+                      : 'Las contraseñas no coinciden'}
+                  </p>
+                )}
               </div>
               <button type="submit" disabled={pending} className="w-full btn-primary py-4">
                 {pending ? (
