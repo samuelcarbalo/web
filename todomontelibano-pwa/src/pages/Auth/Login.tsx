@@ -48,7 +48,12 @@ const Login: React.FC = () => {
 
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="flex justify-center">
-          <BrandLogo className="h-14 w-auto max-w-[220px]" variant="oficial" linkToHome />
+          <BrandLogo
+            className="h-14 w-auto max-w-[220px]"
+            variant="oficial"
+            linkToHome
+            title="Ir al inicio"
+          />
         </div>
         <h2 className="mt-8 text-center text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           Bienvenido de vuelta
@@ -66,6 +71,9 @@ const Login: React.FC = () => {
 
       <div className="relative z-10 mt-10 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="auth-card">
+          <div className="mb-4">
+            <AuthBackHomeLink />
+          </div>
           <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); login.mutate(formData); }}>
             <div>
               <label htmlFor="email" className="auth-label">Correo electrónico</label>

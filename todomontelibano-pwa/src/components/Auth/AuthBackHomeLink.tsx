@@ -6,10 +6,11 @@ import { ArrowLeft } from 'lucide-react';
 const AuthBackHomeLink: React.FC = () => (
   <Link
     to="/"
-    className="inline-flex items-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-bold bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-100 shadow-sm hover:bg-secondary-50 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-500"
+    title="Ir al inicio"
+    className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors py-2 px-3 rounded-lg hover:bg-slate-800/50"
   >
     <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-    Volver al inicio
+    Volver al Inicio
   </Link>
 );
 
