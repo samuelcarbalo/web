@@ -10,6 +10,18 @@ export function isPlatformElevatedUser(user: User | null | undefined): boolean {
   return !!(user.is_superuser || user.is_staff || user.role === 'admin');
 }
 
+export function isSuperAdminLevel1(user: User | null | undefined): boolean {
+  if (!user) return false;
+  const level = user.admin_level ?? 0;
+  if (level === 1) return true;
+  if (level === 2) return false;
+  return !!user.is_superuser;
+}
+
+export function isSuperAdminLevel2(user: User | null | undefined): boolean {
+  return (user?.admin_level ?? 0) === 2;
+}
+
 /** Puede crear/editar contenido de módulos (manager, admin o superuser/staff). */
 export function canManageContent(user: User | null | undefined): boolean {
   if (!user) return false;
@@ -27,6 +39,8 @@ export const usePermissions = () => {
   const isManager = user?.role === 'manager' || isPlatformAdmin;
   const isAdmin = user?.role === 'admin' || isPlatformAdmin;
   const isUser = user?.role === 'user' && !isPlatformAdmin;
+  const canManageAdmins = isSuperAdminLevel1(user);
+  const isDelegatedAdmin = isSuperAdminLevel2(user);
 
   /**
    * Propietario del recurso O administrador de plataforma (CRUD completo).
@@ -53,5 +67,9 @@ export const usePermissions = () => {
     isUser,
     isPlatformAdmin,
     canManageContent: canManage,
+    canManageAdmins,
+    isDelegatedAdmin,
+    isSuperAdminLevel1: canManageAdmins,
+    isSuperAdminLevel2: isDelegatedAdmin,
   };
 };

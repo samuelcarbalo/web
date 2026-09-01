@@ -208,7 +208,7 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (requireAdmin && !(user?.is_superuser || user?.is_staff || user?.role === 'admin')) {
+  if (requireAdmin && !(user?.is_superuser || user?.is_staff || (user?.admin_level ?? 0) >= 1)) {
     return <Navigate to="/dashboard" replace />;
   }
 
