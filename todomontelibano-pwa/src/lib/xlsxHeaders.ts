@@ -1,5 +1,6 @@
 import {
   IMPORT_MODULE_HEADERS,
+  IMPORT_MODULE_SIGNATURES,
   type AdminImportModule,
 } from './adminImportApi';
 
@@ -168,6 +169,14 @@ export function missingExcelHeaders(
 ): string[] {
   const present = new Set(received.map((h) => h.trim()).filter(Boolean));
   return expected.filter((h) => !present.has(h));
+}
+
+export function headersMatchModule(
+  module: AdminImportModule,
+  received: readonly string[],
+): boolean {
+  const keys = IMPORT_MODULE_SIGNATURES[module];
+  return missingExcelHeaders(keys, received).length === 0;
 }
 
 export function guessImportModule(

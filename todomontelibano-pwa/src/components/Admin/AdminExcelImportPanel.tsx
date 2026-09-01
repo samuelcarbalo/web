@@ -6,8 +6,10 @@ import {
   Loader2,
   Upload,
   AlertTriangle,
+  X,
 } from 'lucide-react';
 import {
+  WRONG_TEMPLATE_MESSAGE,
   downloadAdminImportTemplate,
   listAdminImportModules,
   uploadAdminImportExcel,
@@ -17,7 +19,7 @@ import {
 import {
   fallbackImportModules,
   guessImportModule,
-  missingExcelHeaders,
+  headersMatchModule,
   readXlsxHeaders,
 } from '../../lib/xlsxHeaders';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +31,12 @@ const MODULE_LABELS: Record<AdminImportModule, string> = {
   products: 'Productos de Tienda',
   discounts: 'Descuentos / Ofertas Temporales',
 };
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 const AdminExcelImportPanel: React.FC = () => {
   const [module, setModule] = useState<AdminImportModule>('products');
@@ -62,15 +70,12 @@ const AdminExcelImportPanel: React.FC = () => {
   const headerMismatch = useMemo(() => {
     if (readError) return readError;
     if (!fileHeaders) return '';
-    const expected = allModules.find((m) => m.key === module)?.headers ?? [];
-    if (expected.length === 0) return '';
-    if (missingExcelHeaders(expected, fileHeaders).length === 0) return '';
+    if (headersMatchModule(module, fileHeaders)) return '';
     const guessed = guessImportModule(fileHeaders, allModules);
-    const selectedLabel = MODULE_LABELS[module];
     if (guessed && guessed !== module) {
-      return `El archivo seleccionado corresponde a ${MODULE_LABELS[guessed]}, pero tienes seleccionado ${selectedLabel}. Por favor cambia la opción en el selector.`;
+      return `${WRONG_TEMPLATE_MESSAGE} El archivo parece de ${MODULE_LABELS[guessed]}, pero está seleccionado ${MODULE_LABELS[module]}.`;
     }
-    return `El archivo seleccionado no coincide con las columnas de ${selectedLabel}. Por favor verifica la plantilla o cambia la opción en el selector.`;
+    return WRONG_TEMPLATE_MESSAGE;
   }, [allModules, fileHeaders, module, readError]);
 
   const onFile = useCallback((f: File | null) => {
@@ -83,6 +88,7 @@ const AdminExcelImportPanel: React.FC = () => {
     setErrorMsg('');
     if (!f) {
       setReadingHeaders(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
     setReadingHeaders(true);
@@ -101,6 +107,11 @@ const AdminExcelImportPanel: React.FC = () => {
         if (gen !== readGenRef.current) return;
         setReadingHeaders(false);
       });
+  }, []);
+
+  const openPicker = useCallback(() => {
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    fileInputRef.current?.click();
   }, []);
 
   const onDrop = useCallback(
@@ -228,49 +239,87 @@ const AdminExcelImportPanel: React.FC = () => {
         </p>
       )}
 
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => fileInputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        className="sr-only"
+        onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+      />
+
+      {file ? (
+        <div className="mt-6 flex flex-col gap-3 rounded-3xl border border-gray-200 bg-white p-4 sm:flex-row sm:items-center dark:border-gray-700 dark:bg-gray-900">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="rounded-2xl bg-secondary-100 p-3 dark:bg-secondary-950/40">
+              <FileSpreadsheet className="h-6 w-6 text-secondary-700 dark:text-secondary-300" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-extrabold text-gray-900 dark:text-white">
+                {file.name}
+              </p>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                {formatFileSize(file.size)}
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              onClick={openPicker}
+              className="btn-secondary inline-flex items-center justify-center px-4 py-2 text-sm"
+            >
+              Cambiar
+            </button>
+            <button
+              type="button"
+              onClick={() => onFile(null)}
+              className="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-3 py-2 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              aria-label="Quitar archivo"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={openPicker}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openPicker();
+            }
+          }}
+          onDragOver={(e) => {
             e.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        className={`mt-6 cursor-pointer rounded-3xl border-2 border-dashed p-8 text-center transition-colors ${
-          dragOver
-            ? 'border-secondary-600 bg-secondary-50 dark:bg-secondary-950/30'
-            : 'border-gray-300 dark:border-gray-700'
-        }`}
-      >
-        <Upload className="w-8 h-8 mx-auto text-gray-400 mb-3" />
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-          Arrastra el Excel aquí o selecciona un archivo
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          className="hidden"
-          onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <span className="mt-4 inline-block text-sm font-bold text-secondary-700 dark:text-secondary-300">
-          Browse...
-        </span>
-        {file && (
-          <p className="mt-2 text-xs font-medium text-secondary-700 dark:text-secondary-300">
-            Seleccionado: {file.name}
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          className={`mt-6 cursor-pointer rounded-3xl border-2 border-dashed p-8 text-center transition-colors ${
+            dragOver
+              ? 'border-secondary-600 bg-secondary-50 dark:bg-secondary-950/30'
+              : 'border-gray-300 dark:border-gray-700'
+          }`}
+        >
+          <Upload className="mx-auto mb-3 h-8 w-8 text-gray-400" />
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            Arrastra el Excel aquí o selecciona un archivo
           </p>
-        )}
-      </div>
+          <button
+            type="button"
+            className="btn-primary mt-4 inline-flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              openPicker();
+            }}
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Seleccionar archivo Excel
+          </button>
+        </div>
+      )}
 
       {status === 'success' && (
         <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">

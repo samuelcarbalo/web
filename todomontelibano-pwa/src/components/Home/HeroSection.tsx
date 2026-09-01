@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useState } from 'react';
+import React, { memo, useCallback, useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -15,6 +15,7 @@ import {
 import { ROUTES } from '../../config/seo';
 import { getMediaUrl } from '../../lib/api';
 import { useShopProducts } from '../../hooks/useShop';
+import type { ShopProduct } from '../../types/shop';
 
 import shop768Avif from '../../assets/hero/shop-768.avif';
 import shop1536Avif from '../../assets/hero/shop-1536.avif';
@@ -81,8 +82,8 @@ const HERO_SLIDES: readonly HeroSlide[] = [
     ctaLabel: 'Ver Torneos y Deportes',
     ctaTo: ROUTES.deportes,
     ctaIcon: Trophy,
-    alt: 'Partido y canchas deportivas en Córdoba',
-    objectPosition: '42% 48%',
+    alt: 'Niños y niñas jugando fútbol en un barrio de Córdoba',
+    objectPosition: '40% 42%',
   },
   {
     id: 'jobs',
@@ -119,31 +120,140 @@ const SLIDE_IMAGES: Record<HeroSlide['id'], HeroSrcSet> = {
 const srcSetFrom = (urls: readonly [string, string]): string =>
   `${urls[0]} 768w, ${urls[1]} 1536w`;
 
-const HeroPicture: React.FC<{
+const HeroPicture = memo(function HeroPicture({
+  images,
+  alt,
+  priority,
+  objectPosition,
+}: {
   images: HeroSrcSet;
   alt: string;
   priority: boolean;
   objectPosition: string;
-}> = ({ images, alt, priority, objectPosition }) => (
-  <picture>
-    <source type="image/avif" srcSet={srcSetFrom(images.avif)} sizes="100vw" />
-    <source type="image/webp" srcSet={srcSetFrom(images.webp)} sizes="100vw" />
-    <img
-      src={images.jpg[1]}
-      srcSet={srcSetFrom(images.jpg)}
-      sizes="100vw"
-      alt={alt}
-      width={HERO_IMAGE_WIDTH}
-      height={HERO_IMAGE_HEIGHT}
-      fetchPriority={priority ? 'high' : 'low'}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding={priority ? 'sync' : 'async'}
-      draggable={false}
-      className="h-full w-full object-cover"
-      style={{ objectPosition }}
-    />
-  </picture>
-);
+}) {
+  return (
+    <picture>
+      <source type="image/avif" srcSet={srcSetFrom(images.avif)} sizes="100vw" />
+      <source type="image/webp" srcSet={srcSetFrom(images.webp)} sizes="100vw" />
+      <img
+        src={priority ? images.jpg[0] : images.jpg[1]}
+        srcSet={srcSetFrom(images.jpg)}
+        sizes="100vw"
+        alt={alt}
+        width={HERO_IMAGE_WIDTH}
+        height={HERO_IMAGE_HEIGHT}
+        fetchPriority={priority ? 'high' : 'low'}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        draggable={false}
+        className="h-full w-full object-cover [transform:translateZ(0)]"
+        style={{ objectPosition }}
+      />
+    </picture>
+  );
+});
+
+const EMPTY_FEATURED: ShopProduct[] = [];
+
+const HeroSlidePanel = memo(function HeroSlidePanel({
+  slide,
+  images,
+  priority,
+  featuredProducts,
+}: {
+  slide: HeroSlide;
+  images: HeroSrcSet;
+  priority: boolean;
+  featuredProducts: ShopProduct[];
+}) {
+  const CtaIcon = slide.ctaIcon;
+  const isShop = slide.id === 'shop';
+
+  return (
+    <article
+      className="relative min-w-0 shrink-0 grow-0 basis-full h-full [backface-visibility:hidden] [transform:translate3d(0,0,0)] [contain:layout_paint]"
+      aria-roledescription="diapositiva"
+      aria-label={slide.title}
+    >
+      <div className="absolute inset-0">
+        <HeroPicture
+          images={images}
+          alt={slide.alt}
+          priority={priority}
+          objectPosition={slide.objectPosition}
+        />
+      </div>
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary-950 via-primary-950/82 to-primary-950/30"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary-950 via-transparent to-primary-950/35"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 flex h-full flex-col justify-end page-container max-md:!px-14 pb-20 pt-16 sm:pb-24">
+        <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-primary-950/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-200">
+          {slide.kicker} · Montelíbano
+        </p>
+        <h2 className="max-w-3xl text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]">
+          {slide.title}
+        </h2>
+        <p className="mt-4 max-w-2xl text-base sm:text-xl font-medium leading-relaxed text-white/95">
+          {slide.subtitle}
+        </p>
+
+        {isShop && featuredProducts.length > 0 && (
+          <ul className="mt-5 flex max-w-xl flex-wrap gap-2">
+            {featuredProducts.map((product) => {
+              const img = getMediaUrl(product.image_url);
+              return (
+                <li key={product.id}>
+                  <Link
+                    to={`${ROUTES.tienda}/${product.slug}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-primary-950/80 py-1 pl-1 pr-3 text-sm font-bold text-emerald-50 hover:bg-primary-900"
+                  >
+                    {img ? (
+                      <img
+                        src={img}
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                        width={32}
+                        height={32}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <Tag className="ml-2 h-4 w-4 text-emerald-300" aria-hidden="true" />
+                    )}
+                    <span className="max-w-[10rem] truncate">{product.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {isShop && featuredProducts.length === 0 && (
+          <p className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-emerald-200">
+            <Clock3 className="h-4 w-4" aria-hidden="true" />
+            Ofertas y catálogo listos para explorar
+          </p>
+        )}
+
+        <div className="mt-8">
+          <Link
+            to={slide.ctaTo}
+            className="inline-flex min-h-12 items-center justify-center rounded-3xl bg-emerald-400 px-8 py-3.5 text-base font-extrabold text-primary-950 shadow-[0_12px_36px_rgba(52,211,153,0.42)] transition-colors hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-950 sm:px-10 sm:py-4 sm:text-lg"
+          >
+            <CtaIcon className="mr-2 h-5 w-5" aria-hidden="true" />
+            {slide.ctaLabel}
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+});
 
 const HeroSection: React.FC = () => {
   const carouselId = useId();
@@ -154,7 +264,7 @@ const HeroSection: React.FC = () => {
   const featuredProducts = (featuredData?.results ?? []).filter((p) => p.is_featured !== false).slice(0, 3);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: 'start', skipSnaps: false, duration: 28 },
+    { loop: true, align: 'start', skipSnaps: false, duration: 18, watchDrag: true },
     [
       Autoplay({
         delay: AUTOPLAY_MS,
@@ -211,103 +321,24 @@ const HeroSection: React.FC = () => {
       </h1>
 
       <div className="relative min-h-[34rem] h-[min(40rem,calc(100svh-4.5rem))] md:h-[min(44rem,calc(100svh-5rem))]">
-        <div className="h-full overflow-hidden" ref={emblaRef}>
-          <div className="flex h-full touch-pan-y">
-            {HERO_SLIDES.map((slide, slideIndex) => {
-              const images = SLIDE_IMAGES[slide.id];
-              const CtaIcon = slide.ctaIcon;
-              const isShop = slide.id === 'shop';
-              return (
-                <article
-                  key={slide.id}
-                  className="relative min-w-0 shrink-0 grow-0 basis-full h-full"
-                  aria-roledescription="diapositiva"
-                  aria-label={slide.title}
-                >
-                  <div className="absolute inset-0">
-                    <HeroPicture
-                      images={images}
-                      alt={slide.alt}
-                      priority={slideIndex === 0}
-                      objectPosition={slide.objectPosition}
-                    />
-                  </div>
-                  <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary-950 via-primary-950/82 to-primary-950/30"
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary-950 via-transparent to-primary-950/35"
-                    aria-hidden="true"
-                  />
-
-                  <div className="relative z-10 flex h-full flex-col justify-end page-container max-md:!px-14 pb-20 pt-16 sm:pb-24">
-                    <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-200 backdrop-blur-md">
-                      {slide.kicker} · Montelíbano
-                    </p>
-                    <h2 className="max-w-3xl text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]">
-                      {slide.title}
-                    </h2>
-                    <p className="mt-4 max-w-2xl text-base sm:text-xl font-medium leading-relaxed text-white/95">
-                      {slide.subtitle}
-                    </p>
-
-                    {isShop && featuredProducts.length > 0 && (
-                      <ul className="mt-5 flex max-w-xl flex-wrap gap-2">
-                        {featuredProducts.map((product) => {
-                          const img = getMediaUrl(product.image_url);
-                          return (
-                            <li key={product.id}>
-                              <Link
-                                to={`${ROUTES.tienda}/${product.slug}`}
-                                className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-primary-950/75 py-1 pl-1 pr-3 text-sm font-bold text-emerald-50 backdrop-blur-md hover:bg-primary-900"
-                              >
-                                {img ? (
-                                  <img
-                                    src={img}
-                                    alt=""
-                                    className="h-8 w-8 rounded-full object-cover"
-                                    width={32}
-                                    height={32}
-                                  />
-                                ) : (
-                                  <Tag className="ml-2 h-4 w-4 text-emerald-300" aria-hidden="true" />
-                                )}
-                                <span className="max-w-[10rem] truncate">{product.name}</span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-
-                    {isShop && featuredProducts.length === 0 && (
-                      <p className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-emerald-200">
-                        <Clock3 className="h-4 w-4" aria-hidden="true" />
-                        Ofertas y catálogo listos para explorar
-                      </p>
-                    )}
-
-                    <div className="mt-8">
-                      <Link
-                        to={slide.ctaTo}
-                        className="inline-flex min-h-12 items-center justify-center rounded-3xl bg-emerald-400 px-8 py-3.5 text-base font-extrabold text-primary-950 shadow-[0_12px_36px_rgba(52,211,153,0.42)] transition hover:bg-emerald-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-950 sm:px-10 sm:py-4 sm:text-lg"
-                      >
-                        <CtaIcon className="mr-2 h-5 w-5" aria-hidden="true" />
-                        {slide.ctaLabel}
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+        <div className="h-full overflow-hidden touch-pan-y [transform:translateZ(0)]" ref={emblaRef}>
+          <div className="flex h-full will-change-transform [backface-visibility:hidden] [transform:translate3d(0,0,0)]">
+            {HERO_SLIDES.map((slide, slideIndex) => (
+              <HeroSlidePanel
+                key={slide.id}
+                slide={slide}
+                images={SLIDE_IMAGES[slide.id]}
+                priority={slideIndex === 0}
+                featuredProducts={slide.id === 'shop' ? featuredProducts : EMPTY_FEATURED}
+              />
+            ))}
           </div>
         </div>
 
         <button
           type="button"
           onClick={goPrev}
-          className="absolute left-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:left-5 md:top-1/2 md:h-14 md:w-14"
+          className="absolute left-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/80 text-white shadow-lg transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:left-5 md:top-1/2 md:h-14 md:w-14"
           aria-label="Diapositiva anterior"
         >
           <ChevronLeft className="h-6 w-6" aria-hidden="true" />
@@ -315,7 +346,7 @@ const HeroSection: React.FC = () => {
         <button
           type="button"
           onClick={goNext}
-          className="absolute right-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/70 text-white shadow-lg backdrop-blur-md transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:right-5 md:top-1/2 md:h-14 md:w-14"
+          className="absolute right-1.5 top-[26%] z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-primary-950/80 text-white shadow-lg transition hover:bg-emerald-400 hover:text-primary-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-white md:right-5 md:top-1/2 md:h-14 md:w-14"
           aria-label="Diapositiva siguiente"
         >
           <ChevronRight className="h-6 w-6" aria-hidden="true" />
