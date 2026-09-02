@@ -1,26 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { useProfile, useUpdateProfile } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
-import { 
-  User, 
-  Mail, 
-  Building2, 
-  Camera, 
-  Save, 
-  MapPin, 
+import {
+  normalizeBirthDateForInput,
+  parseApiFieldErrors,
+  parseApiErrorMessage,
+} from '../lib/apiErrors';
+import {
+  User,
+  Mail,
+  Building2,
+  Camera,
+  Save,
+  MapPin,
   Briefcase,
   Calendar,
   Edit3,
-  Loader2
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
+
+type ProfileFormData = {
+  user_name: string;
+  bio: string;
+  location: string;
+  department: string;
+  job_title: string;
+  birth_date: string;
+};
 
 const Profile: React.FC = () => {
   const { user } = useAuthStore();
-  // console.log(user)
   const { data: profile, isLoading, isError } = useProfile();
   const updateProfile = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     user_name: '',
     bio: '',
     location: '',
@@ -28,25 +43,63 @@ const Profile: React.FC = () => {
     job_title: '',
     birth_date: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Cargar datos del perfil cuando estén disponibles
+  const resetFeedback = () => {
+    setFieldErrors({});
+    setFormError(null);
+    setSuccessMessage(null);
+  };
+
+  const loadFormFromProfile = () => {
+    if (!profile) return;
+    setFormData({
+      user_name: profile.user_name || '',
+      bio: profile.bio || '',
+      location: profile.location || '',
+      department: profile.department || '',
+      job_title: profile.job_title || '',
+      birth_date: normalizeBirthDateForInput(profile.birth_date),
+    });
+  };
+
   useEffect(() => {
-    if (profile) {
-      setFormData({
-        user_name: profile.user_name || '',
-        bio: profile.bio || '',
-        location: profile.location || '',
-        department: profile.department || '',
-        job_title: profile.job_title || '',
-        birth_date: profile.birth_date || '',
-      });
-    }
+    loadFormFromProfile();
   }, [profile]);
+
+  const handleCancelEdit = () => {
+    loadFormFromProfile();
+    resetFeedback();
+    setIsEditing(false);
+  };
+
+  const fieldErrorClass = (field: string) =>
+    fieldErrors[field] ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30' : '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    resetFeedback();
+
     updateProfile.mutate(formData, {
-      onSuccess: () => setIsEditing(false),
+      onSuccess: () => {
+        setIsEditing(false);
+        setSuccessMessage('Perfil actualizado correctamente.');
+      },
+      onError: (error) => {
+        const mapped = parseApiFieldErrors(error);
+        if (Object.keys(mapped).length > 0) {
+          setFieldErrors(mapped);
+          if (mapped._form) {
+            setFormError(mapped._form);
+          }
+        }
+        setFormError((prev) =>
+          prev ??
+          parseApiErrorMessage(error, 'Error al actualizar perfil. Verifica los datos e intenta de nuevo.'),
+        );
+      },
     });
   };
 
@@ -153,7 +206,14 @@ const Profile: React.FC = () => {
                 {profile.birth_date && (
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{new Date(profile.birth_date).toLocaleDateString('es-CO')}</span>
+                    <span>
+                      {(() => {
+                        const iso = normalizeBirthDateForInput(profile.birth_date);
+                        const [y, m, d] = iso.split('-').map(Number);
+                        if (!y || !m || !d) return iso;
+                        return new Date(y, m - 1, d).toLocaleDateString('es-CO');
+                      })()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -180,8 +240,9 @@ const Profile: React.FC = () => {
                   Información personal
                 </h3>
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => (isEditing ? handleCancelEdit() : setIsEditing(true))}
                   className="flex items-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium"
+                  type="button"
                 >
                   {isEditing ? (
                     'Cancelar'
@@ -194,6 +255,26 @@ const Profile: React.FC = () => {
                 </button>
               </div>
 
+              {successMessage && !isEditing && (
+                <div
+                  role="status"
+                  className="mb-4 flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                >
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
+
+              {formError && isEditing && (
+                <div
+                  role="alert"
+                  className="mb-4 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -203,9 +284,24 @@ const Profile: React.FC = () => {
                     type="text"
                     disabled={!isEditing}
                     value={formData.user_name}
-                    onChange={(e) => setFormData({...formData, user_name: e.target.value})}
-                    className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, user_name: e.target.value });
+                      if (fieldErrors.user_name) {
+                        setFieldErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.user_name;
+                          return next;
+                        });
+                      }
+                    }}
+                    className={`input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 ${fieldErrorClass('user_name')}`}
                   />
+                  {fieldErrors.user_name && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.user_name}</p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    El nombre visible se gestiona desde tu cuenta de usuario.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -217,10 +313,22 @@ const Profile: React.FC = () => {
                       type="text"
                       disabled={!isEditing}
                       value={formData.job_title}
-                      onChange={(e) => setFormData({...formData, job_title: e.target.value})}
-                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                      onChange={(e) => {
+                        setFormData({ ...formData, job_title: e.target.value });
+                        if (fieldErrors.job_title) {
+                          setFieldErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.job_title;
+                            return next;
+                          });
+                        }
+                      }}
+                      className={`input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 ${fieldErrorClass('job_title')}`}
                       placeholder="Ej: Desarrollador Full Stack"
                     />
+                    {fieldErrors.job_title && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.job_title}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -230,10 +338,22 @@ const Profile: React.FC = () => {
                       type="text"
                       disabled={!isEditing}
                       value={formData.department}
-                      onChange={(e) => setFormData({...formData, department: e.target.value})}
-                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                      onChange={(e) => {
+                        setFormData({ ...formData, department: e.target.value });
+                        if (fieldErrors.department) {
+                          setFieldErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.department;
+                            return next;
+                          });
+                        }
+                      }}
+                      className={`input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 ${fieldErrorClass('department')}`}
                       placeholder="Ej: Tecnología"
                     />
+                    {fieldErrors.department && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.department}</p>
+                    )}
                   </div>
                 </div>
 
@@ -248,11 +368,23 @@ const Profile: React.FC = () => {
                         type="text"
                         disabled={!isEditing}
                         value={formData.location}
-                        onChange={(e) => setFormData({...formData, location: e.target.value})}
-                        className="input-field pl-10 disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                        onChange={(e) => {
+                          setFormData({ ...formData, location: e.target.value });
+                          if (fieldErrors.location) {
+                            setFieldErrors((prev) => {
+                              const next = { ...prev };
+                              delete next.location;
+                              return next;
+                            });
+                          }
+                        }}
+                        className={`input-field pl-10 disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 ${fieldErrorClass('location')}`}
                         placeholder="Ej: Chever, Córdoba"
                       />
                     </div>
+                    {fieldErrors.location && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.location}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -262,9 +394,21 @@ const Profile: React.FC = () => {
                       type="date"
                       disabled={!isEditing}
                       value={formData.birth_date}
-                      onChange={(e) => setFormData({...formData, birth_date: e.target.value})}
-                      className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500"
+                      onChange={(e) => {
+                        setFormData({ ...formData, birth_date: e.target.value });
+                        if (fieldErrors.birth_date) {
+                          setFieldErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.birth_date;
+                            return next;
+                          });
+                        }
+                      }}
+                      className={`input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 ${fieldErrorClass('birth_date')}`}
                     />
+                    {fieldErrors.birth_date && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.birth_date}</p>
+                    )}
                   </div>
                 </div>
 
@@ -276,10 +420,22 @@ const Profile: React.FC = () => {
                     rows={4}
                     disabled={!isEditing}
                     value={formData.bio}
-                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                    className="input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 resize-none"
+                    onChange={(e) => {
+                      setFormData({ ...formData, bio: e.target.value });
+                      if (fieldErrors.bio) {
+                        setFieldErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.bio;
+                          return next;
+                        });
+                      }
+                    }}
+                    className={`input-field disabled:bg-gray-50 dark:bg-gray-900/50 disabled:text-gray-500 resize-none ${fieldErrorClass('bio')}`}
                     placeholder="Cuéntanos sobre ti, tu experiencia y habilidades..."
                   />
+                  {fieldErrors.bio && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.bio}</p>
+                  )}
                   <p className="mt-1 text-xs text-gray-500">
                     Esta información será visible para las empresas cuando apliques a empleos
                   </p>
@@ -289,15 +445,17 @@ const Profile: React.FC = () => {
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="flex-1 btn-secondary"
+                      onClick={handleCancelEdit}
+                      disabled={updateProfile.isPending}
+                      className="flex-1 btn-secondary disabled:opacity-60"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={updateProfile.isPending}
-                      className="flex-1 btn-primary flex items-center justify-center"
+                      aria-busy={updateProfile.isPending}
+                      className="flex-1 btn-primary flex items-center justify-center disabled:opacity-60"
                     >
                       {updateProfile.isPending ? (
                         <>

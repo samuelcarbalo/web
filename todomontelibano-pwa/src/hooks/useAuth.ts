@@ -3,6 +3,9 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { hasValidSessionHint, markSessionStart, purgeClientSession } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
+import {
+  formatBirthDateForApi,
+} from '../lib/apiErrors';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
 import { consumeAuthRedirect } from '../lib/authRedirect';
@@ -100,20 +103,41 @@ export const useProfile = () => {
 };
 
 // Hook para actualizar el perfil
+export type ProfileUpdatePayload = {
+  user_name?: string;
+  bio?: string;
+  location?: string;
+  department?: string;
+  job_title?: string;
+  birth_date?: string;
+};
+
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async (data: Partial<Profile>) => {
-      // Obtenemos el perfil cacheado para sacar su id
+    mutationFn: async (data: ProfileUpdatePayload) => {
       const profile = queryClient.getQueryData<Profile>(['profile']);
-      const profileId = profile?.id; // el id del perfil extendido: 2d7e3e55-...
-      
-      const response = await api.patch(`/profiles/${profileId}/`, data);
+      const profileId = profile?.id;
+
+      if (!profileId) {
+        throw new Error('Perfil no encontrado. Recarga la página e intenta de nuevo.');
+      }
+
+      const payload = {
+        bio: data.bio?.trim() ?? '',
+        location: data.location?.trim() ?? '',
+        department: data.department?.trim() ?? '',
+        job_title: data.job_title?.trim() ?? '',
+        birth_date: formatBirthDateForApi(data.birth_date),
+      };
+
+      const response = await api.patch(`/profiles/${profileId}/`, payload);
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 };
