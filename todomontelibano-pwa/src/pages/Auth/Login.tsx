@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useLogin } from '../../hooks/useAuth';
 import ThemeToggle from '../../components/UI/ThemeToggle';
 import BrandLogo from '../../components/Brand/BrandLogo';
 import AuthBackHomeLink from '../../components/Auth/AuthBackHomeLink';
+import AuthSubmitStatus from '../../components/Auth/AuthSubmitStatus';
 import SeoHead from '../../components/SEO/SeoHead';
 import { TENANT_CONFIG } from '../../config/tenant';
 import { ROUTES } from '../../config/seo';
@@ -29,6 +30,13 @@ const Login: React.FC = () => {
   });
 
   const login = useLogin();
+  const isSubmitting = login.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login.reset();
+    login.mutate(formData);
+  };
 
   return (
     <div className="auth-page">
@@ -74,14 +82,14 @@ const Login: React.FC = () => {
           <div className="mb-4">
             <AuthBackHomeLink />
           </div>
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); login.mutate(formData); }}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="auth-label">Correo electrónico</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 auth-icon" />
-                <input id="email" type="email" required autoComplete="email"
+                <input id="email" type="email" required autoComplete="email" disabled={isSubmitting}
                   value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field pl-12" placeholder="tu@email.com" />
+                  className="input-field pl-12 disabled:opacity-60" placeholder="tu@email.com" />
               </div>
             </div>
 
@@ -89,10 +97,10 @@ const Login: React.FC = () => {
               <label htmlFor="password" className="auth-label">Contraseña</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 auth-icon" />
-                <input id="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password"
+                <input id="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" disabled={isSubmitting}
                   value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input-field pl-12 pr-12" placeholder="••••••••" />
-                <button type="button" className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                  className="input-field pl-12 pr-12 disabled:opacity-60" placeholder="••••••••" />
+                <button type="button" className="absolute inset-y-0 right-0 pr-4 flex items-center" disabled={isSubmitting}
                   onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="h-5 w-5 auth-icon-btn" /> : <Eye className="h-5 w-5 auth-icon-btn" />}
                 </button>
@@ -117,18 +125,33 @@ const Login: React.FC = () => {
               </Link>
             </div>
 
-            <button type="submit" disabled={login.isPending} className="w-full btn-primary py-4">
-              {login.isPending ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="w-full btn-primary py-4 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                  Iniciando sesión...
+                </>
               ) : (
-                <>Iniciar Sesión<ArrowRight className="ml-2 w-4 h-4 inline" /></>
+                <>
+                  Iniciar Sesión
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </>
               )}
             </button>
-          </form>
 
-          {login.isError && (
-            <div className="auth-error mt-6">Error al iniciar sesión. Verifica tus credenciales.</div>
-          )}
+            <AuthSubmitStatus
+              isPending={isSubmitting}
+              isError={login.isError}
+              error={login.error}
+              variant="login"
+              fallbackError="No pudimos iniciar sesión. Verifica tu correo y contraseña e intenta de nuevo."
+            />
+          </form>
         </div>
       </div>
     </div>
