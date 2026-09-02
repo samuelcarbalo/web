@@ -9,6 +9,8 @@ export interface AdminUser {
   phone?: string;
   full_name?: string;
   role: string;
+  /** Clave del selector del panel: user | manager | admin | super_admin */
+  panel_role?: 'user' | 'manager' | 'admin' | 'super_admin';
   user_type: string;
   company_name?: string | null;
   organization?: string | null;
