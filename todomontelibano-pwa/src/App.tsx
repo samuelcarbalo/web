@@ -2,7 +2,7 @@ import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ErrorBoundary from './components/ErrorBoundary';
-import BrandLogo from './components/Brand/BrandLogo';
+import RouteLoadingFallback from './components/UI/RouteLoadingFallback';
 
 // Layout
 import MainLayout from './components/Layout/MainLayout';
@@ -92,12 +92,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const PageLoader: React.FC = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 dark:bg-gray-950">
-    <BrandLogo linkToHome={false} variant="mark" className="h-14 w-auto max-w-[180px] animate-pulse" />
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
-  </div>
-);
+const PageLoader: React.FC = () => <RouteLoadingFallback />;
 
 const AUTH_INIT_TIMEOUT_MS = 5_000;
 

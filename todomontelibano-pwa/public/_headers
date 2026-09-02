@@ -1,11 +1,28 @@
+/critical.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  X-Content-Type-Options: nosniff
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  X-Content-Type-Options: nosniff
+
+/assets/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Content-Type: text/css; charset=utf-8
+  X-Content-Type-Options: nosniff
 
 /*.js
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  X-Content-Type-Options: nosniff
 
 /*.css
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Content-Type: text/css; charset=utf-8
+  X-Content-Type-Options: nosniff
 
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate

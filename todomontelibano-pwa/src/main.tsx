@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { setupBlankScreenRecovery, setupPwaUpdates, purgeCachesIfVersionChanged } from './lib/pwa'
 import { recoverFromStaleChunks, setupChunkLoadRecovery } from './lib/chunkRecovery'
 import { enforceSessionMaxAge } from './lib/session'
+import { scheduleMarkAppReady } from './lib/appBoot'
 
 initTheme()
 void purgeCachesIfVersionChanged()
@@ -65,6 +66,7 @@ if (rootEl) {
       </HelmetProvider>
     </StrictMode>,
   )
+  scheduleMarkAppReady()
   // React ya reemplazó #root; limpiar flag del watchdog de index.html
   try {
     sessionStorage.removeItem('boot_watchdog_v1')

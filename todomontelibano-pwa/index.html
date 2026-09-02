@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="app-booting">
   <head>
     <meta charset="UTF-8" />
+    <!-- Estilos críticos síncronos (antes del JS) — anti-FOUC -->
+    <link rel="preload" href="/critical.css" as="style" />
+    <link rel="stylesheet" href="/critical.css" />
     <!-- Preconnect al API (TLS/TCP mientras descarga el JS) -->
     <link rel="preconnect" href="https://missingdigitalback.onrender.com" crossorigin />
     <link rel="dns-prefetch" href="https://missingdigitalback.onrender.com" />
@@ -136,6 +139,12 @@
     <meta name="apple-mobile-web-app-title" content="Chéver" />
   </head>
   <body>
+    <div id="app-boot-overlay" aria-live="polite" aria-busy="true" aria-label="Cargando Chéver">
+      <div class="boot-logo" aria-hidden="true"></div>
+      <div class="boot-spinner" aria-hidden="true"></div>
+      <p class="boot-label">Cargando Chéver…</p>
+      <div class="boot-skeleton" aria-hidden="true"></div>
+    </div>
     <div id="root">
       <!--prerender-start-->
       <main id="prerender-shell" style="font-family:system-ui,sans-serif;max-width:48rem;margin:0 auto;padding:2.5rem 1.25rem;color:#0f172a;line-height:1.6">
@@ -154,25 +163,7 @@
         </nav>
       </main>
       <!--prerender-end-->
-      <div
-        id="app-boot"
-        style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"
-        aria-hidden="true"
-      >
-        Cargando Chéver
-      </div>
     </div>
-    <style>
-      @keyframes boot-spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      html.dark #app-boot {
-        background: #030712;
-        color: #cbd5e1;
-      }
-    </style>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Manifest PWA diferido: no forma parte de la cadena crítica de LCP -->
     <script>
@@ -199,7 +190,7 @@
         if (/Googlebot|bingbot|Slurp|DuckDuckBot|Baiduspider/i.test(navigator.userAgent || '')) return;
         var KEY = 'boot_watchdog_v1';
         setTimeout(function () {
-          if (!document.getElementById('app-boot')) return;
+          if (!document.getElementById('app-boot-overlay')) return;
           try {
             if (sessionStorage.getItem(KEY) === '1') return;
             sessionStorage.setItem(KEY, '1');

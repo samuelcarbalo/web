@@ -1,0 +1,141 @@
+/**
+ * Estilos críticos embebidos en el HTML inicial (antes del bundle JS/CSS de Vite).
+ * Evita FOUC: fondo, tipografía base y pantalla de arranque sin depender de Tailwind.
+ */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f9fafb;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark body {
+  background-color: #030712;
+  color: #f1f5f9;
+}
+
+/* Ocultar app hasta rehidratación; el overlay cubre la pantalla */
+html.app-booting #root {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.app-ready #root {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#app-boot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: #f9fafb;
+  transition: opacity 0.2s ease-out;
+}
+
+html.dark #app-boot-overlay {
+  background: #030712;
+}
+
+html.app-ready #app-boot-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#app-boot-overlay .boot-logo {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #0bad9a 0%, #021433 100%);
+  opacity: 0.9;
+  animation: boot-pulse 1.4s ease-in-out infinite;
+}
+
+#app-boot-overlay .boot-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: boot-spin 0.75s linear infinite;
+}
+
+html.dark #app-boot-overlay .boot-spinner {
+  border-color: #1f2937;
+  border-top-color: #a78bfa;
+}
+
+#app-boot-overlay .boot-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+html.dark #app-boot-overlay .boot-label {
+  color: #94a3b8;
+}
+
+#app-boot-overlay .boot-skeleton {
+  width: min(18rem, 72vw);
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: boot-shimmer 1.2s ease-in-out infinite;
+}
+
+html.dark #app-boot-overlay .boot-skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes boot-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes boot-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
