@@ -2,6 +2,16 @@ import type { Profile } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { normalizeBirthDateForInput } from './apiErrors';
 
+export function mergeProfileFromApi(
+  previous: Profile | undefined,
+  patch: Partial<Profile>,
+): Profile {
+  if (!previous) {
+    return patch as Profile;
+  }
+  return { ...previous, ...patch };
+}
+
 /** Aplica en Zustand los datos devueltos por PATCH /profiles/{id}/ */
 export function syncProfileToAuthStore(profile: Profile): void {
   const fullName = (profile.user_name || '').trim();
