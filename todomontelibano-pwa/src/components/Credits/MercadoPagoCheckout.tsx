@@ -14,20 +14,20 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
   initPoint = null,
   isLoading = false,
 }) => {
-  const { data: mpConfig } = useMpConfig();
+  const { data: mpConfig, isLoading: isMpConfigLoading, isError: isMpConfigError } = useMpConfig();
   const [mpReady, setMpReady] = useState(false);
 
   useEffect(() => {
-    const publicKey = mpConfig?.public_key || import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || '';
-    if (publicKey) {
-      initMercadoPago(publicKey, { locale: 'es-CO' });
-      setMpReady(true);
-    } else {
+    const publicKey = mpConfig?.public_key?.trim() || '';
+    if (!publicKey) {
       setMpReady(false);
+      return;
     }
+    initMercadoPago(publicKey, { locale: 'es-CO' });
+    setMpReady(true);
   }, [mpConfig?.public_key]);
 
-  if (isLoading) {
+  if (isLoading || isMpConfigLoading) {
     return (
       <div className="flex items-center justify-center py-6 gap-2 text-gray-500">
         <Loader2 className="w-5 h-5 animate-spin" />
@@ -58,8 +58,9 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
         <div className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm text-amber-900 dark:text-amber-100">
           <p className="font-semibold mb-1">Botón de pago no disponible</p>
           <p>
-            Agrega <code className="text-xs bg-white/50 dark:bg-black/20 px-1 rounded">VITE_MERCADOPAGO_PUBLIC_KEY</code>{' '}
-            en tu <code className="text-xs">.env</code> (o configúrala en el servidor) para mostrar el botón oficial.
+            {isMpConfigError
+              ? 'No se pudo cargar la configuración de Mercado Pago desde el servidor.'
+              : 'Configura las credenciales en el panel de administración (Mercado Pago → Test/Producción).'}
             {initPoint && ' Mientras tanto, usa el enlace de arriba.'}
           </p>
         </div>
@@ -69,7 +70,6 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
 
   return (
     <div className="mp-checkout-container w-full min-h-[48px]">
-      {/* Wallet de MP muestra el logo oficial en primera posición (requisito de contrato) */}
       <Wallet initialization={{ preferenceId }} />
 
       {initPoint && (

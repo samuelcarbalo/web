@@ -72,6 +72,7 @@ export interface ShopCheckoutResponse {
   preference_id: string;
   init_point?: string;
   sandbox_init_point?: string;
+  is_production?: boolean;
 }
 
 export interface StoreSettings {

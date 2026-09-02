@@ -43,7 +43,8 @@ export const useMpConfig = () =>
       const { data } = await paymentsApi.getMpConfig();
       return data;
     },
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
   });
 
 export const useCreatePreference = () =>
