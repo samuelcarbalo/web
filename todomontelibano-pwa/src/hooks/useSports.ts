@@ -527,6 +527,7 @@ export const useFormatTemplates = (sportType?: string) => {
     queryKey: [TOURNAMENTS_KEY, 'format-templates', sportType],
     queryFn: () => getFormatTemplates(sportType),
     enabled: !!sportType,
+    staleTime: 1000 * 60 * 60,
   });
 };
 

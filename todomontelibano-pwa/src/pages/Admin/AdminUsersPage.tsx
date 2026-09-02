@@ -12,6 +12,7 @@ import {
   Users,
   Briefcase,
   Store,
+  CreditCard,
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ import type { AdminUser } from '../../lib/adminApi';
 import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
 import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
 import AdminStoreVisualSettings from '../../components/Admin/AdminStoreVisualSettings';
+import AdminMercadoPagoSettings from '../../components/Admin/AdminMercadoPagoSettings';
 
 function adminLevelOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser'> | null | undefined): number {
   const level = Number(u?.admin_level) || 0;
@@ -67,7 +69,7 @@ const AdminUsersPage: React.FC = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
-  const [tab, setTab] = useState<'users' | 'jobs' | 'store'>('users');
+  const [tab, setTab] = useState<'users' | 'jobs' | 'store' | 'payments'>('users');
   const { canManageAdmins, isDelegatedAdmin } = usePermissions();
 
   const { data, isLoading, isError } = useAdminUsers({
@@ -221,6 +223,20 @@ const AdminUsersPage: React.FC = () => {
             <Store className="w-4 h-4" />
             Tienda
           </button>
+          {canManageAdmins && (
+            <button
+              type="button"
+              onClick={() => setTab('payments')}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+                tab === 'payments'
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              Pagos
+            </button>
+          )}
         </div>
       {tab === 'users' && (
       <>
@@ -392,6 +408,8 @@ const AdminUsersPage: React.FC = () => {
       )}
 
       {tab === 'store' && <AdminStoreVisualSettings />}
+
+      {tab === 'payments' && canManageAdmins && <AdminMercadoPagoSettings />}
       </div>
 
       {editing && (

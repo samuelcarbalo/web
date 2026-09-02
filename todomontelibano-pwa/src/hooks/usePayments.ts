@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { paymentsApi, moderationApi } from '../lib/paymentsApi';
+import { paymentsApi, moderationApi, type MpAdminConfigUpdate } from '../lib/paymentsApi';
 import { FALLBACK_PACKAGES, type CreditPackage } from '../config/credits';
 
 function normalizePackages(data: unknown): CreditPackage[] {
@@ -46,6 +46,30 @@ export const useMpConfig = () =>
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });
+
+export const useMpAdminConfig = (enabled = true) =>
+  useQuery({
+    queryKey: ['mp-admin-config'],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getMpAdminConfig();
+      return data;
+    },
+    enabled,
+    staleTime: 1000 * 30,
+    retry: 1,
+  });
+
+export const useUpdateMpAdminConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: MpAdminConfigUpdate) =>
+      paymentsApi.updateMpAdminConfig(payload).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mp-admin-config'] });
+      queryClient.invalidateQueries({ queryKey: ['mp-config'] });
+    },
+  });
+};
 
 export const useCreatePreference = () =>
   useMutation({
