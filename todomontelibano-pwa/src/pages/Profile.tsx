@@ -63,10 +63,10 @@ const Profile: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (profile) {
+    if (profile && !isEditing && !updateProfile.isPending) {
       applyProfileToForm(profile);
     }
-  }, [profile, applyProfileToForm]);
+  }, [profile, isEditing, updateProfile.isPending, applyProfileToForm]);
   const handleCancelEdit = () => {
     if (profile) applyProfileToForm(profile);
     resetFeedback();

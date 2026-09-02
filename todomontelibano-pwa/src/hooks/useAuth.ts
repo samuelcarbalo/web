@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { hasValidSessionHint, markSessionStart, purgeClientSession } from '../lib/session';
 import type { LoginCredentials, RegisterData, User, Profile } from '../types';
 import { formatBirthDateForApi } from '../lib/apiErrors';
-import { syncProfileToAuthStore } from '../lib/profileSync';
+import { syncProfileToAuthStore, mergeProfileFromApi } from '../lib/profileSync';
 import { useNavigate } from 'react-router-dom';
 import { TENANT_CONFIG } from '../config/tenant';
 import { consumeAuthRedirect } from '../lib/authRedirect';
@@ -133,14 +133,12 @@ export const useUpdateProfile = () => {
       };
 
       const response = await api.patch<Profile>(`/profiles/${profileId}/`, payload);
-      return response.data;
+      return mergeProfileFromApi(profile, response.data);
     },
     onSuccess: (updatedProfile) => {
       queryClient.setQueryData(['profile'], updatedProfile);
       queryClient.setQueryData(['me'], updatedProfile);
       syncProfileToAuthStore(updatedProfile);
-      void queryClient.invalidateQueries({ queryKey: ['profile'] });
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 };

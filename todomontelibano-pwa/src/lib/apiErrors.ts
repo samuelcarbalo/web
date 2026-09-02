@@ -45,6 +45,17 @@ export function parseApiFieldErrors(error: unknown): Record<string, string> {
     }
   }
 
+  if (typeof data === 'object' && data !== null) {
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      if (['detail', 'message', 'error', 'success'].includes(key)) continue;
+      if (Array.isArray(value) && typeof value[0] === 'string') {
+        mapped[key] = value[0];
+      } else if (typeof value === 'string' && value.trim()) {
+        mapped[key] = value.trim();
+      }
+    }
+  }
+
   if (typeof data.error === 'string' && data.error.trim()) {
     mapped._form = data.error.trim();
   }
