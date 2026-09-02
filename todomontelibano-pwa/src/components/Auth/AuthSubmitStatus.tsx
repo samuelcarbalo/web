@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { parseApiErrorMessage } from '../../lib/apiErrors';
+import { COLD_START_HINT } from '../../lib/coldStartUi';
 import { useDelayedLoadingHint } from '../../hooks/useDelayedLoadingHint';
 
 type AuthSubmitVariant = 'login' | 'register';
@@ -10,7 +11,7 @@ const LOADING_COPY: Record<AuthSubmitVariant, string> = {
   register: 'Creando tu cuenta... Estamos preparando todo para ti ✨',
 };
 
-const SLOW_HINT = 'Conectando de forma segura con Chéver...';
+const SLOW_HINT = COLD_START_HINT;
 
 interface AuthSubmitStatusProps {
   isPending: boolean;

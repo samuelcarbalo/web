@@ -70,6 +70,8 @@ import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
 import { canManageContent } from './hooks/usePermissions';
 import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
+import ColdStartNotice from './components/UI/ColdStartNotice';
+import { startRenderKeepAlive } from './lib/renderKeepAlive';
 import {
   JobsLegacyRedirect,
   SportsLegacyRedirect,
@@ -94,7 +96,7 @@ const queryClient = new QueryClient({
 
 const PageLoader: React.FC = () => <RouteLoadingFallback />;
 
-const AUTH_INIT_TIMEOUT_MS = 5_000;
+const AUTH_INIT_TIMEOUT_MS = 65_000;
 
 /**
  * Hidrata sesión; libera isLoading SIEMPRE (finally + timeout 5s).
@@ -224,10 +226,13 @@ const ProductosAliasRedirect: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  useEffect(() => startRenderKeepAlive(), []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <ScrollToTop />
+        <ColdStartNotice />
         <AuthInitializer>
           <PwaUpdateBanner />
           <ErrorBoundary onReset={() => queryClient.resetQueries()}>

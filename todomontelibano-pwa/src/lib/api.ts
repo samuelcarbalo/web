@@ -7,6 +7,10 @@ import {
   purgeClientSession,
 } from './session';
 import { getApiBaseUrl, getApiOrigin, subscribeApiBaseUrl } from '../api/config';
+import { trackApiRequestEnd, trackApiRequestStart } from './coldStartUi';
+
+/** Margen para cold starts de Render free tier (~30–60 s). */
+export const API_TIMEOUT_MS = 60_000;
 
 const PUBLIC_ENDPOINTS = [
   '/sports/matches/',
@@ -31,6 +35,7 @@ const PUBLIC_ENDPOINTS = [
 /** Axios instance — `baseURL` follows `src/api/config.ts` (env + optional DEV switch). */
 export const api = axios.create({
   baseURL: getApiBaseUrl(),
+  timeout: API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -41,6 +46,7 @@ subscribeApiBaseUrl((baseUrl) => {
 });
 
 api.interceptors.request.use(async (config) => {
+  trackApiRequestStart();
   // Keep in sync if LocalStorage switch changed without reload.
   config.baseURL = getApiBaseUrl();
 
@@ -81,7 +87,7 @@ async function refreshAccessToken(): Promise<string> {
   }
 
   refreshPromise = axios
-    .post(`${getApiBaseUrl()}/auth/refresh/`, { refresh: refreshToken })
+    .post(`${getApiBaseUrl()}/auth/refresh/`, { refresh: refreshToken }, { timeout: API_TIMEOUT_MS })
     .then((response) => {
       const { access } = response.data;
       localStorage.setItem('access_token', access);
@@ -99,8 +105,12 @@ async function refreshAccessToken(): Promise<string> {
 type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    trackApiRequestEnd();
+    return response;
+  },
   async (error: AxiosError) => {
+    trackApiRequestEnd();
     if (axios.isCancel(error) || error.message === 'Sesión expirada (24h)') {
       return Promise.reject(error);
     }
