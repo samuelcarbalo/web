@@ -10,7 +10,9 @@ import {
 import { useCreateTournament, useFormatTemplates } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
+import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
+import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports';
 
 const CreateTournament: React.FC = () => {
@@ -98,6 +100,13 @@ const CreateTournament: React.FC = () => {
     if (formData.max_players_per_team < formData.min_players_per_team) {
       newErrors.max_players_per_team = 'El máximo debe ser mayor o igual al mínimo';
     }
+
+    if (formData.logo.trim() && !isValidHttpImageUrl(formData.logo)) {
+      newErrors.logo = 'Ingresa una URL válida (http/https) o sube un archivo';
+    }
+    if (formData.banner.trim() && !isValidHttpImageUrl(formData.banner)) {
+      newErrors.banner = 'Ingresa una URL válida (http/https) o sube un archivo';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -119,6 +128,8 @@ const CreateTournament: React.FC = () => {
     
     createMutation.mutate({
       ...formData,
+      logo: formData.logo.trim(),
+      banner: formData.banner.trim(),
       slug: slug,
       organization: user?.organization || '',
       format_template: formData.format_template,
@@ -439,31 +450,25 @@ const CreateTournament: React.FC = () => {
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Imágenes (opcional)</h2>
             
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  URL del logo
-                </label>
-                <input
-                  type="url"
-                  value={formData.logo}
-                  onChange={(e) => handleChange('logo', e.target.value)}
-                  className="input-field"
-                  placeholder="https://ejemplo.com/logo.png"
-                />
-              </div>
+              <HybridImageUrlInput
+                id="tournament-logo"
+                label="URL del logo"
+                value={formData.logo}
+                onChange={(url) => handleChange('logo', url)}
+                placeholder="https://ejemplo.com/logo.png"
+                error={errors.logo}
+                hint="Pega una URL o usa «Subir archivo» (ImgBB)."
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  URL del banner
-                </label>
-                <input
-                  type="url"
-                  value={formData.banner}
-                  onChange={(e) => handleChange('banner', e.target.value)}
-                  className="input-field"
-                  placeholder="https://ejemplo.com/banner.png"
-                />
-              </div>
+              <HybridImageUrlInput
+                id="tournament-banner"
+                label="URL del banner"
+                value={formData.banner}
+                onChange={(url) => handleChange('banner', url)}
+                placeholder="https://ejemplo.com/banner.png"
+                error={errors.banner}
+                hint="Imagen ancha recomendada para la cabecera del torneo."
+              />
             </div>
           </div>
 

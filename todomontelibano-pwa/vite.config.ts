@@ -28,7 +28,12 @@ function preloadBuiltCss(): PluginOption {
 }
 
 function manualChunks(id: string): string | undefined {
-  if (!id.includes('node_modules')) return;
+  if (!id.includes('node_modules')) {
+    if (id.includes('/src/pages/Admin/')) return 'page-admin';
+    if (id.includes('/src/pages/Sports/')) return 'page-sports';
+    if (id.includes('/src/pages/Shop/')) return 'page-shop';
+    return;
+  }
 
   // Lucide: chunk aparte; cada ruta ya importa iconos por nombre (tree-shake).
   if (id.includes('lucide-react')) return 'vendor-icons';

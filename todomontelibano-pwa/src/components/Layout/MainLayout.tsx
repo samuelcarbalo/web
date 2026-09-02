@@ -29,6 +29,50 @@ import BrandLogo from "../Brand/BrandLogo";
 import { canManageContent } from "../../hooks/usePermissions";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
 import StoreSubNavbar from "../Shop/StoreSubNavbar";
+import MobileNavMenu, { type MobileNavService } from "./MobileNavMenu";
+
+const MOBILE_SERVICES: MobileNavService[] = [
+  {
+    name: "Tienda",
+    icon: ShoppingBag,
+    path: ROUTES.tienda,
+    active: true,
+    description: "Catálogo y compras con Mercado Pago",
+    comingSoon: false,
+  },
+  {
+    name: "Deportes",
+    icon: Trophy,
+    path: ROUTES.deportes,
+    active: true,
+    description: "Fútbol, Softbol y más",
+    comingSoon: false,
+  },
+  {
+    name: "Empleos",
+    icon: Briefcase,
+    path: ROUTES.empleos,
+    active: true,
+    description: "Encuentra tu próximo trabajo",
+    comingSoon: false,
+  },
+  {
+    name: "Eventos publicitarios",
+    icon: Calendar,
+    path: ROUTES.eventos,
+    active: true,
+    description: "Ferias, conciertos y activaciones de marca",
+    comingSoon: false,
+  },
+  {
+    name: "Bienes Raíces",
+    icon: House,
+    path: ROUTES.bienesRaices,
+    active: true,
+    description: "Propiedades en venta y alquiler",
+    comingSoon: false,
+  },
+];
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -41,47 +85,24 @@ const MainLayout: React.FC = () => {
   const unreadCount = unreadData?.unread_count ?? 0;
   useNotificationSocket(sessionActive);
 
-  const services = [
-    {
-      name: "Tienda",
-      icon: ShoppingBag,
-      path: ROUTES.tienda,
-      active: true,
-      description: "Catálogo y compras con Mercado Pago",
-      comingSoon: false,
-    },
-    {
-      name: "Deportes",
-      icon: Trophy,
-      path: ROUTES.deportes,
-      active: true,
-      description: "Fútbol, Softbol y más",
-      comingSoon: false,
-    },
-    {
-      name: "Empleos",
-      icon: Briefcase,
-      path: ROUTES.empleos,
-      active: true,
-      description: "Encuentra tu próximo trabajo",
-    },
-    {
-      name: "Eventos publicitarios",
-      icon: Calendar,
-      path: ROUTES.eventos,
-      active: true,
-      description: "Ferias, conciertos y activaciones de marca",
-      comingSoon: false,
-    },
-    {
-      name: "Bienes Raíces",
-      icon: House,
-      path: ROUTES.bienesRaices,
-      active: true,
-      description: "Propiedades en venta y alquiler",
-      comingSoon: false,
-    },
-  ];
+  React.useEffect(() => {
+    setIsMenuOpen(false);
+    setIsServicesOpen(false);
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    const root = document.documentElement;
+    if (!isMenuOpen) {
+      root.classList.remove("mobile-nav-open");
+      return;
+    }
+    root.classList.add("mobile-nav-open");
+    return () => root.classList.remove("mobile-nav-open");
+  }, [isMenuOpen]);
+
+  const closeMobileMenu = React.useCallback(() => setIsMenuOpen(false), []);
+
+  const services = MOBILE_SERVICES;
 
   const isActive = (path: string) => {
     if (path === ROUTES.home) return location.pathname === ROUTES.home;
@@ -282,8 +303,12 @@ const MainLayout: React.FC = () => {
             <div className="flex items-center gap-2 md:hidden">
               <ThemeToggle />
               <button
+                type="button"
                 className="p-2.5 rounded-3xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={() => setIsMenuOpen((open) => !open)}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-nav-panel"
+                aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
               >
                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -292,89 +317,13 @@ const MainLayout: React.FC = () => {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200/60 dark:border-gray-800/60 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl">
-            <div className="px-4 py-6 space-y-4">
-              <Link
-                to="/"
-                className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Inicio
-              </Link>
-
-              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                  Servicios
-                </p>
-                {services.map((service) => (
-                  <Link
-                    key={service.name}
-                    to={service.active ? service.path : "#"}
-                    onClick={(e) => {
-                      if (!service.active) e.preventDefault();
-                      setIsMenuOpen(false);
-                    }}
-                    className={`flex items-center py-3 font-bold ${service.active ? "text-gray-700 dark:text-gray-200" : "text-gray-400"}`}
-                  >
-                    <service.icon className="w-5 h-5 mr-3" />
-                    {service.name}
-                    {service.comingSoon && (
-                      <span className="ml-auto badge text-[10px]">Pronto</span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-
-              {sessionActive ? (
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
-                  {canManageContent(user) && (
-                    <div className="px-4 py-3 text-sm font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-center gap-1.5 mb-3">
-                      🪙 {user?.credits ?? 0} Créditos disponibles
-                    </div>
-                  )}
-                  <Link to="/creditos" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
-                    Comprar créditos
-                  </Link>
-                  <Link to="/profile" className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
-                    Mi Perfil
-                  </Link>
-                  <Link to="/dashboard" className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
-                    Dashboard
-                  </Link>
-                  {(user?.is_superuser || user?.is_staff) && (
-                    <Link
-                      to="/dashboard/admin"
-                      className="block py-3 text-base font-bold text-indigo-700 dark:text-indigo-300"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Panel de administración
-                    </Link>
-                  )}
-                  <Link to={ROUTES.tiendaPedidos} className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200" onClick={() => setIsMenuOpen(false)}>
-                    Mis pedidos
-                  </Link>
-                  <button
-                    onClick={() => { logout(); setIsMenuOpen(false); }}
-                    className="w-full text-left py-3 text-base font-bold text-red-600 dark:text-red-400"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </div>
-              ) : (
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-3">
-                  <Link to="/creditos" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
-                    Ver planes de créditos
-                  </Link>
-                  <Link to="/login" className="block py-3 text-base font-bold text-violet-600 dark:text-violet-400" onClick={() => setIsMenuOpen(false)}>
-                    Iniciar Sesión
-                  </Link>
-                  <Link to="/register" className="btn-primary w-full text-center" onClick={() => setIsMenuOpen(false)}>
-                    Crear Cuenta
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
+          <MobileNavMenu
+            services={MOBILE_SERVICES}
+            sessionActive={sessionActive}
+            user={user}
+            onClose={closeMobileMenu}
+            onLogout={logout}
+          />
         )}
       </header>
 

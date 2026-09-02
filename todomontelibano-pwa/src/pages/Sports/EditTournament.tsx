@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useTournament, useUpdateTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
+import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
+import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports'; //sportTypeLabels
 
 const EditTournament: React.FC = () => {
@@ -53,6 +55,8 @@ const EditTournament: React.FC = () => {
     { value: 'cancelled', label: 'Cancelado' },
   ];
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (tournament) {
       // Verificar ownership
@@ -86,10 +90,24 @@ const EditTournament: React.FC = () => {
     e.preventDefault();
     
     if (!slug) return;
+
+    const nextErrors: Record<string, string> = {};
+    if (formData.logo.trim() && !isValidHttpImageUrl(formData.logo)) {
+      nextErrors.logo = 'Ingresa una URL válida (http/https) o sube un archivo';
+    }
+    if (formData.banner.trim() && !isValidHttpImageUrl(formData.banner)) {
+      nextErrors.banner = 'Ingresa una URL válida (http/https) o sube un archivo';
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
     
     updateMutation.mutate({
       slug,
-      data: formData,
+      data: {
+        ...formData,
+        logo: formData.logo.trim(),
+        banner: formData.banner.trim(),
+      },
     }, {
       onSuccess: () => {
         navigate(`/sports/tournaments/${slug}`);
@@ -113,6 +131,9 @@ const EditTournament: React.FC = () => {
 
   const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   if (isLoading) {
@@ -379,29 +400,21 @@ const EditTournament: React.FC = () => {
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Imágenes</h2>
             
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  URL del logo
-                </label>
-                <input
-                  type="url"
-                  value={formData.logo}
-                  onChange={(e) => handleChange('logo', e.target.value)}
-                  className="input-field"
-                />
-              </div>
+              <HybridImageUrlInput
+                id="edit-tournament-logo"
+                label="URL del logo"
+                value={formData.logo}
+                onChange={(url) => handleChange('logo', url)}
+                error={errors.logo}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  URL del banner
-                </label>
-                <input
-                  type="url"
-                  value={formData.banner}
-                  onChange={(e) => handleChange('banner', e.target.value)}
-                  className="input-field"
-                />
-              </div>
+              <HybridImageUrlInput
+                id="edit-tournament-banner"
+                label="URL del banner"
+                value={formData.banner}
+                onChange={(url) => handleChange('banner', url)}
+                error={errors.banner}
+              />
             </div>
           </div>
 
