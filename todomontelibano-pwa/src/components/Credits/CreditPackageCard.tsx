@@ -1,7 +1,7 @@
 import React from 'react';
-import { Sparkles, Check } from 'lucide-react';
+import { Sparkles, Check, X } from 'lucide-react';
 import type { CreditPackage } from '../../config/credits';
-import { formatCop } from '../../config/credits';
+import { CREDIT_COSTS, STORE_UNLIMITED_COPY, formatCop } from '../../config/credits';
 
 interface CreditPackageCardProps {
   pkg: CreditPackage;
@@ -10,6 +10,17 @@ interface CreditPackageCardProps {
   onSelect: () => void;
   isProcessing?: boolean;
 }
+
+const FeatureRow: React.FC<{ ok: boolean; children: React.ReactNode }> = ({ ok, children }) => (
+  <li className={`flex items-start gap-2 ${ok ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500'}`}>
+    {ok ? (
+      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-label="Incluido" />
+    ) : (
+      <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" aria-label="No alcanza" />
+    )}
+    <span className={ok ? '' : 'line-through decoration-red-300'}>{children}</span>
+  </li>
+);
 
 const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
   pkg,
@@ -20,6 +31,15 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
 }) => {
   const standardPrice = pkg.standard_price_cop ?? pkg.credits * 1000;
   const hasSavings = pkg.savings_cop > 0;
+  const isDiamond = pkg.id === 'diamante' || pkg.credits >= 450;
+  const canActivateStoreUnlimited = pkg.credits >= CREDIT_COSTS.storeUnlimitedActivation;
+  const canJob = pkg.credits >= CREDIT_COSTS.job;
+  const canStore = pkg.credits >= CREDIT_COSTS.store;
+  const canTournament = pkg.credits >= CREDIT_COSTS.tournament;
+  const surplusCredits =
+    pkg.credits > CREDIT_COSTS.storeUnlimitedActivation
+      ? pkg.credits - CREDIT_COSTS.storeUnlimitedActivation
+      : 0;
 
   return (
     <article
@@ -27,7 +47,9 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
         isSelected
           ? 'border-violet-500 shadow-lg shadow-violet-500/20 bg-white dark:bg-gray-900'
           : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/80 hover:border-violet-300'
-      } ${isPopular ? 'ring-2 ring-violet-400 ring-offset-2 dark:ring-offset-gray-950' : ''}`}
+      } ${isPopular ? 'ring-2 ring-violet-400 ring-offset-2 dark:ring-offset-gray-950' : ''} ${
+        isDiamond ? 'border-amber-300 dark:border-amber-600' : ''
+      }`}
     >
       {pkg.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
@@ -66,19 +88,24 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
 
       <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 flex-1">{pkg.description}</p>
 
-      <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
-        <li className="flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-          1 crédito = $1.000 COP
-        </li>
-        <li className="flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-          Empleo o inmueble: 5 créditos
-        </li>
-        <li className="flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-          Torneo de fútbol: 50 créditos
-        </li>
+      <ul className="mt-4 space-y-2 text-sm">
+        <FeatureRow ok>1 crédito = $1.000 COP</FeatureRow>
+        <FeatureRow ok={canJob}>Empleo o Inmueble (5 créditos)</FeatureRow>
+        <FeatureRow ok={canStore}>Producto en Tienda (10 créditos)</FeatureRow>
+        <FeatureRow ok={canTournament}>Torneo de Fútbol (50 créditos)</FeatureRow>
+        <FeatureRow ok={canActivateStoreUnlimited}>{STORE_UNLIMITED_COPY.monthEquivalency}</FeatureRow>
+        <FeatureRow ok={canActivateStoreUnlimited || surplusCredits > 0}>
+          {STORE_UNLIMITED_COPY.surplusUsage}
+        </FeatureRow>
+        {isDiamond && surplusCredits > 0 && (
+          <li className="flex items-start gap-2 text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 rounded-2xl px-3 py-2">
+            <Check className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <span>
+              Con este paquete, al publicar en tienda se activan 30 días ilimitados (250 créditos)
+              y quedan <strong>{surplusCredits} créditos libres</strong> para otros servicios.
+            </span>
+          </li>
+        )}
       </ul>
 
       <button

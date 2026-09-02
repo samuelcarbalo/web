@@ -58,6 +58,9 @@ export const useMe = () => {
           job_title: profile.job_title || undefined,
           completion_percentage: profile.completion_percentage,
           credits: user_res.credits,
+          store_unlimited_until: user_res.store_unlimited_until ?? null,
+          store_unlimited_activations_pending:
+            Number(user_res.store_unlimited_activations_pending) || 0,
         };
 
         setAuth(user, {
@@ -170,6 +173,9 @@ export const useLogin = () => {
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
         credits: user_res.credits,
+        store_unlimited_until: user_res.store_unlimited_until ?? null,
+        store_unlimited_activations_pending:
+          Number(user_res.store_unlimited_activations_pending) || 0,
       };
       
       setAuth(user, { access: data.access, refresh: data.refresh });
@@ -226,6 +232,9 @@ export const useRegister = () => {
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
         credits: user_res.credits,
+        store_unlimited_until: user_res.store_unlimited_until ?? null,
+        store_unlimited_activations_pending:
+          Number(user_res.store_unlimited_activations_pending) || 0,
       };
       
       setAuth(user, { access: accessToken, refresh: refreshToken });

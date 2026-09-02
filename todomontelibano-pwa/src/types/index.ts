@@ -56,6 +56,8 @@ export interface User {
   job_title?: string;
   completion_percentage?: number;
   credits?: number;
+  store_unlimited_until?: string | null;
+  store_unlimited_activations_pending?: number;
 }
 
 // Para login/register (respuesta simple)
