@@ -37,10 +37,27 @@ function adminLevelOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser'> | null 
   return 0;
 }
 
+function panelRoleOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser' | 'role' | 'panel_role'>): string {
+  if (u.panel_role) return u.panel_role;
+  const level = adminLevelOf(u);
+  if (level === 1) return 'super_admin';
+  if (level === 2) return 'admin';
+  if (u.role === 'manager') return 'manager';
+  if (u.role === 'admin') return 'admin';
+  return 'user';
+}
+
 function apiErrorMessage(error: unknown, fallback: string): string {
   const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
   return typeof detail === 'string' && detail.trim() ? detail : fallback;
 }
+
+const ROLE_OPTIONS = [
+  { value: 'user', label: 'Usuario (user)' },
+  { value: 'manager', label: 'Gestor (manager)' },
+  { value: 'admin', label: 'Administrador Delegado - Nivel 2 (admin)' },
+  { value: 'super_admin', label: 'Super Admin Root - Nivel 1 (super_admin)' },
+] as const;
 
 const AdminUsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -73,14 +90,29 @@ const AdminUsersPage: React.FC = () => {
       first_name: u.first_name || '',
       last_name: u.last_name || '',
       phone: u.phone || '',
-      role: u.role || 'user',
+      role: panelRoleOf(u),
     });
   };
 
   const saveEdit = async () => {
     if (!editing) return;
     try {
-      await updateUser.mutateAsync({ id: editing.id, data: editForm });
+      const payload: Partial<AdminUser> = {
+        first_name: editForm.first_name,
+        last_name: editForm.last_name,
+        phone: editForm.phone,
+      };
+      if (canManageAdmins) {
+        payload.role = editForm.role;
+        if (editForm.role === 'super_admin') {
+          payload.admin_level = 1;
+        } else if (editForm.role === 'admin') {
+          payload.admin_level = 2;
+        } else {
+          payload.admin_level = 0;
+        }
+      }
+      await updateUser.mutateAsync({ id: editing.id, data: payload });
       await setCredits.mutateAsync({
         id: editing.id,
         payload: {
@@ -374,7 +406,13 @@ const AdminUsersPage: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
             <h2 className="text-lg font-extrabold mb-4">Editar {editing.email}</h2>
-            <div className="space-y-3">
+            <form
+              className="space-y-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void saveEdit();
+              }}
+            >
               <input
                 className="input-field"
                 placeholder="Nombre"
@@ -393,16 +431,30 @@ const AdminUsersPage: React.FC = () => {
                 value={editForm.phone}
                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
               />
-              <select
-                className="input-field"
-                value={editForm.role}
-                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                disabled={adminLevelOf(editing) >= 1}
-              >
-                <option value="user">user</option>
-                <option value="manager">manager</option>
-                {canManageAdmins && <option value="admin">admin</option>}
-              </select>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Rol
+                </label>
+                <select
+                  className="input-field"
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                  disabled={isDelegatedAdmin || adminLevelOf(editing) === 1}
+                >
+                  {(canManageAdmins ? ROLE_OPTIONS : ROLE_OPTIONS.filter((opt) => opt.value === 'user' || opt.value === 'manager')).map(
+                    (opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ),
+                  )}
+                </select>
+                {isDelegatedAdmin && (
+                  <p className="text-xs text-gray-500">
+                    Un Administrador (Nivel 2) no puede asignar Super Admin ni cambiar roles de administradores.
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-amber-500" />
                 <input
@@ -423,10 +475,10 @@ const AdminUsersPage: React.FC = () => {
                 />
                 Créditos ilimitados
               </label>
-              <button type="button" className="btn-primary w-full justify-center" onClick={saveEdit}>
+              <button type="submit" className="btn-primary w-full justify-center">
                 Guardar cambios
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
