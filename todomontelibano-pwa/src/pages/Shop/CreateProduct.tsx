@@ -6,12 +6,20 @@ import { api } from '../../lib/api';
 import { useShopCategories } from '../../hooks/useShop';
 import { ROUTES } from '../../config/seo';
 import SeoHead from '../../components/SEO/SeoHead';
+import { useAuthStore } from '../../store/authStore';
+import { CREDIT_COSTS, STORE_UNLIMITED_COPY, storePublishCreditCost } from '../../config/credits';
+import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
+import StoreUnlimitedActivationModal from '../../components/Shop/StoreUnlimitedActivationModal';
 
 const CreateProduct: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
   const { data: categoriesData } = useShopCategories();
   const categories = categoriesData?.items ?? [];
+  const publishCost = storePublishCreditCost(user);
+  const userCredits = user?.credits ?? 0;
+  const hasEnough = !!user?.is_unlimited_credits || !!user?.is_superuser || userCredits >= publishCost;
 
   const [form, setForm] = useState({
     name: '',
@@ -26,6 +34,8 @@ const CreateProduct: React.FC = () => {
     is_featured: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const needsActivationConfirm = publishCost === CREDIT_COSTS.storeUnlimitedActivation;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -47,13 +57,18 @@ const CreateProduct: React.FC = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['shop'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
       navigate(data?.slug ? `/tienda/${data.slug}` : ROUTES.tienda);
     },
     onError: (err: unknown) => {
+      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data;
+      const fromList = Array.isArray(data?.error) ? (data.error[0] as { message?: string })?.message : undefined;
       const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+        (typeof data?.detail === 'string' && data.detail) ||
+        (typeof data?.message === 'string' && data.message) ||
+        fromList ||
         'No se pudo crear el producto. Verifica permisos y organización (X-Tenant).';
-      setError(typeof detail === 'string' ? detail : 'Error al crear el producto');
+      setError(detail);
     },
   });
 
@@ -74,14 +89,35 @@ const CreateProduct: React.FC = () => {
             Crear producto en tienda
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Publica un producto en el catálogo del tenant actual.
+            Publicar 1 producto cuesta {CREDIT_COSTS.store} créditos. {STORE_UNLIMITED_COPY.monthEquivalency}{' '}
+            {STORE_UNLIMITED_COPY.surplusUsage}
           </p>
+          {publishCost === 0 ? (
+            <p className="mt-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+              Esta publicación no consume créditos (membresía de tienda activa o créditos ilimitados).
+            </p>
+          ) : publishCost === CREDIT_COSTS.storeUnlimitedActivation ? (
+            <p className="mt-2 text-sm font-semibold text-amber-800 dark:text-amber-200">
+              Tu saldo es ≥ {CREDIT_COSTS.storeUnlimitedActivation} créditos. Al publicar se te pedirá
+              confirmación para descontar {CREDIT_COSTS.storeUnlimitedActivation} créditos y activar
+              Tienda Ilimitada por 30 días. Los créditos sobrantes quedan disponibles para otros
+              servicios.
+            </p>
+          ) : (
+            <p className="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Costo de esta publicación: {CREDIT_COSTS.store} créditos.
+            </p>
+          )}
 
           <form
             className="mt-6 space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               setError(null);
+              if (needsActivationConfirm) {
+                setShowActivationModal(true);
+                return;
+              }
               create.mutate();
             }}
           >
@@ -188,13 +224,42 @@ const CreateProduct: React.FC = () => {
               </p>
             )}
 
-            <button type="submit" disabled={create.isPending} className="btn-primary inline-flex items-center gap-2">
+            {!hasEnough && (
+              <InsufficientCreditsAlert
+                required={publishCost}
+                available={userCredits}
+                actionLabel="publicar en la tienda"
+              />
+            )}
+
+            <button
+              type="submit"
+              disabled={create.isPending || !hasEnough}
+              className="btn-primary inline-flex items-center gap-2"
+            >
               <Plus className="w-4 h-4" />
-              {create.isPending ? 'Publicando…' : 'Crear producto'}
+              {create.isPending
+                ? 'Publicando…'
+                : publishCost === 0
+                  ? 'Crear producto'
+                  : needsActivationConfirm
+                    ? 'Crear producto (activar tienda ilimitada)'
+                    : `Crear producto (${publishCost} créditos)`}
             </button>
           </form>
         </div>
       </div>
+
+      <StoreUnlimitedActivationModal
+        isOpen={showActivationModal}
+        onClose={() => setShowActivationModal(false)}
+        onConfirm={() => {
+          setShowActivationModal(false);
+          create.mutate();
+        }}
+        userCredits={userCredits}
+        isProcessing={create.isPending}
+      />
     </div>
   );
 };

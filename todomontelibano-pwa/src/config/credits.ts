@@ -4,6 +4,15 @@ export const CREDIT_COSTS = {
   realEstate: 5,
   tournament: 50,
   event: 5,
+  store: 10,
+  storeUnlimitedActivation: 250,
+} as const;
+
+/** Textos de membresía de Tienda Virtual */
+export const STORE_UNLIMITED_COPY = {
+  monthEquivalency: '250 créditos equivalen a 1 mes ilimitado de Tienda Virtual.',
+  surplusUsage:
+    'Los créditos sobrantes del saldo podrán usarse libremente en empleos, torneos, bienes raíces y demás servicios.',
 } as const;
 
 /** Planes de patrocinio exclusivo de torneo (fallback si API no responde) */
@@ -118,7 +127,8 @@ export const FALLBACK_PACKAGES: CreditPackage[] = [
     price_cop: 200000,
     badge: 'Patrocinio mensual',
     savings_cop: 50000,
-    description: '250 créditos — cubre un patrocinio de torneo por 1 mes.',
+    description:
+      '250 créditos — alcanzan para activar 1 mes ilimitado de Tienda Virtual al publicar, o usar en otros servicios.',
     standard_price_cop: 250000,
   },
   {
@@ -126,9 +136,10 @@ export const FALLBACK_PACKAGES: CreditPackage[] = [
     name: 'Paquete Diamante',
     credits: 450,
     price_cop: 350000,
-    badge: 'Patrocinio bimestral',
+    badge: 'Patrocinio ejecutivo',
     savings_cop: 100000,
-    description: '450 créditos — cubre el patrocinio exclusivo por 2 meses.',
+    description:
+      '450 créditos: activa Tienda Ilimitada por 30 días al publicar (250 cr); los 200 restantes quedan libres para empleos, torneos, bienes raíces y demás servicios.',
     standard_price_cop: 450000,
   },
 ];
@@ -139,3 +150,25 @@ export const formatCop = (amount: number) =>
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(amount);
+
+export function hasActiveStoreUnlimited(user?: {
+  store_unlimited_until?: string | null;
+} | null): boolean {
+  if (!user?.store_unlimited_until) return false;
+  return new Date(user.store_unlimited_until).getTime() > Date.now();
+}
+
+export function storePublishCreditCost(user?: {
+  credits?: number;
+  is_unlimited_credits?: boolean;
+  is_superuser?: boolean;
+  store_unlimited_until?: string | null;
+} | null): number {
+  if (!user) return CREDIT_COSTS.store;
+  if (user.is_unlimited_credits || user.is_superuser) return 0;
+  if (hasActiveStoreUnlimited(user)) return 0;
+  if ((user.credits ?? 0) >= CREDIT_COSTS.storeUnlimitedActivation) {
+    return CREDIT_COSTS.storeUnlimitedActivation;
+  }
+  return CREDIT_COSTS.store;
+}
