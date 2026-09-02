@@ -46,6 +46,8 @@ export interface User {
   role: 'user' | 'manager' | 'admin';
   is_superuser?: boolean;
   is_staff?: boolean;
+  /** 0=usuario, 1=Super Admin Root, 2=Administrador delegado */
+  admin_level?: 0 | 1 | 2;
   is_unlimited_credits?: boolean;
   user_type: 'person' | 'company';
   avatar?: string;

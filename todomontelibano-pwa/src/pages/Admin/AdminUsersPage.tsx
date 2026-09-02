@@ -1,17 +1,46 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Shield, Coins, Ban, CheckCircle2, Trash2, Pencil, X, Users, Briefcase, Store } from 'lucide-react';
+import {
+  Search,
+  Shield,
+  Coins,
+  Ban,
+  CheckCircle2,
+  Trash2,
+  Pencil,
+  X,
+  Users,
+  Briefcase,
+  Store,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react';
 import {
   useAdminUsers,
   useDeleteAdminUser,
+  useDemoteAdminUser,
+  usePromoteAdminUser,
   useSetAdminActive,
   useSetAdminCredits,
   useUpdateAdminUser,
 } from '../../hooks/useAdminUsers';
+import { usePermissions } from '../../hooks/usePermissions';
 import type { AdminUser } from '../../lib/adminApi';
 import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
 import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
 import AdminStoreVisualSettings from '../../components/Admin/AdminStoreVisualSettings';
+
+function adminLevelOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser'> | null | undefined): number {
+  const level = Number(u?.admin_level) || 0;
+  if (level === 1 || level === 2) return level;
+  if (u?.is_superuser) return 1;
+  return 0;
+}
+
+function apiErrorMessage(error: unknown, fallback: string): string {
+  const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+  return typeof detail === 'string' && detail.trim() ? detail : fallback;
+}
 
 const AdminUsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -22,6 +51,7 @@ const AdminUsersPage: React.FC = () => {
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
   const [tab, setTab] = useState<'users' | 'jobs' | 'store'>('users');
+  const { canManageAdmins, isDelegatedAdmin } = usePermissions();
 
   const { data, isLoading, isError } = useAdminUsers({
     search: search.trim() || undefined,
@@ -31,6 +61,8 @@ const AdminUsersPage: React.FC = () => {
   const setActive = useSetAdminActive();
   const deleteUser = useDeleteAdminUser();
   const updateUser = useUpdateAdminUser();
+  const promoteUser = usePromoteAdminUser();
+  const demoteUser = useDemoteAdminUser();
 
   const users = data?.results ?? [];
 
@@ -47,30 +79,68 @@ const AdminUsersPage: React.FC = () => {
 
   const saveEdit = async () => {
     if (!editing) return;
-    await updateUser.mutateAsync({ id: editing.id, data: editForm });
-    await setCredits.mutateAsync({
-      id: editing.id,
-      payload: {
-        credits: Number(creditValue) || 0,
-        is_unlimited_credits: editing.is_unlimited_credits,
-      },
-    });
-    setEditing(null);
+    try {
+      await updateUser.mutateAsync({ id: editing.id, data: editForm });
+      await setCredits.mutateAsync({
+        id: editing.id,
+        payload: {
+          credits: Number(creditValue) || 0,
+          is_unlimited_credits: editing.is_unlimited_credits,
+        },
+      });
+      setEditing(null);
+    } catch (error) {
+      window.alert(apiErrorMessage(error, 'No se pudieron guardar los cambios.'));
+    }
   };
+
+  const handlePromote = async (u: AdminUser) => {
+    if (!window.confirm(`¿Ascender a ${u.email} a Administrador (Nivel 2)?`)) return;
+    try {
+      await promoteUser.mutateAsync({ id: u.id, adminLevel: 2 });
+    } catch (error) {
+      window.alert(apiErrorMessage(error, 'No se pudo ascender al usuario.'));
+    }
+  };
+
+  const handleDemote = async (u: AdminUser) => {
+    if (!window.confirm(`¿Degradar a ${u.email} a usuario estándar?`)) return;
+    try {
+      await demoteUser.mutateAsync(u.id);
+    } catch (error) {
+      window.alert(apiErrorMessage(error, 'No se pudo degradar al usuario.'));
+    }
+  };
+
+  const handleBlock = async (u: AdminUser) => {
+    try {
+      await setActive.mutateAsync({ id: u.id, is_active: !u.is_active });
+    } catch (error) {
+      window.alert(apiErrorMessage(error, 'No se pudo cambiar el estado del usuario.'));
+    }
+  };
+
+  const actorLabel = canManageAdmins
+    ? 'Super Admin Root (Nivel 1)'
+    : isDelegatedAdmin
+      ? 'Administrador (Nivel 2)'
+      : 'Superadmin';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950/50 pb-16">
       <div className="bg-gradient-to-r from-violet-700 via-indigo-700 to-slate-900 text-white shadow-md">
         <div className="page-container py-10 sm:py-14">
           <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-white/20 rounded-full">
-            Superadmin
+            {actorLabel}
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mt-3 tracking-tight flex items-center gap-2">
             <Shield className="w-8 h-8" /> Panel de administración
           </h1>
           <p className="mt-2 text-violet-100 max-w-2xl font-light">
-            Gestiona usuarios, créditos, empleos y la configuración visual de la tienda. Solo visible
-            para staff / superusuario.
+            Gestiona usuarios, créditos, empleos y la configuración visual de la tienda.
+            {isDelegatedAdmin
+              ? ' Como Administrador (Nivel 2) puedes gestionar contenidos, pero no roles de Super Admin.'
+              : ' Solo visible para staff / superusuario.'}
           </p>
           {focusCredits && (
             <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-amber-400/20 border border-amber-200/50 px-4 py-2 text-sm font-bold text-amber-50">
@@ -171,8 +241,17 @@ const AdminUsersPage: React.FC = () => {
                     </p>
                   </td>
                   <td className="px-4 py-3">
-                    {u.role}
-                    {u.is_superuser ? ' · super' : ''}
+                    {adminLevelOf(u) === 1 ? (
+                      <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-200 px-2.5 py-0.5 text-xs font-bold">
+                        Super Admin Root (Nivel 1)
+                      </span>
+                    ) : adminLevelOf(u) === 2 ? (
+                      <span className="inline-flex items-center rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-200 px-2.5 py-0.5 text-xs font-bold">
+                        Administrador (Nivel 2)
+                      </span>
+                    ) : (
+                      <span className="text-gray-700 dark:text-gray-300">{u.role}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {u.has_unlimited_credits ? 'Ilimitado' : u.credits}
@@ -186,27 +265,47 @@ const AdminUsersPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      <button type="button" className="btn-secondary !py-1.5 !px-3 text-xs" onClick={() => openEdit(u)}>
-                        <Pencil className="w-3 h-3 mr-1" /> Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-secondary !py-1.5 !px-3 text-xs"
-                        onClick={() =>
-                          setActive.mutate({ id: u.id, is_active: !u.is_active })
-                        }
-                      >
-                        {u.is_active ? (
-                          <>
-                            <Ban className="w-3 h-3 mr-1" /> Bloquear
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 mr-1" /> Activar
-                          </>
-                        )}
-                      </button>
-                      {!u.is_superuser && (
+                      {!(isDelegatedAdmin && adminLevelOf(u) >= 1) && (
+                        <button type="button" className="btn-secondary !py-1.5 !px-3 text-xs" onClick={() => openEdit(u)}>
+                          <Pencil className="w-3 h-3 mr-1" /> Editar
+                        </button>
+                      )}
+                      {canManageAdmins && adminLevelOf(u) === 0 && (
+                        <button
+                          type="button"
+                          className="btn-secondary !py-1.5 !px-3 text-xs"
+                          onClick={() => handlePromote(u)}
+                        >
+                          <ArrowUp className="w-3 h-3 mr-1" /> Ascender a Admin
+                        </button>
+                      )}
+                      {canManageAdmins && adminLevelOf(u) === 2 && (
+                        <button
+                          type="button"
+                          className="btn-secondary !py-1.5 !px-3 text-xs"
+                          onClick={() => handleDemote(u)}
+                        >
+                          <ArrowDown className="w-3 h-3 mr-1" /> Degradar
+                        </button>
+                      )}
+                      {canManageAdmins && adminLevelOf(u) !== 1 && (
+                        <button
+                          type="button"
+                          className="btn-secondary !py-1.5 !px-3 text-xs"
+                          onClick={() => handleBlock(u)}
+                        >
+                          {u.is_active ? (
+                            <>
+                              <Ban className="w-3 h-3 mr-1" /> Bloquear
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 mr-1" /> Activar
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {canManageAdmins && adminLevelOf(u) !== 1 && !u.is_superuser && (
                         <button
                           type="button"
                           className="btn-secondary !py-1.5 !px-3 text-xs text-red-600"
@@ -298,10 +397,11 @@ const AdminUsersPage: React.FC = () => {
                 className="input-field"
                 value={editForm.role}
                 onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                disabled={adminLevelOf(editing) >= 1}
               >
                 <option value="user">user</option>
                 <option value="manager">manager</option>
-                <option value="admin">admin</option>
+                {canManageAdmins && <option value="admin">admin</option>}
               </select>
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-amber-500" />

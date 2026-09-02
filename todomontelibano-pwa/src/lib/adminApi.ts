@@ -17,6 +17,8 @@ export interface AdminUser {
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
+  admin_level?: 0 | 1 | 2;
+  admin_level_label?: string;
   is_unlimited_credits: boolean;
   has_unlimited_credits: boolean;
   credits: number;
@@ -74,6 +76,15 @@ export const adminApi = {
 
   setActive: (id: string, is_active: boolean) =>
     api.post<AdminUser>(`/admin/users/${id}/set-active/`, { is_active }),
+
+  promoteUser: (userId: string, adminLevel: 1 | 2 = 2) =>
+    api.post<AdminUser>('/admin/users/promote/', {
+      user_id: userId,
+      admin_level: adminLevel,
+    }),
+
+  demoteUser: (userId: string) =>
+    api.post<AdminUser>('/admin/users/demote/', { user_id: userId }),
 
   deleteUser: (id: string) => api.delete(`/admin/users/${id}/`),
 

@@ -54,3 +54,20 @@ export const useDeleteAdminUser = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: adminKeys.all }),
   });
 };
+
+export const usePromoteAdminUser = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, adminLevel }: { id: string; adminLevel?: 1 | 2 }) =>
+      adminApi.promoteUser(id, adminLevel ?? 2).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: adminKeys.all }),
+  });
+};
+
+export const useDemoteAdminUser = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.demoteUser(id).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: adminKeys.all }),
+  });
+};
