@@ -11,7 +11,9 @@ import {
   useCreatePreference,
   useCreditPackages,
   useMyPaymentOrders,
+  useMpConfig,
 } from '../../hooks/usePayments';
+import { resolveMpInitPoint } from '../../lib/mpCheckout';
 import {
   buildCreditsIntentPath,
   buildLoginUrl,
@@ -30,6 +32,7 @@ const CreditPackagesPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const { data: packages, isError, isFetching } = useCreditPackages();
   const createPreference = useCreatePreference();
+  const { data: mpConfig } = useMpConfig();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get('tab') === 'historial' ? 'historial' : 'comprar';
   const packageIntent = searchParams.get('package');
@@ -80,7 +83,12 @@ const CreditPackagesPage: React.FC = () => {
     try {
       const result = await createPreference.mutateAsync(packageId);
       setPreferenceId(result.preference_id);
-      setInitPoint(result.init_point || result.sandbox_init_point || null);
+      setInitPoint(
+        resolveMpInitPoint(
+          result,
+          result.is_production ?? mpConfig?.is_production ?? false,
+        ),
+      );
       requestAnimationFrame(() => {
         checkoutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });

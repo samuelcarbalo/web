@@ -5,6 +5,8 @@ import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
 import { useShopCheckout } from '../../hooks/useShop';
+import { useMpConfig } from '../../hooks/usePayments';
+import { resolveMpInitPoint } from '../../lib/mpCheckout';
 import { buildLoginUrl } from '../../lib/authRedirect';
 import { ROUTES } from '../../config/seo';
 
@@ -21,6 +23,7 @@ const CheckoutPage: React.FC = () => {
   const clear = useCartStore((s) => s.clear);
   const subtotal = useCartStore((s) => s.subtotal());
   const checkout = useShopCheckout();
+  const { data: mpConfig } = useMpConfig();
   const [discountCode, setDiscountCode] = useState('');
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [initPoint, setInitPoint] = useState<string | null>(null);
@@ -41,7 +44,12 @@ const CheckoutPage: React.FC = () => {
         discount_code: discountCode.trim() || undefined,
       });
       setPreferenceId(data.preference_id);
-      setInitPoint(data.init_point || data.sandbox_init_point || null);
+      setInitPoint(
+        resolveMpInitPoint(
+          data,
+          data.is_production ?? mpConfig?.is_production ?? false,
+        ),
+      );
       setOrderTotal(Number(data.order.total_cop));
       clear();
     } catch {
