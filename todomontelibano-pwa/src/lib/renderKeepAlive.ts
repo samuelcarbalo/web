@@ -7,7 +7,7 @@ const PING_TIMEOUT_MS = 30_000;
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 function healthUrl(): string {
-  return `${getApiOrigin()}/api/v1/health/`;
+  return `${getApiOrigin()}/healthz`;
 }
 
 async function pingBackend(): Promise<void> {
