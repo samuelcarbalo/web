@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useProfile, useUpdateProfile } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
 import {
@@ -6,6 +6,9 @@ import {
   parseApiFieldErrors,
   parseApiErrorMessage,
 } from '../lib/apiErrors';
+import { profileToFormData } from '../lib/profileSync';
+import Toast from '../components/UI/Toast';
+import type { Profile as ProfileType } from '../types';
 import {
   User,
   Mail,
@@ -17,7 +20,6 @@ import {
   Calendar,
   Edit3,
   Loader2,
-  CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
 
@@ -45,32 +47,28 @@ const Profile: React.FC = () => {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [displayProfile, setDisplayProfile] = useState<ProfileType | null>(null);
+
+  const activeProfile = displayProfile ?? profile ?? null;
 
   const resetFeedback = () => {
     setFieldErrors({});
     setFormError(null);
-    setSuccessMessage(null);
   };
 
-  const loadFormFromProfile = () => {
-    if (!profile) return;
-    setFormData({
-      user_name: profile.user_name || '',
-      bio: profile.bio || '',
-      location: profile.location || '',
-      department: profile.department || '',
-      job_title: profile.job_title || '',
-      birth_date: normalizeBirthDateForInput(profile.birth_date),
-    });
-  };
+  const applyProfileToForm = useCallback((data: ProfileType) => {
+    setDisplayProfile(data);
+    setFormData(profileToFormData(data));
+  }, []);
 
   useEffect(() => {
-    loadFormFromProfile();
-  }, [profile]);
-
+    if (profile) {
+      applyProfileToForm(profile);
+    }
+  }, [profile, applyProfileToForm]);
   const handleCancelEdit = () => {
-    loadFormFromProfile();
+    if (profile) applyProfileToForm(profile);
     resetFeedback();
     setIsEditing(false);
   };
@@ -83,9 +81,10 @@ const Profile: React.FC = () => {
     resetFeedback();
 
     updateProfile.mutate(formData, {
-      onSuccess: () => {
+      onSuccess: (updatedProfile) => {
+        applyProfileToForm(updatedProfile);
         setIsEditing(false);
-        setSuccessMessage('Perfil actualizado correctamente.');
+        setShowSuccessToast(true);
       },
       onError: (error) => {
         const mapped = parseApiFieldErrors(error);
@@ -111,7 +110,7 @@ const Profile: React.FC = () => {
     );
   }
 
-  if (isError || !profile) {
+  if (isError || !activeProfile) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
@@ -129,6 +128,12 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      {showSuccessToast && (
+        <Toast
+          message="Perfil actualizado correctamente"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Mi Perfil</h1>
@@ -139,10 +144,10 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="card text-center">
               <div className="relative w-32 h-32 mx-auto mb-4">
-                {profile.avatar ? (
+                {activeProfile.avatar ? (
                   <img 
-                    src={profile.avatar} 
-                    alt={profile.user_name}
+                    src={activeProfile.avatar} 
+                    alt={activeProfile.user_name}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
@@ -156,13 +161,13 @@ const Profile: React.FC = () => {
               </div>
               
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {profile.user_name}
+                {activeProfile.user_name}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-2">{user?.email}</p>
               
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-violet-100 dark:bg-violet-950/40 text-blue-700 rounded-full text-sm font-medium">
-                  {profile.organization_name}
+                  {activeProfile.organization_name}
                 </span>
               </div>
 
@@ -170,12 +175,12 @@ const Profile: React.FC = () => {
               <div className="mt-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">Perfil completado</span>
-                  <span className="font-medium text-violet-600 dark:text-violet-400">{profile.completion_percentage}%</span>
+                  <span className="font-medium text-violet-600 dark:text-violet-400">{activeProfile.completion_percentage}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-violet-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${profile.completion_percentage}%` }}
+                    style={{ width: `${activeProfile.completion_percentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -183,32 +188,32 @@ const Profile: React.FC = () => {
               <div className="mt-6 text-left space-y-3 text-sm">
                 <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{profile.organization_name}</span>
+                  <span className="truncate">{activeProfile.organization_name}</span>
                 </div>
-                {profile.location && (
+                {activeProfile.location && (
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{profile.location}</span>
+                    <span>{activeProfile.location}</span>
                   </div>
                 )}
-                {profile.job_title && (
+                {activeProfile.job_title && (
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Briefcase className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{profile.job_title}</span>
+                    <span>{activeProfile.job_title}</span>
                   </div>
                 )}
-                {profile.department && (
+                {activeProfile.department && (
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{profile.department}</span>
+                    <span>{activeProfile.department}</span>
                   </div>
                 )}
-                {profile.birth_date && (
+                {activeProfile.birth_date && (
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span>
                       {(() => {
-                        const iso = normalizeBirthDateForInput(profile.birth_date);
+                        const iso = normalizeBirthDateForInput(activeProfile.birth_date);
                         const [y, m, d] = iso.split('-').map(Number);
                         if (!y || !m || !d) return iso;
                         return new Date(y, m - 1, d).toLocaleDateString('es-CO');
@@ -220,10 +225,10 @@ const Profile: React.FC = () => {
 
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                 <p className="text-xs text-gray-500 mt-1">
-                  Última actualización: {new Date(profile.created_at || '').toLocaleDateString('es-CO')}
+                  Última actualización: {new Date(activeProfile.created_at || '').toLocaleDateString('es-CO')}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Última actualización: {new Date(profile.updated_at || '').toLocaleDateString('es-CO')}
+                  Última actualización: {new Date(activeProfile.updated_at || '').toLocaleDateString('es-CO')}
                 </p>
               </div>
             </div>
@@ -254,16 +259,6 @@ const Profile: React.FC = () => {
                   )}
                 </button>
               </div>
-
-              {successMessage && !isEditing && (
-                <div
-                  role="status"
-                  className="mb-4 flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
-                >
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{successMessage}</span>
-                </div>
-              )}
 
               {formError && isEditing && (
                 <div
@@ -299,9 +294,6 @@ const Profile: React.FC = () => {
                   {fieldErrors.user_name && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.user_name}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    El nombre visible se gestiona desde tu cuenta de usuario.
-                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -497,11 +489,11 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Preferencias (si quieres expandir) */}
-            {profile.preferences && Object.keys(profile.preferences).length > 0 && (
+            {activeProfile.preferences && Object.keys(activeProfile.preferences).length > 0 && (
               <div className="card">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Preferencias</h3>
                 <pre className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-3xl text-sm overflow-auto">
-                  {JSON.stringify(profile.preferences, null, 2)}
+                  {JSON.stringify(activeProfile.preferences, null, 2)}
                 </pre>
               </div>
             )}

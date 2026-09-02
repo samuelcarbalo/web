@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getWebSocketUrl } from '../lib/chatApi';
 import { openSafeWebSocket } from '../lib/notificationsRealtime';
+import { getWsReconnectDelay, shouldReconnectWebSocket } from '../lib/wsReconnect';
 import { chatKeys } from './useChat';
 import type { ChatWebSocketEvent, Message } from '../types/chat';
 
@@ -23,6 +24,8 @@ export const useChatSocket = ({
   const [isConnected, setIsConnected] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
 
   const closeSocket = useCallback(() => {
     const ws = wsRef.current;
@@ -53,8 +56,21 @@ export const useChatSocket = ({
     }
 
     wsRef.current = ws;
-    ws.onopen = () => setIsConnected(true);
-    ws.onclose = () => setIsConnected(false);
+    ws.onopen = () => {
+      reconnectAttemptRef.current = 0;
+      setIsConnected(true);
+    };
+    ws.onclose = (event) => {
+      setIsConnected(false);
+      if (!conversationId || !enabled) return;
+      if (!shouldReconnectWebSocket(event.code)) return;
+      if (reconnectAttemptRef.current >= 10) return;
+
+      const delay = getWsReconnectDelay(reconnectAttemptRef.current);
+      reconnectAttemptRef.current += 1;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = setTimeout(connect, delay);
+    };
     ws.onerror = () => {
       setIsConnected(false);
       try {
@@ -112,6 +128,7 @@ export const useChatSocket = ({
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       closeSocket();
       setIsConnected(false);

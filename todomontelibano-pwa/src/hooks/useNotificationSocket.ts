@@ -7,14 +7,21 @@ import {
   setNotificationsRealtimeLive,
   showLocalPaymentNotification,
 } from '../lib/notificationsRealtime';
+import {
+  getWsReconnectDelay,
+  shouldReconnectWebSocket,
+  WS_CLOSE_TOKEN_EXPIRED,
+  WS_CLOSE_UNAUTHORIZED,
+} from '../lib/wsReconnect';
 import { notificationKeys } from './useNotifications';
 import type { Notification } from '../types/notification';
 
-const MAX_WS_RETRIES = 2;
+/** Tras agotar reintentos WS, cae a polling HTTP cada 15s. */
+const MAX_WS_RETRIES = 12;
 
 /**
- * WebSocket a /ws/notifications/. Si Channels/ASGI no está disponible, deja de reintentar
- * y cae a polling HTTP (useNotifications) sin romper el resto de la app.
+ * WebSocket a /ws/notifications/. Reconexión con backoff exponencial si Render
+ * reinicia o suspende la instancia. Sin token válido → polling HTTP.
  */
 export function useNotificationSocket(enabled: boolean) {
   const queryClient = useQueryClient();
@@ -63,6 +70,24 @@ export function useNotificationSocket(enabled: boolean) {
       }
     };
 
+    const scheduleReconnect = (closeCode: number) => {
+      if (cancelled) return;
+
+      if (
+        !shouldReconnectWebSocket(closeCode) ||
+        closeCode === WS_CLOSE_UNAUTHORIZED ||
+        closeCode === WS_CLOSE_TOKEN_EXPIRED ||
+        retryRef.current >= MAX_WS_RETRIES
+      ) {
+        startPolling();
+        return;
+      }
+
+      const delay = getWsReconnectDelay(retryRef.current);
+      retryRef.current += 1;
+      timerRef.current = setTimeout(connect, delay);
+    };
+
     const connect = () => {
       if (cancelled) return;
       closeSocket();
@@ -70,7 +95,7 @@ export function useNotificationSocket(enabled: boolean) {
       const url = getNotificationsWebSocketUrl();
       const ws = openSafeWebSocket(url);
       if (!ws) {
-        startPolling();
+        scheduleReconnect(1006);
         return;
       }
 
@@ -116,16 +141,7 @@ export function useNotificationSocket(enabled: boolean) {
         wsRef.current = null;
         setNotificationsRealtimeLive(false);
         if (cancelled) return;
-
-        // 4001 = token inválido; no reintentar en bucle
-        if (event.code === 4001 || retryRef.current >= MAX_WS_RETRIES) {
-          startPolling();
-          return;
-        }
-
-        const delay = Math.min(15_000, 2000 * 2 ** retryRef.current);
-        retryRef.current += 1;
-        timerRef.current = setTimeout(connect, delay);
+        scheduleReconnect(event.code);
       };
     };
 
