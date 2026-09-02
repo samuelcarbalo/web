@@ -9,11 +9,13 @@ import {
   Building2,
   ArrowRight,
   Check,
+  Loader2,
 } from "lucide-react";
 import { useRegister } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/UI/ThemeToggle";
 import BrandLogo from "../../components/Brand/BrandLogo";
 import AuthBackHomeLink from "../../components/Auth/AuthBackHomeLink";
+import AuthSubmitStatus from "../../components/Auth/AuthSubmitStatus";
 import SeoHead from "../../components/SEO/SeoHead";
 import { buildLoginUrl, isSafeInternalPath, setAuthRedirect } from "../../lib/authRedirect";
 
@@ -40,9 +42,11 @@ const Register: React.FC = () => {
   });
 
   const register = useRegister();
+  const isSubmitting = register.isPending;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    register.reset();
     register.mutate({
       ...formData,
       user_type: userType,
@@ -137,7 +141,8 @@ const Register: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setUserType("person")}
-                      className={`auth-type-card ${userType === "person" ? "auth-type-card-selected" : ""}`}
+                      disabled={isSubmitting}
+                      className={`auth-type-card ${userType === "person" ? "auth-type-card-selected" : ""} disabled:opacity-60`}
                     >
                       <div className="flex flex-col items-center">
                         <User
@@ -162,7 +167,8 @@ const Register: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setUserType("company")}
-                      className={`auth-type-card ${userType === "company" ? "auth-type-card-selected" : ""}`}
+                      disabled={isSubmitting}
+                      className={`auth-type-card ${userType === "company" ? "auth-type-card-selected" : ""} disabled:opacity-60`}
                     >
                       <div className="flex flex-col items-center">
                         <Building2
@@ -189,7 +195,8 @@ const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="w-full btn-primary flex justify-center items-center py-3"
+                  disabled={isSubmitting}
+                  className="w-full btn-primary flex justify-center items-center py-3 disabled:opacity-60"
                 >
                   Continuar
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -211,6 +218,7 @@ const Register: React.FC = () => {
                       type="text"
                       id="username"
                       required
+                      disabled={isSubmitting}
                       value={formData.username}
                       onChange={(e) =>
                         setFormData({ ...formData, username: e.target.value })
@@ -231,6 +239,7 @@ const Register: React.FC = () => {
                       type="text"
                       id="last_name"
                       required
+                      disabled={isSubmitting}
                       value={formData.last_name}
                       onChange={(e) =>
                         setFormData({ ...formData, last_name: e.target.value })
@@ -256,6 +265,7 @@ const Register: React.FC = () => {
                       type="email"
                       id="email"
                       required
+                      disabled={isSubmitting}
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
@@ -276,6 +286,7 @@ const Register: React.FC = () => {
                   <input
                     type="tel"
                     id="phone"
+                    disabled={isSubmitting}
                     value={formData.phone}
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
@@ -301,6 +312,7 @@ const Register: React.FC = () => {
                         type="text"
                         id="company_name"
                         required={userType === "company"}
+                        disabled={isSubmitting}
                         value={formData.company_name}
                         onChange={(e) =>
                           setFormData({
@@ -319,14 +331,16 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 btn-secondary py-3"
+                    disabled={isSubmitting}
+                    className="flex-1 btn-secondary py-3 disabled:opacity-60"
                   >
                     Atrás
                   </button>
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="flex-1 btn-primary py-3"
+                    disabled={isSubmitting}
+                    className="flex-1 btn-primary py-3 disabled:opacity-60"
                   >
                     Continuar
                   </button>
@@ -352,6 +366,7 @@ const Register: React.FC = () => {
                       id="password"
                       required
                       minLength={8}
+                      disabled={isSubmitting}
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
@@ -388,6 +403,7 @@ const Register: React.FC = () => {
                       type={showPassword ? "text" : "password"}
                       id="password_confirm"
                       required
+                      disabled={isSubmitting}
                       value={formData.password_confirm}
                       onChange={(e) =>
                         setFormData({
@@ -440,34 +456,41 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="flex-1 btn-secondary py-3"
+                    disabled={isSubmitting}
+                    className="flex-1 btn-secondary py-3 disabled:opacity-60"
                   >
                     Atrás
                   </button>
                   <button
                     type="submit"
                     disabled={
-                      register.isPending ||
+                      isSubmitting ||
                       formData.password !== formData.password_confirm
                     }
-                    className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-busy={isSubmitting}
+                    className="flex-1 btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {register.isPending ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                        Creando cuenta...
+                      </>
                     ) : (
-                      "Crear cuenta"
+                      "Registrarse"
                     )}
                   </button>
                 </div>
+
+                <AuthSubmitStatus
+                  isPending={isSubmitting}
+                  isError={register.isError}
+                  error={register.error}
+                  variant="register"
+                  fallbackError="No pudimos crear tu cuenta. Verifica que el correo no esté registrado e intenta de nuevo."
+                />
               </div>
             )}
           </form>
-
-          {register.isError && (
-            <div className="auth-error">
-              Error al crear la cuenta. Verifica que el email no esté registrado.
-            </div>
-          )}
         </div>
       </div>
     </div>
