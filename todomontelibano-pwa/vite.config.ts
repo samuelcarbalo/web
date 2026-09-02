@@ -3,6 +3,30 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/** Precarga hojas CSS del build para reducir FOUC en producción. */
+function preloadBuiltCss(): PluginOption {
+  return {
+    name: 'preload-built-css',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        const bundle = ctx.bundle;
+        if (!bundle) return html;
+
+        const preloads = Object.keys(bundle)
+          .filter((file) => file.endsWith('.css'))
+          .map((file) => {
+            const href = file.startsWith('/') ? file : `/${file}`;
+            return `<link rel="preload" href="${href}" as="style" crossorigin />`;
+          });
+
+        if (!preloads.length) return html;
+        return html.replace('</head>', `${preloads.join('\n    ')}\n  </head>`);
+      },
+    },
+  };
+}
+
 function manualChunks(id: string): string | undefined {
   if (!id.includes('node_modules')) return;
 
@@ -49,11 +73,13 @@ export default defineConfig(({ mode }): UserConfig => {
   const plugins: PluginOption[] = [
     react(),
     tailwindcss(),
+    preloadBuiltCss(),
     VitePWA({
       registerType: 'autoUpdate',
       // Registro manual en src/lib/pwa.ts (evita doble registro)
       injectRegister: false,
       includeAssets: [
+        'critical.css',
         'chever-logo.svg',
         'chever_oficial.svg',
         'chever-oficial-pwa.svg',
