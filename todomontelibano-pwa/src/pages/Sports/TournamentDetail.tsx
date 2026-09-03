@@ -27,7 +27,7 @@ import {
   useTournamentStructure,
 } from '../../hooks/useSports';
 
-import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import ReportPublicationButton from '../../components/Moderation/ReportPublicationButton';
 import CreateTeamModal from './CreateTeamModal';
@@ -41,7 +41,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user, isOwner: checkIsOwner } = usePermissions();
+  const { user, isOwner: checkIsOwner, canManageTournament: checkCanManage } = usePermissions();
   const queryClient = useQueryClient();
 
   const { data: tournament, isLoading } = useTournament(slug || '');
@@ -59,6 +59,10 @@ const TournamentDetail: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const isOwner = checkIsOwner(tournament);
+  // canManage: Super Admin puede gestionar cualquier torneo aunque no sea el creador
+  const canManage = checkCanManage(tournament);
+  // Super Admin puede agregar equipos aunque las inscripciones estén cerradas
+  const isSuperAdminUser = isSportsSuperAdmin(user);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -420,7 +424,7 @@ const TournamentDetail: React.FC = () => {
                       </div>
                     </div>
 
-                    {isOwner && registrationOpen && (
+                    {canManage && (registrationOpen || isSuperAdminUser) && (
                       <button 
                         onClick={() => setIsCreateTeamModalOpen(true)}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-3xl hover:bg-green-700 transition-colors shadow-sm"
@@ -488,7 +492,7 @@ const TournamentDetail: React.FC = () => {
                             </span>
                           </div>
 
-                          {isOwner && (
+                          {canManage && (
                             <button 
                               onClick={(e) => {
                                 e.preventDefault();
@@ -554,7 +558,7 @@ const TournamentDetail: React.FC = () => {
                       Cierra el <span className="font-medium text-gray-700 dark:text-gray-200">{formatDate(tournament.registration_deadline)}</span>
                     </p>
 
-                    {isOwner ? (
+                    {canManage ? (
                       <button 
                         onClick={() => setIsCreateTeamModalOpen(true)}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold rounded-3xl text-white bg-green-600 hover:bg-green-700 shadow-sm shadow-green-200 transition-all hover:shadow-2xl"
@@ -651,8 +655,8 @@ const TournamentDetail: React.FC = () => {
                 </div>
               </div>
 
-              {/* Gestión (solo owner) */}
-              {isOwner && (
+              {/* Gestión (owner o Super Admin) */}
+              {canManage && (
                 <>
                   <PlayerSuspensionsPanel
                     tournamentId={tournament.id}

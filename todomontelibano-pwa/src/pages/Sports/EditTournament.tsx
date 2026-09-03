@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTournament, useUpdateTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
+import { isSportsSuperAdmin } from '../../hooks/usePermissions';
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports'; //sportTypeLabels
@@ -59,8 +60,13 @@ const EditTournament: React.FC = () => {
 
   useEffect(() => {
     if (tournament) {
-      // Verificar ownership
-      if (user?.organization !== tournament.organization && user?.role !== 'admin') {
+      // Verificar ownership: Super Admin pasa siempre; también admins o creadores del torneo
+      const canEdit =
+        isSportsSuperAdmin(user) ||
+        user?.role === 'admin' ||
+        user?.is_superuser ||
+        user?.organization === tournament.organization;
+      if (!canEdit) {
         navigate('/sports');
         return;
       }

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTournaments, useBannersByPosition } from '../../hooks/useSports';
-import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { getMatches } from '../../lib/sportsApi';
 import type { SportType, Match } from '../../types/sports';
 import { sportTypeColors } from '../../types/sports';
@@ -133,9 +133,12 @@ const TournamentsList: React.FC = () => {
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { isManager, isAdmin } = usePermissions();
+  const { isManager, isAdmin, user } = usePermissions();
   const location = useLocation();
-  const showMyTournamentsOption = isManager || isAdmin;
+  // Super Admin puede crear torneos y ver "Mis torneos" sin ser manager/admin de org
+  const isSuperAdmin = isSportsSuperAdmin(user);
+  const canCreateTournament = isManager || isAdmin || isSuperAdmin;
+  const showMyTournamentsOption = isManager || isAdmin || isSuperAdmin;
 
   const [viewMode, setViewMode] = useState<'all' | 'mine'>(() => {
     if (location.pathname.includes('my_tournaments')) {
@@ -443,7 +446,7 @@ const TournamentsList: React.FC = () => {
               </p>
             </div>
 
-            {(isManager || isAdmin) && (
+            {canCreateTournament && (
               <Link
                 to="/sports/tournaments/create"
                 className="inline-flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-500 rounded-3xl text-white font-semibold transition-all shadow-lg shadow-green-900/30 hover:shadow-2xl hover:shadow-green-900/40 hover:scale-[1.02] flex-shrink-0"
