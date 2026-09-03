@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   Users, 
@@ -31,16 +31,19 @@ import { usePermissions, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import ReportPublicationButton from '../../components/Moderation/ReportPublicationButton';
 import CreateTeamModal from './CreateTeamModal';
+import DeleteTournamentModal from '../../components/Sports/DeleteTournamentModal';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import PurchaseSponsorshipModal from '../../components/Advertising/PurchaseSponsorshipModal';
 import PlayerSuspensionsPanel from './PlayerSuspensionsPanel';
+import Toast from '../../components/UI/Toast';
 import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 import { useQueryClient } from '@tanstack/react-query';
 
 
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { user, isOwner: checkIsOwner, canManageTournament: checkCanManage } = usePermissions();
   const queryClient = useQueryClient();
 
@@ -56,7 +59,9 @@ const TournamentDetail: React.FC = () => {
 
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [isPurchaseSponsorshipOpen, setIsPurchaseSponsorshipOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const isOwner = checkIsOwner(tournament);
   // canManage: Super Admin puede gestionar cualquier torneo aunque no sea el creador
@@ -78,11 +83,26 @@ const TournamentDetail: React.FC = () => {
     return new Date(tournament.registration_deadline) > new Date();
   };
 
-  const handleDelete = () => {
-    if (confirm('¿Estás seguro de eliminar este torneo? Esta acción no se puede deshacer.')) {
-      deleteMutation.mutate(slug || '');
-    }
-  };
+  // Determina si el torneo tiene datos que requieran confirmación extra
+  const tournamentHasData = (tournament?.matches_count ?? 0) > 0 || (tournament?.teams_count ?? 0) > 0;
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!slug) return;
+    deleteMutation.mutate(slug, {
+      onSuccess: () => {
+        // Invalidar caches relacionados
+        queryClient.invalidateQueries({ queryKey: ['tournaments'] });
+        queryClient.removeQueries({ queryKey: ['tournaments', slug] });
+        setIsDeleteModalOpen(false);
+        setSuccessToast(`El torneo "${tournament?.name}" fue eliminado correctamente.`);
+        // Redirigir a la lista de torneos tras breve pausa para que el toast sea visible
+        setTimeout(() => navigate('/deportes'), 1200);
+      },
+      onError: () => {
+        setIsDeleteModalOpen(false);
+      },
+    });
+  }, [slug, deleteMutation, queryClient, tournament?.name, navigate]);
 
   const handleDeleteTeam = (teamSlug: string) => {
     if (confirm('¿Eliminar este equipo?')) {
@@ -677,7 +697,7 @@ const TournamentDetail: React.FC = () => {
                     </Link>
 
                     <button 
-                      onClick={handleDelete}
+                      onClick={() => setIsDeleteModalOpen(true)}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-3xl border border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all group"
                     >
                       <div className="w-9 h-9 rounded-3xl bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
@@ -723,6 +743,25 @@ const TournamentDetail: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: ['banners'] });
         }}
       />
+
+      {/* Modal de confirmación de eliminación */}
+      <DeleteTournamentModal
+        isOpen={isDeleteModalOpen}
+        tournamentName={tournament?.name || ''}
+        hasData={tournamentHasData}
+        isPending={deleteMutation.isPending}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => !deleteMutation.isPending && setIsDeleteModalOpen(false)}
+      />
+
+      {/* Toast de éxito post-eliminación */}
+      {successToast && (
+        <Toast
+          message={successToast}
+          variant="success"
+          onClose={() => setSuccessToast(null)}
+        />
+      )}
     </>
   );
 };
