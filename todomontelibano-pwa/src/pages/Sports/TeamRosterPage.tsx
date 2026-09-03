@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -6,11 +6,9 @@ import {
   Trash2,
   Edit3,
   Save,
-  X,
   UserPlus,
   Crown,
   Loader2,
-  Camera,
   Users,
   CreditCard,
   Mail,
@@ -32,7 +30,7 @@ import {
   useTeams,
 } from '../../hooks/useSports';
 import type { Player, CreatePlayerData } from '../../types/sports';
-import { uploadImageToImgBB as uploadToImgBB } from '../../lib/imgbb';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 /* ═══════════════════════════════════════════
    POSITIONS CONFIG
@@ -138,7 +136,6 @@ const TeamRosterPage: React.FC = () => {
     teamSlug: string;
   }>();
   const { user } = useAuthStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ── Data hooks ── */
   const { data: tournament } = useTournament(tournamentSlug || '');
@@ -153,9 +150,6 @@ const TeamRosterPage: React.FC = () => {
 
   /* ── Local state ── */
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
 
   const [formData, setFormData] = useState<CreatePlayerData>({
     first_name: '',
@@ -216,64 +210,6 @@ const TeamRosterPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /* ── Photo upload ── */
-  const uploadImageToImgBB = async (file: File): Promise<string> => {
-    return uploadToImgBB(file);
-  };
-
-  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    await processPhotoFile(file);
-  };
-
-  const processPhotoFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setErrors((prev) => ({ ...prev, photo: 'El archivo debe ser una imagen' }));
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, photo: 'Máximo 2MB' }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewPhoto(reader.result as string);
-    reader.readAsDataURL(file);
-
-    setUploadingPhoto(true);
-    setErrors((prev) => ({ ...prev, photo: '' }));
-
-    try {
-      const url = await uploadImageToImgBB(file);
-      setFormData((prev) => ({ ...prev, photo: url }));
-      setPreviewPhoto(null);
-    } catch {
-      setErrors((prev) => ({ ...prev, photo: 'Error al subir. Usa URL.' }));
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  /* ── Drag & drop handlers ── */
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) await processPhotoFile(file);
-  };
-
   /* ── Form submit ── */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,7 +247,6 @@ const TeamRosterPage: React.FC = () => {
       id_number: '',
       email: '',
     });
-    setPreviewPhoto(null);
     setErrors({});
     setEditingPlayer(null);
   };
@@ -429,104 +364,14 @@ const TeamRosterPage: React.FC = () => {
                   </div>
 
                   <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    {/* ── Photo Upload Zone ── */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                        Foto del Jugador
-                      </label>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoSelect}
-                        className="hidden"
-                      />
-
-                      {(formData.photo || previewPhoto) ? (
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className="relative">
-                            <img
-                              src={previewPhoto || formData.photo}
-                              alt="Preview"
-                              className="w-20 h-20 rounded-3xl object-cover border-2 border-slate-200 dark:border-gray-800 shadow-sm"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setFormData((p) => ({ ...p, photo: '' }));
-                                setPreviewPhoto(null);
-                              }}
-                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                            {uploadingPhoto && (
-                              <div className="absolute inset-0 bg-black/40 rounded-3xl flex items-center justify-center">
-                                <Loader2 className="w-6 h-6 text-white animate-spin" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-700 dark:text-gray-200">
-                              {uploadingPhoto ? 'Subiendo...' : 'Foto lista'}
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium mt-1"
-                            >
-                              Cambiar foto
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          onDragEnter={handleDrag}
-                          onDragLeave={handleDrag}
-                          onDragOver={handleDrag}
-                          onDrop={handleDrop}
-                          className={`relative border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 ${
-                            dragActive
-                              ? 'border-indigo-500 bg-indigo-50'
-                              : 'border-slate-200 dark:border-gray-800 hover:border-slate-300 hover:bg-slate-50 dark:bg-gray-900/50'
-                          }`}
-                        >
-                          <div className="w-12 h-12 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-2">
-                            <Camera className="w-5 h-5 text-slate-400" />
-                          </div>
-                          <p className="text-sm font-medium text-slate-600 dark:text-gray-400">
-                            {dragActive
-                              ? 'Suelta la imagen aquí'
-                              : 'Arrastra o haz clic'}
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">
-                            JPG, PNG hasta 2MB
-                          </p>
-                        </div>
-                      )}
-                      {errors.photo && (
-                        <p className="mt-2 text-xs text-red-600 font-medium">
-                          {errors.photo}
-                        </p>
-                      )}
-
-                      {/* URL Fallback */}
-                      {!formData.photo && !previewPhoto && (
-                        <div className="mt-3 relative">
-                          <input
-                            type="url"
-                            value={formData.photo}
-                            onChange={(e) =>
-                              handleChange('photo', e.target.value)
-                            }
-                            className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-3xl text-sm text-slate-700 dark:text-gray-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                            placeholder="O pegar URL de imagen"
-                          />
-                          <Camera className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                        </div>
-                      )}
-                    </div>
+                    <ImageUploader
+                      id="player-photo"
+                      label="Foto del jugador"
+                      value={formData.photo || ''}
+                      onChange={(url) => handleChange('photo', url)}
+                      error={errors.photo}
+                      preview="avatar"
+                    />
 
                     {/* ── Name Fields ── */}
                     <div className="grid grid-cols-2 gap-3">

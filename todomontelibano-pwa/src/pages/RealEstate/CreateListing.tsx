@@ -5,6 +5,7 @@ import { useCreateListing } from '../../hooks/useRealEstate';
 import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 const CreateListing: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const CreateListing: React.FC = () => {
     contact_phone: '',
     contact_email: '',
   });
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,13 +34,10 @@ const CreateListing: React.FC = () => {
       navigate(ROUTES_CREDITS.packages);
       return;
     }
-    const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append('image', image);
-
-    createListing.mutate(fd, {
-      onSuccess: (data) => navigate(`/real-estate/${data.id}`),
-    });
+    createListing.mutate(
+      { ...form, price: Number(form.price), image: image.trim() },
+      { onSuccess: (data) => navigate(`/real-estate/${data.id}`) },
+    );
   };
 
   return (
@@ -144,10 +142,13 @@ const CreateListing: React.FC = () => {
               <ImagePlus className="w-5 h-5 text-orange-600" />
               <h2 className="font-bold">Imagen principal</h2>
             </div>
-            <input type="file" accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-              className="input-field" />
-            {image && <p className="text-sm text-gray-500 mt-2">{image.name}</p>}
+            <ImageUploader
+              id="listing-image"
+              label="Foto principal"
+              value={image}
+              onChange={setImage}
+              preview="banner"
+            />
           </div>
 
           <div className="card">

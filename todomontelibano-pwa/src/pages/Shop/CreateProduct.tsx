@@ -10,6 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 import { CREDIT_COSTS, STORE_UNLIMITED_COPY, storePublishCreditCost } from '../../config/credits';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import StoreUnlimitedActivationModal from '../../components/Shop/StoreUnlimitedActivationModal';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 const CreateProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -184,15 +185,14 @@ const CreateProduct: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="auth-label">URL de imagen</label>
-              <input
-                className="input-field"
-                value={form.image_url}
-                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
+            <ImageUploader
+              id="product-image"
+              label="Imagen del producto"
+              value={form.image_url}
+              onChange={(url) => setForm({ ...form, image_url: url })}
+              preview="square"
+              hint="Sube un archivo o pega una URL HTTPS. Se guarda como enlace público."
+            />
             <div>
               <label className="auth-label">SKU</label>
               <input

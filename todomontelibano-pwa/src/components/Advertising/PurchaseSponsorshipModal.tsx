@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, Upload, Loader2, Megaphone, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Loader2, Megaphone, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   usePurchaseSponsorship,
@@ -10,7 +10,7 @@ import {
   FALLBACK_SPONSORSHIP_PLANS,
 } from '../../config/credits';
 import InsufficientCreditsAlert from '../Credits/InsufficientCreditsAlert';
-import { uploadImageToImgBB } from '../../lib/imgbb';
+import ImageUploader from '../UI/ImageUploader';
 
 interface Props {
   isOpen: boolean;
@@ -30,7 +30,6 @@ const PurchaseSponsorshipModal: React.FC<Props> = ({
   const { user, isAuthenticated } = useAuthStore();
   const { data: plansFromApi } = useSponsorshipPlans();
   const purchase = usePurchaseSponsorship();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const plans = plansFromApi?.length ? plansFromApi : [...FALLBACK_SPONSORSHIP_PLANS];
 
@@ -39,7 +38,6 @@ const PurchaseSponsorshipModal: React.FC<Props> = ({
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const selectedPlan = plans.find((p) => p.id === plan);
@@ -58,22 +56,6 @@ const PurchaseSponsorshipModal: React.FC<Props> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-
-  const uploadImage = async (file: File) => uploadImageToImgBB(file);
-
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setError('');
-    try {
-      setImage(await uploadImage(file));
-    } catch {
-      setError('Error al subir imagen. Usa una URL.');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,23 +173,17 @@ const PurchaseSponsorshipModal: React.FC<Props> = ({
               rows={2}
               className="w-full rounded-2xl border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm"
             />
-            <input
-              type="url"
-              placeholder="URL de imagen *"
+            <ImageUploader
+              id="sponsor-image"
+              label="Imagen del anuncio"
               value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="w-full rounded-2xl border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm"
+              onChange={(url) => {
+                setError('');
+                setImage(url);
+              }}
+              required
+              preview="banner"
             />
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="text-sm text-violet-600 flex items-center gap-1"
-            >
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              Subir imagen
-            </button>
             <input
               type="url"
               placeholder="Link de destino (opcional)"
@@ -229,7 +205,7 @@ const PurchaseSponsorshipModal: React.FC<Props> = ({
             <button
               type="submit"
               form="sponsorship-form"
-              disabled={!isAuthenticated || !hasEnough || purchase.isPending || uploading}
+              disabled={!isAuthenticated || !hasEnough || purchase.isPending}
               className="px-4 py-2 rounded-2xl text-sm bg-violet-600 text-white disabled:opacity-50 flex items-center gap-2"
             >
               {purchase.isPending ? (

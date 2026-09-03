@@ -4,6 +4,7 @@ import { ChevronLeft, House, MapPin, DollarSign, FileText, ImagePlus } from 'luc
 import { useListing, useUpdateListing } from '../../hooks/useRealEstate';
 import { usePermissions } from '../../hooks/usePermissions';
 import { getMediaUrl } from '../../lib/api';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 const EditListing: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +20,7 @@ const EditListing: React.FC = () => {
     property_type: 'apartment' as 'house' | 'apartment' | 'lot' | 'commercial' | 'farm',
     contact_name: '', contact_phone: '', contact_email: '',
   });
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState('');
 
   useEffect(() => {
     if (listing) {
@@ -39,18 +40,18 @@ const EditListing: React.FC = () => {
         contact_phone: listing.contact_phone || '',
         contact_email: listing.contact_email || '',
       });
+      setImage(getMediaUrl(listing.image) || listing.image || '');
     }
   }, [listing, checkIsOwner, listingId, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append('image', image);
-
     updateListing.mutate(
-      { id: listingId, data: image ? fd : { ...form, price: Number(form.price) } },
-      { onSuccess: () => navigate(`/real-estate/${listingId}`) }
+      {
+        id: listingId,
+        data: { ...form, price: Number(form.price), image: image.trim() },
+      },
+      { onSuccess: () => navigate(`/real-estate/${listingId}`) },
     );
   };
 
@@ -130,11 +131,13 @@ const EditListing: React.FC = () => {
 
           <div className="card">
             <h2 className="font-bold mb-4 flex items-center gap-2"><ImagePlus className="w-5 h-5" /> Imagen</h2>
-            {listing.image && !image && (
-              <img src={getMediaUrl(listing.image)} alt="" className="w-full max-h-48 object-cover rounded-2xl mb-4" />
-            )}
-            <input type="file" accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => setImage(e.target.files?.[0] || null)} className="input-field" />
+            <ImageUploader
+              id="listing-image-edit"
+              label="Foto principal"
+              value={image}
+              onChange={setImage}
+              preview="banner"
+            />
           </div>
 
           <div className="card space-y-4">

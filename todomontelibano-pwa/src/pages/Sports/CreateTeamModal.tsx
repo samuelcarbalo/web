@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { X, Users, Palette, UserCircle, Upload, Loader2, ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Users, Palette, UserCircle } from 'lucide-react';
 import { useCreateTeam } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
-import { uploadImageToImgBB as uploadToImgBB } from '../../lib/imgbb';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 interface CreateTeamModalProps {
   isOpen: boolean;
@@ -21,7 +21,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 }) => {
   const { user } = useAuthStore();
   const createMutation = useCreateTeam();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -36,8 +35,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Cerrar con Escape
   React.useEffect(() => {
@@ -72,52 +69,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const uploadImageToImgBB = async (file: File): Promise<string> => {
-    return uploadToImgBB(file);
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      setErrors(prev => ({ ...prev, logo: 'El archivo debe ser una imagen' }));
-      return;
-    }
-
-    // Validar tamaño (máximo 2MB para ImgBB gratuito)
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors(prev => ({ ...prev, logo: 'La imagen debe ser menor a 2MB' }));
-      return;
-    }
-
-    // Crear preview local
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Subir imagen
-    setUploadingImage(true);
-    setErrors(prev => ({ ...prev, logo: '' }));
-
-    try {
-      const imageUrl = await uploadImageToImgBB(file);
-      setFormData(prev => ({ ...prev, logo: imageUrl }));
-      setPreviewImage(null); // Usar la URL remota en lugar del preview local
-    } catch (error) {
-      setErrors(prev => ({ 
-        ...prev, 
-        logo: 'Error al subir la imagen. Intenta con una URL o usa otro servicio.' 
-      }));
-      // Mantener el preview local si falla la subida
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -149,7 +100,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
           coach_email: '',
           coach_phone: '',
         });
-        setPreviewImage(null);
       },
     });
   };
@@ -163,10 +113,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
   const handleModalClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   return (
@@ -254,87 +200,15 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                   />
                 </div> */}
 
-                {/* Logo - Subida de archivo o URL */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Logo del equipo
-                  </label>
-                  
-                  {/* Input de archivo oculto */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-
-                  {/* Preview de imagen */}
-                  {(formData.logo || previewImage) && (
-                    <div className="mb-3 relative inline-block">
-                      <img 
-                        src={previewImage || formData.logo} 
-                        alt="Preview" 
-                        className="w-20 h-20 rounded-3xl object-cover border-2 border-gray-200 dark:border-gray-800"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, logo: '' }));
-                          setPreviewImage(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Botones de subida */}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={triggerFileInput}
-                      disabled={uploadingImage}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-3xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {uploadingImage ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Subiendo...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Subir imagen
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* O ingresar URL manualmente */}
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500 mb-1">O ingresa una URL:</p>
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-gray-400" />
-                      <input
-                        type="url"
-                        value={formData.logo}
-                        onChange={(e) => handleChange('logo', e.target.value)}
-                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
-                        placeholder="https:ejemplo.com/logo.png"
-                        disabled={uploadingImage}
-                      />
-                    </div>
-                  </div>
-
-                  {errors.logo && <p className="mt-1 text-sm text-red-600">{errors.logo}</p>}
-                  
-                  <p className="mt-1 text-xs text-gray-500">
-                    Máximo 2MB. Formatos: JPG, PNG, GIF, WEBP
-                  </p>
-                </div>
-
+                <ImageUploader
+                  id="team-logo"
+                  label="Logo del equipo"
+                  value={formData.logo}
+                  onChange={(url) => handleChange('logo', url)}
+                  error={errors.logo}
+                  preview="square"
+                  hint="Máximo 2 MB. PNG, JPG, GIF o WEBP."
+                />
 
                 {/* Datos del entrenador */}
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
@@ -431,7 +305,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
               <button
                 type="submit"
                 form="create-team-form"
-                disabled={createMutation.isPending || uploadingImage}
+                disabled={createMutation.isPending}
                 className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {createMutation.isPending ? (
@@ -446,7 +320,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                disabled={uploadingImage}
                 className="mt-3 w-full inline-flex justify-center rounded-3xl border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
               >
                 Cancelar
