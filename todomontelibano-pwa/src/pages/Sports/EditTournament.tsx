@@ -10,6 +10,7 @@ import {
 import { useTournament, useUpdateTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import { isSportsSuperAdmin, isPlatformElevatedUser } from '../../hooks/usePermissions';
+import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports'; //sportTypeLabels
@@ -190,6 +191,7 @@ const EditTournament: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <SportsSubscriptionBanner />
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
           <div className="card">

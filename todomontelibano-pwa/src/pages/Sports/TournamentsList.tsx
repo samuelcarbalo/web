@@ -24,6 +24,9 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useTournaments, useBannersByPosition } from '../../hooks/useSports';
 import { usePermissions, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import { hasActiveSportsModule } from '../../config/credits';
+import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
+import { ROUTES } from '../../config/seo';
 import { getMatches } from '../../lib/sportsApi';
 import type { SportType, Match } from '../../types/sports';
 import { sportTypeColors } from '../../types/sports';
@@ -137,7 +140,8 @@ const TournamentsList: React.FC = () => {
   const location = useLocation();
   // Super Admin puede crear torneos y ver "Mis torneos" sin ser manager/admin de org
   const isSuperAdmin = isSportsSuperAdmin(user);
-  const canCreateTournament = isManager || isAdmin || isSuperAdmin;
+  const canCreateTournament = (isManager || isAdmin || isSuperAdmin) && hasActiveSportsModule(user);
+  const showCreateCta = isManager || isAdmin || isSuperAdmin;
   const showMyTournamentsOption = isManager || isAdmin || isSuperAdmin;
 
   const [viewMode, setViewMode] = useState<'all' | 'mine'>(() => {
@@ -446,13 +450,13 @@ const TournamentsList: React.FC = () => {
               </p>
             </div>
 
-            {canCreateTournament && (
+            {showCreateCta && (
               <Link
-                to="/sports/tournaments/create"
+                to={canCreateTournament ? '/sports/tournaments/create' : `${ROUTES.creditos}#sports-module`}
                 className="inline-flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-500 rounded-3xl text-white font-semibold transition-all shadow-lg shadow-green-900/30 hover:shadow-2xl hover:shadow-green-900/40 hover:scale-[1.02] flex-shrink-0"
               >
                 <Plus className="w-5 h-5" />
-                Crear torneo
+                {canCreateTournament ? 'Crear torneo' : 'Activar módulo deportivo'}
               </Link>
             )}
           </div>
@@ -482,6 +486,7 @@ const TournamentsList: React.FC = () => {
       )}
 
       <div className="page-container py-8">
+        {showCreateCta && <SportsSubscriptionBanner />}
 
         {showMyTournamentsOption && !isMatchesTab && (
           <div className="flex justify-start mb-6">

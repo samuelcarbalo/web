@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi, moderationApi, type MpAdminConfigUpdate, type PurchaseHistoryItem } from '../lib/paymentsApi';
 import { FALLBACK_PACKAGES, type CreditPackage } from '../config/credits';
+import { useAuthStore } from '../store/authStore';
 
 function normalizePackages(data: unknown): CreditPackage[] {
   if (Array.isArray(data) && data.length > 0) {
@@ -106,6 +107,33 @@ export const useReportPublication = () =>
  * Historial de compras enriquecido del usuario autenticado.
  * GET /api/v1/payments/my-purchases/
  */
+export const useActivateSportsModule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => paymentsApi.activateSportsModule().then((r) => r.data),
+    onSuccess: (data) => {
+      useAuthStore.getState().updateUser({
+        credits: data.credits,
+        sports_module_active: data.sports_module_active,
+        sports_module_expires_at: data.sports_module_expires_at,
+      });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      queryClient.invalidateQueries({ queryKey: ['sports-subscription'] });
+    },
+  });
+};
+
+export const useSportsSubscriptionStatus = (enabled = true) =>
+  useQuery({
+    queryKey: ['sports-subscription'],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getSportsSubscriptionStatus();
+      return data;
+    },
+    enabled,
+    staleTime: 15_000,
+  });
+
 export const useMyPurchases = (enabled = true) =>
   useQuery({
     queryKey: ['my-purchases'],

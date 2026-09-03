@@ -2,13 +2,26 @@
 export const CREDIT_COSTS = {
   job: 5,
   realEstate: 5,
-  tournament: 50,
+  tournament: 200,
+  sportsModule: 200,
   event: 5,
   store: 10,
   storeUnlimitedActivation: 250,
 } as const;
 
 /** Textos de membresía de Tienda Virtual */
+export const SPORTS_MODULE_DAYS = 30;
+
+export const SPORTS_MODULE_COPY = {
+  title: 'Plan Administración Deportiva Completa',
+  priceLabel: '200 Créditos / Mes',
+  benefits: [
+    'Creación, edición y eliminación ilimitada de torneos por 30 días.',
+    'Gestión completa de equipos, plantillas y jugadores.',
+    'Generación y control de calendarios, tablas de posiciones y partidos.',
+  ],
+} as const;
+
 export const STORE_UNLIMITED_COPY = {
   monthEquivalency: '250 créditos equivalen a 1 mes ilimitado de Tienda Virtual.',
   surplusUsage:
@@ -107,7 +120,7 @@ export const FALLBACK_PACKAGES: CreditPackage[] = [
     price_cop: 45000,
     badge: '¡Ideal para 1 Torneo!',
     savings_cop: 5000,
-    description: '50 créditos — suficiente para crear un torneo de fútbol.',
+    description: '50 créditos — avance hacia el Plan Administración Deportiva (200 créditos / 30 días).',
     standard_price_cop: 50000,
   },
   {
@@ -150,6 +163,28 @@ export const formatCop = (amount: number) =>
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(amount);
+
+export function hasActiveSportsModule(user?: {
+  sports_module_active?: boolean;
+  sports_module_expires_at?: string | null;
+  is_unlimited_credits?: boolean;
+  is_superuser?: boolean;
+  admin_level?: number;
+} | null): boolean {
+  if (!user) return false;
+  if (user.is_unlimited_credits || user.is_superuser || user.admin_level === 1) return true;
+  if (!user.sports_module_expires_at) return false;
+  return new Date(user.sports_module_expires_at).getTime() > Date.now();
+}
+
+export function sportsModuleDaysLeft(user?: {
+  sports_module_expires_at?: string | null;
+} | null): number | null {
+  if (!user?.sports_module_expires_at) return null;
+  const ms = new Date(user.sports_module_expires_at).getTime() - Date.now();
+  if (ms <= 0) return 0;
+  return Math.ceil(ms / (1000 * 60 * 60 * 24));
+}
 
 export function hasActiveStoreUnlimited(user?: {
   store_unlimited_until?: string | null;

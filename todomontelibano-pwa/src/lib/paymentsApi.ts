@@ -55,7 +55,23 @@ export const paymentsApi = {
 
   /** Historial de compras enriquecido del usuario autenticado. */
   getMyPurchases: () => api.get<PurchaseHistoryItem[]>('/payments/my-purchases/'),
+
+  getSportsSubscriptionStatus: () =>
+    api.get<SportsSubscriptionStatus>('/subscriptions/sports-status/'),
+
+  activateSportsModule: () =>
+    api.post<SportsSubscriptionStatus & { success: boolean; message: string; credits: number }>(
+      '/subscriptions/activate-sports/',
+    ),
 };
+
+export interface SportsSubscriptionStatus {
+  sports_module_active: boolean;
+  sports_module_expires_at: string | null;
+  sports_module_cost: number;
+  sports_module_days: number;
+  has_access?: boolean;
+}
 
 // ─── Tipos del historial de compras ──────────────────────────────────────────
 

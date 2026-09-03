@@ -60,6 +60,8 @@ export const useMe = () => {
           job_title: profile.job_title || undefined,
           completion_percentage: profile.completion_percentage,
           credits: user_res.credits,
+          sports_module_active: !!user_res.sports_module_active,
+          sports_module_expires_at: user_res.sports_module_expires_at ?? null,
           store_unlimited_until: user_res.store_unlimited_until ?? null,
           store_unlimited_activations_pending:
             Number(user_res.store_unlimited_activations_pending) || 0,
@@ -198,6 +200,8 @@ export const useLogin = () => {
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
         credits: user_res.credits,
+        sports_module_active: !!user_res.sports_module_active,
+        sports_module_expires_at: user_res.sports_module_expires_at ?? null,
         store_unlimited_until: user_res.store_unlimited_until ?? null,
         store_unlimited_activations_pending:
           Number(user_res.store_unlimited_activations_pending) || 0,
@@ -257,6 +261,8 @@ export const useRegister = () => {
         job_title: profile.job_title || undefined,
         completion_percentage: profile.completion_percentage,
         credits: user_res.credits,
+        sports_module_active: !!user_res.sports_module_active,
+        sports_module_expires_at: user_res.sports_module_expires_at ?? null,
         store_unlimited_until: user_res.store_unlimited_until ?? null,
         store_unlimited_activations_pending:
           Number(user_res.store_unlimited_activations_pending) || 0,

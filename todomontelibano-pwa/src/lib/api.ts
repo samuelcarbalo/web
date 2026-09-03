@@ -8,6 +8,7 @@ import {
 } from './session';
 import { getApiBaseUrl, getApiOrigin, subscribeApiBaseUrl } from '../api/config';
 import { trackApiRequestEnd, trackApiRequestStart } from './coldStartUi';
+import { emitSportsSubscriptionRequired } from './sportsSubscriptionEvents';
 
 /** Margen para cold starts de Render free tier (~30–60 s). */
 export const API_TIMEOUT_MS = 60_000;
@@ -134,6 +135,17 @@ api.interceptors.response.use(
       } catch {
         await purgeClientSession({ redirectToHome: true });
         return Promise.reject(error);
+      }
+    }
+
+    if (error.response?.status === 403) {
+      const payload = error.response.data as { detail?: unknown; code?: string } | undefined;
+      const detail = typeof payload?.detail === 'string' ? payload.detail : '';
+      if (
+        payload?.code === 'sports_module_expired' ||
+        detail.includes('Servicio de Torneos')
+      ) {
+        emitSportsSubscriptionRequired();
       }
     }
 

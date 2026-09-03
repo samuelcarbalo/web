@@ -28,6 +28,8 @@ import {
 } from '../../hooks/useSports';
 
 import { usePermissions, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import { hasActiveSportsModule } from '../../config/credits';
+import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import ReportPublicationButton from '../../components/Moderation/ReportPublicationButton';
 import CreateTeamModal from './CreateTeamModal';
@@ -65,7 +67,7 @@ const TournamentDetail: React.FC = () => {
 
   const isOwner = checkIsOwner(tournament);
   // canManage: Super Admin puede gestionar cualquier torneo aunque no sea el creador
-  const canManage = checkCanManage(tournament);
+  const canManage = checkCanManage(tournament) && hasActiveSportsModule(user);
   // Super Admin puede agregar equipos aunque las inscripciones estén cerradas
   const isSuperAdminUser = isSportsSuperAdmin(user);
 
@@ -300,6 +302,7 @@ const TournamentDetail: React.FC = () => {
         </div>
 
         <div className="page-container py-8">
+          {checkCanManage(tournament) && <SportsSubscriptionBanner />}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
             {/* Main Content */}

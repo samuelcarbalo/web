@@ -28,6 +28,7 @@ import { BRAND_DISPLAY_NAME, BRAND_TAGLINE } from "../../config/brand";
 import BrandLogo from "../Brand/BrandLogo";
 import { canManageContent } from "../../hooks/usePermissions";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
+import SportsSubscriptionRequiredModal from "../Sports/SportsSubscriptionRequiredModal";
 import StoreSubNavbar from "../Shop/StoreSubNavbar";
 import MobileNavMenu, { type MobileNavService } from "./MobileNavMenu";
 
@@ -331,6 +332,7 @@ const MainLayout: React.FC = () => {
 
       <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
+        <SportsSubscriptionRequiredModal />
       </main>
 
       <footer className="bg-white dark:bg-gray-900/80 border-t border-gray-200/80 dark:border-gray-800/80 mt-auto transition-colors duration-300" role="contentinfo">
