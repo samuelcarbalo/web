@@ -52,7 +52,29 @@ export const paymentsApi = {
     api.post<PreferenceResponse>('/payments/create-preference/', { package_id: packageId }),
 
   getMyOrders: () => api.get('/payments/my-orders/'),
+
+  /** Historial de compras enriquecido del usuario autenticado. */
+  getMyPurchases: () => api.get<PurchaseHistoryItem[]>('/payments/my-purchases/'),
 };
+
+// ─── Tipos del historial de compras ──────────────────────────────────────────
+
+export type PurchaseStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'refunded';
+
+export interface PurchaseHistoryItem {
+  id: string;
+  package_id: string;
+  package_name: string;
+  package_description: string;
+  credits_amount: number;
+  amount_cop: number;
+  mp_payment_id: string | null;
+  status: PurchaseStatus;
+  status_display: string;
+  credits_applied: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export const moderationApi = {
   reportPublication: (data: {

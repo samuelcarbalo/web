@@ -17,6 +17,12 @@ import {
   ShoppingBag,
   Package,
   Shield,
+  CreditCard,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { canManageContent } from '../hooks/usePermissions';
@@ -26,6 +32,8 @@ import { useContactMessages } from '../hooks/useContact';
 import CreditBalanceBadge from '../components/Credits/CreditBalanceBadge';
 import BuyCreditsButton from '../components/Credits/BuyCreditsButton';
 import { useMyShopOrders } from '../hooks/useShop';
+import { useMyPurchases } from '../hooks/usePayments';
+import type { PurchaseHistoryItem } from '../lib/paymentsApi';
 import { ROUTES } from '../config/seo';
 import { useCartStore } from '../store/cartStore';
 import BrandLogo from '../components/Brand/BrandLogo';
@@ -119,6 +127,38 @@ const Dashboard: React.FC = () => {
   const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManagerOrAdmin });
   const { data: shopOrders = [] } = useMyShopOrders(true);
   const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
+
+  // Historial de compras
+  const { data: purchases = [], isLoading: loadingPurchases } = useMyPurchases(!!user);
+
+  const formatCOP = (amount: number) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleString('es-CO', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const purchaseStatusBadge = (item: PurchaseHistoryItem) => {
+    const cfg: Record<string, { label: string; cls: string; Icon: React.FC<{ className?: string }> }> = {
+      approved:  { label: 'Aprobado',   cls: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300',   Icon: CheckCircle2 },
+      pending:   { label: 'Pendiente',  cls: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300', Icon: Clock },
+      in_process:{ label: 'En proceso', cls: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300', Icon: Clock },
+      rejected:  { label: 'Rechazado',  cls: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300',            Icon: XCircle },
+      cancelled: { label: 'Cancelado',  cls: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',           Icon: XCircle },
+      refunded:  { label: 'Reembolsado',cls: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300',        Icon: AlertCircle },
+    };
+    const s = cfg[item.status] ?? { label: item.status_display || item.status, cls: 'bg-gray-100 text-gray-600', Icon: AlertCircle };
+    return (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${s.cls}`}>
+        <s.Icon className="w-3 h-3" />
+        {s.label}
+      </span>
+    );
+  };
   
 
   // Stats de deportes (nuevo)
@@ -618,6 +658,129 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </Link>
+          </div>
+        </div>
+
+        {/* ── Historial de Compras ─────────────────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <CreditCard className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+              Mis Compras
+            </h2>
+            <Link to={ROUTES.creditos} className="text-violet-600 hover:text-violet-700 text-sm font-medium">
+              Comprar créditos →
+            </Link>
+          </div>
+
+          <div className="card overflow-hidden p-0">
+            {loadingPurchases ? (
+              /* Skeleton loader */
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="px-6 py-4 animate-pulse flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-3xl bg-gray-200 dark:bg-gray-700 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                    </div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : purchases.length === 0 ? (
+              /* Empty state */
+              <div className="py-16 text-center px-6">
+                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Aún no has realizado ninguna compra
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">
+                  Adquiere créditos para publicar empleos, torneos, eventos y más en la plataforma.
+                </p>
+                <Link
+                  to={ROUTES.creditos}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-3xl transition-colors"
+                >
+                  <Coins className="w-4 h-4" />
+                  Ver paquetes de créditos
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Tabla desktop */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Fecha</th>
+                        <th className="text-left px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Detalle</th>
+                        <th className="text-right px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Valor</th>
+                        <th className="text-center px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Estado</th>
+                        <th className="text-left px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">ID Transacción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {purchases.map((p) => (
+                        <tr key={p.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-xs">
+                            {formatDate(p.created_at)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="font-semibold text-gray-900 dark:text-white">{p.package_name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{p.package_description}</p>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="font-bold text-gray-900 dark:text-white">{formatCOP(p.amount_cop)}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {purchaseStatusBadge(p)}
+                          </td>
+                          <td className="px-6 py-4">
+                            {p.mp_payment_id ? (
+                              <span className="font-mono text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                {p.mp_payment_id.slice(0, 14)}…
+                                <ExternalLink className="w-3 h-3 opacity-50" />
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Lista mobile */}
+                <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+                  {purchases.map((p) => (
+                    <div key={p.id} className="px-4 py-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">{p.package_name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{p.package_description}</p>
+                        </div>
+                        <span className="font-bold text-gray-900 dark:text-white text-sm shrink-0">
+                          {formatCOP(p.amount_cop)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        {purchaseStatusBadge(p)}
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{formatDate(p.created_at)}</span>
+                      </div>
+                      {p.mp_payment_id && (
+                        <p className="font-mono text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                          ID: {p.mp_payment_id}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
