@@ -436,18 +436,20 @@ const EditTournament: React.FC = () => {
             <div className="space-y-6">
               <HybridImageUrlInput
                 id="edit-tournament-logo"
-                label="URL del logo"
+                label="Logo del torneo"
                 value={formData.logo}
                 onChange={(url) => handleChange('logo', url)}
                 error={errors.logo}
+                preview="square"
               />
 
               <HybridImageUrlInput
                 id="edit-tournament-banner"
-                label="URL del banner"
+                label="Banner del torneo"
                 value={formData.banner}
                 onChange={(url) => handleChange('banner', url)}
                 error={errors.banner}
+                preview="banner"
               />
             </div>
           </div>

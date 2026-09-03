@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { X, ImageIcon, Upload, Loader2, Link2, Type, FileText, ExternalLink, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ImageIcon, Link2, Type, FileText, ExternalLink, Calendar } from 'lucide-react';
 import { useCreateBanner } from '../hooks/useSports';
-import { uploadImageToImgBB } from '../lib/imgbb';
+import ImageUploader from './UI/ImageUploader';
 
 interface CreateBannerModalProps {
   isOpen: boolean;
@@ -22,7 +22,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
   onSuccess,
 }) => {
   const createBannerMutation = useCreateBanner();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -38,8 +37,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Cerrar con Escape
   React.useEffect(() => {
@@ -74,40 +71,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setErrors(prev => ({ ...prev, image: 'El archivo debe ser una imagen' }));
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors(prev => ({ ...prev, image: 'La imagen debe ser menor a 2MB' }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewImage(reader.result as string);
-    reader.readAsDataURL(file);
-
-    setUploadingImage(true);
-    setErrors(prev => ({ ...prev, image: '' }));
-
-    try {
-      const imageUrl = await uploadImageToImgBB(file);
-      setFormData(prev => ({ ...prev, image: imageUrl }));
-      setPreviewImage(null);
-    } catch (error: any) {
-      setErrors(prev => ({
-        ...prev,
-        image: `Error al subir: ${error.message}. Intenta con una URL manual.`,
-      }));
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -137,7 +100,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
           start_date: getTodayString(),
           end_date: '',
         });
-        setPreviewImage(null);
       },
     });
   };
@@ -146,8 +108,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
-
-  const triggerFileInput = () => fileInputRef.current?.click();
 
   return (
     <div className="fixed inset-0 z-[100]">
@@ -246,85 +206,16 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
                   </div>
                 </div>
 
-                {/* Imagen del banner */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-gray-400" />
-                    Imagen del banner *
-                  </label>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-
-                  {/* Preview */}
-                  {(formData.image || previewImage) && (
-                    <div className="mb-3 relative inline-block w-full">
-                      <img
-                        src={previewImage || formData.image}
-                        alt="Preview"
-                        className="w-full h-32 rounded-3xl object-cover border-2 border-gray-200 dark:border-gray-800"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, image: '' }));
-                          setPreviewImage(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Botón subir */}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={triggerFileInput}
-                      disabled={uploadingImage}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-3xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {uploadingImage ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Subiendo...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Subir imagen
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* URL manual */}
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500 mb-1">O ingresa una URL:</p>
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-gray-400" />
-                      <input
-                        type="url"
-                        value={formData.image}
-                        onChange={(e) => handleChange('image', e.target.value)}
-                        className="flex-1 rounded-3xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
-                        placeholder="https://ejemplo.com/banner.jpg"
-                        disabled={uploadingImage}
-                      />
-                    </div>
-                  </div>
-
-                  {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
-                  <p className="mt-1 text-xs text-gray-500">
-                    Máximo 2MB. Formatos: JPG, PNG, GIF, WEBP. Recomendado: 1200x400px
-                  </p>
-                </div>
+                <ImageUploader
+                  id="banner-image"
+                  label="Imagen del banner"
+                  value={formData.image}
+                  onChange={(url) => handleChange('image', url)}
+                  error={errors.image}
+                  required
+                  preview="banner"
+                  hint="Máximo 2 MB. Recomendado: 1200×400 px."
+                />
 
                 {/* Link URL */}
                 <div>
@@ -361,7 +252,7 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
               <button
                 type="submit"
                 form="create-banner-form"
-                disabled={createBannerMutation.isPending || uploadingImage}
+                disabled={createBannerMutation.isPending}
                 className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {createBannerMutation.isPending ? (
@@ -376,7 +267,6 @@ const CreateBannerModal: React.FC<CreateBannerModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                disabled={uploadingImage}
                 className="mt-3 w-full inline-flex justify-center rounded-3xl border border-gray-300 dark:border-gray-700 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
               >
                 Cancelar

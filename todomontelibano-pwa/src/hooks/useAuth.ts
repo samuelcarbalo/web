@@ -111,6 +111,7 @@ export type ProfileUpdatePayload = {
   department?: string;
   job_title?: string;
   birth_date?: string;
+  avatar?: string;
 };
 
 export const useUpdateProfile = () => {
@@ -132,6 +133,7 @@ export const useUpdateProfile = () => {
         department: data.department?.trim() ?? '',
         job_title: data.job_title?.trim() ?? '',
         birth_date: formatBirthDateForApi(data.birth_date),
+        avatar: data.avatar?.trim() ?? '',
       };
 
       const response = await api.patch<Profile>(`/profiles/${profileId}/`, payload);

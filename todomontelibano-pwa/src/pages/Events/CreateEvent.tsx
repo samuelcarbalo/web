@@ -5,6 +5,7 @@ import { useCreateEvent } from '../../hooks/useEvents';
 import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import { CREDIT_COSTS } from '../../config/credits';
+import ImageUploader from '../../components/UI/ImageUploader';
 
 const categories = [
   { value: 'feria', label: 'Feria' },
@@ -156,11 +157,13 @@ const CreateEvent: React.FC = () => {
             />
           </>
         )}
-        <input
-          placeholder="URL imagen de portada"
+        <ImageUploader
+          id="event-cover"
+          label="Imagen de portada"
           value={form.cover_image}
-          onChange={(e) => set('cover_image', e.target.value)}
-          className="w-full rounded-2xl border px-3 py-2"
+          onChange={(url) => set('cover_image', url)}
+          preview="banner"
+          hint="Sube un archivo o pega una URL HTTPS."
         />
         <input
           placeholder="Organizador"

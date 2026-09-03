@@ -59,10 +59,11 @@ export const useCreateListing = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: FormData) => {
-      const response = await api.post<RealEstateOffer>('/real-estate/offers/', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+    mutationFn: async (data: FormData | Record<string, unknown>) => {
+      const isFormData = data instanceof FormData;
+      const response = await api.post<RealEstateOffer>('/real-estate/offers/', data, isFormData
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined);
       return response.data;
     },
     onSuccess: () => {

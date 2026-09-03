@@ -8,6 +8,7 @@ import {
 } from '../lib/apiErrors';
 import { profileToFormData } from '../lib/profileSync';
 import Toast from '../components/UI/Toast';
+import ImageUploader from '../components/UI/ImageUploader';
 import type { Profile as ProfileType } from '../types';
 import {
   User,
@@ -30,6 +31,7 @@ type ProfileFormData = {
   department: string;
   job_title: string;
   birth_date: string;
+  avatar: string;
 };
 
 const Profile: React.FC = () => {
@@ -44,6 +46,7 @@ const Profile: React.FC = () => {
     department: '',
     job_title: '',
     birth_date: '',
+    avatar: '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -144,9 +147,9 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="card text-center">
               <div className="relative w-32 h-32 mx-auto mb-4">
-                {activeProfile.avatar ? (
+                {formData.avatar || activeProfile.avatar ? (
                   <img 
-                    src={activeProfile.avatar} 
+                    src={formData.avatar || activeProfile.avatar} 
                     alt={activeProfile.user_name}
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -155,7 +158,15 @@ const Profile: React.FC = () => {
                     <User className="w-16 h-16 text-violet-600 dark:text-violet-400" />
                   </div>
                 )}
-                <button className="absolute bottom-0 right-0 p-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full hover:from-violet-500 hover:to-indigo-500 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isEditing) setIsEditing(true);
+                    document.getElementById('profile-avatar-url')?.focus();
+                  }}
+                  className="absolute bottom-0 right-0 p-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full hover:from-violet-500 hover:to-indigo-500 transition-colors"
+                  aria-label="Cambiar foto de perfil"
+                >
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
@@ -271,6 +282,25 @@ const Profile: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {isEditing && (
+                  <ImageUploader
+                    id="profile-avatar"
+                    label="Foto de perfil"
+                    value={formData.avatar}
+                    onChange={(url) => {
+                      setFormData({ ...formData, avatar: url });
+                      if (fieldErrors.avatar) {
+                        setFieldErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.avatar;
+                          return next;
+                        });
+                      }
+                    }}
+                    error={fieldErrors.avatar}
+                    preview="avatar"
+                  />
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Nombre completo

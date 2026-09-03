@@ -37,5 +37,6 @@ export function profileToFormData(profile: Profile) {
     department: profile.department || '',
     job_title: profile.job_title || '',
     birth_date: normalizeBirthDateForInput(profile.birth_date),
+    avatar: profile.avatar || '',
   };
 }

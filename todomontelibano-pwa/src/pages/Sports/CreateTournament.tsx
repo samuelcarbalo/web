@@ -447,21 +447,23 @@ const CreateTournament: React.FC = () => {
             <div className="space-y-6">
               <HybridImageUrlInput
                 id="tournament-logo"
-                label="URL del logo"
+                label="Logo del torneo"
                 value={formData.logo}
                 onChange={(url) => handleChange('logo', url)}
                 placeholder="https://ejemplo.com/logo.png"
                 error={errors.logo}
-                hint="Pega una URL o usa «Subir archivo» (ImgBB)."
+                preview="square"
+                hint="Sube un archivo o pega una URL HTTPS."
               />
 
               <HybridImageUrlInput
                 id="tournament-banner"
-                label="URL del banner"
+                label="Banner del torneo"
                 value={formData.banner}
                 onChange={(url) => handleChange('banner', url)}
                 placeholder="https://ejemplo.com/banner.png"
                 error={errors.banner}
+                preview="banner"
                 hint="Imagen ancha recomendada para la cabecera del torneo."
               />
             </div>
