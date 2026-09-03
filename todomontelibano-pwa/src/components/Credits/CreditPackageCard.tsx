@@ -92,7 +92,7 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
         <FeatureRow ok>1 crédito = $1.000 COP</FeatureRow>
         <FeatureRow ok={canJob}>Empleo o Inmueble (5 créditos)</FeatureRow>
         <FeatureRow ok={canStore}>Producto en Tienda (10 créditos)</FeatureRow>
-        <FeatureRow ok={canTournament}>Torneo de Fútbol (50 créditos)</FeatureRow>
+        <FeatureRow ok={canTournament}>Módulo Deportivo 30 días (200 créditos)</FeatureRow>
         <FeatureRow ok={canActivateStoreUnlimited}>{STORE_UNLIMITED_COPY.monthEquivalency}</FeatureRow>
         <FeatureRow ok={canActivateStoreUnlimited || surplusCredits > 0}>
           {STORE_UNLIMITED_COPY.surplusUsage}

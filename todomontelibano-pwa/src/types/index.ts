@@ -58,6 +58,8 @@ export interface User {
   credits?: number;
   store_unlimited_until?: string | null;
   store_unlimited_activations_pending?: number;
+  sports_module_active?: boolean;
+  sports_module_expires_at?: string | null;
 }
 
 // Para login/register (respuesta simple)

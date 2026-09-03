@@ -21,6 +21,8 @@ import {
 } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import { canManageContent, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import { hasActiveSportsModule } from '../../config/credits';
+import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import type { BracketNode, CompetitionGroup, TournamentPhase } from '../../types/sports';
 import { getMatchAwayScore, getMatchHomeScore } from '../../lib/matchScoring';
 
@@ -46,7 +48,9 @@ const TournamentStructurePage: React.FC = () => {
   const sportType = tournament?.sport_type || 'football';
 
   // Super Admin tiene acceso total; también puede ser el creador del torneo o admin de plataforma
-  const isOwner = isSportsSuperAdmin(user) || user?.id === tournament?.posted_by || canManageContent(user);
+  const isOwner =
+    (isSportsSuperAdmin(user) || user?.id === tournament?.posted_by || canManageContent(user)) &&
+    hasActiveSportsModule(user);
   const teams = teamsData?.results ?? [];
 
   const assignedTeamIds = useMemo(() => {
@@ -218,6 +222,8 @@ const TournamentStructurePage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <SportsSubscriptionBanner />
 
       <div className="space-y-6">
         {structure.phases.map((phase) => (

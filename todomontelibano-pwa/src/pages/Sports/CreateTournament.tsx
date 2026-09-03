@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import { useCreateTournament, useFormatTemplates } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
-import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
+import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
-import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
+import { CREDIT_COSTS, ROUTES_CREDITS, hasActiveSportsModule } from '../../config/credits';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports';
 
@@ -20,8 +20,7 @@ const CreateTournament: React.FC = () => {
   const { user } = useAuthStore();
   const createMutation = useCreateTournament();
   
-  const userCredits = user?.credits ?? 0;
-  const hasEnoughCredits = userCredits >= CREDIT_COSTS.tournament;
+  const canUseSports = hasActiveSportsModule(user);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -114,8 +113,8 @@ const CreateTournament: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasEnoughCredits) {
-      navigate(ROUTES_CREDITS.packages);
+    if (!canUseSports) {
+      navigate(`${ROUTES_CREDITS.packages}#sports-module`);
       return;
     }
     
@@ -171,11 +170,7 @@ const CreateTournament: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <InsufficientCreditsAlert
-          required={CREDIT_COSTS.tournament}
-          available={userCredits}
-          actionLabel="creación de torneo"
-        />
+        <SportsSubscriptionBanner />
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
@@ -492,7 +487,7 @@ const CreateTournament: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending || !hasEnoughCredits}
+              disabled={createMutation.isPending || !canUseSports}
               className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createMutation.isPending ? (
@@ -500,10 +495,10 @@ const CreateTournament: React.FC = () => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Creando...
                 </span>
-              ) : !hasEnoughCredits ? (
-                'Créditos insuficientes (Cuesta 50 🪙)'
+              ) : !canUseSports ? (
+                `Activa el módulo (${CREDIT_COSTS.sportsModule} 🪙 / 30 días)`
               ) : (
-                'Crear torneo (Cuesta 50 🪙)'
+                'Crear torneo (incluido en tu plan)'
               )}
             </button>
           </div>

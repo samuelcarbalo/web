@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Coins, Target, History } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
+import SportsModulePlanCard from '../../components/Sports/SportsModulePlanCard';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
 import CreditBalanceBadge from '../../components/Credits/CreditBalanceBadge';
 import BuyCreditsButton from '../../components/Credits/BuyCreditsButton';
@@ -256,6 +257,10 @@ const CreditPackagesPage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            <div className="mb-8">
+              <SportsModulePlanCard />
+            </div>
 
             {isError && !isFetching && (
               <p className="mb-4 text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl px-4 py-3">
