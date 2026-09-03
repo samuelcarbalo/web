@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useProfile, useUpdateProfile } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
 import {
@@ -7,6 +8,7 @@ import {
   parseApiErrorMessage,
 } from '../lib/apiErrors';
 import { profileToFormData } from '../lib/profileSync';
+import { ROUTES } from '../config/seo';
 import Toast from '../components/UI/Toast';
 import ImageUploader from '../components/UI/ImageUploader';
 import type { Profile as ProfileType } from '../types';
@@ -22,6 +24,7 @@ import {
   Edit3,
   Loader2,
   AlertCircle,
+  Receipt,
 } from 'lucide-react';
 
 type ProfileFormData = {
@@ -234,12 +237,16 @@ const Profile: React.FC = () => {
                 )}
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-                <p className="text-xs text-gray-500 mt-1">
-                  Última actualización: {new Date(activeProfile.created_at || '').toLocaleDateString('es-CO')}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Última actualización: {new Date(activeProfile.updated_at || '').toLocaleDateString('es-CO')}
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800 space-y-3">
+                <Link
+                  to={ROUTES.facturas}
+                  className="flex items-center justify-center gap-2 w-full rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-800 dark:text-violet-200 px-4 py-2.5 text-sm font-bold hover:bg-violet-100 dark:hover:bg-violet-900/50"
+                >
+                  <Receipt className="w-4 h-4" />
+                  Mis facturas de compra
+                </Link>
+                <p className="text-xs text-gray-500">
+                  Última actualización: {new Date(activeProfile.updated_at || activeProfile.created_at || '').toLocaleDateString('es-CO')}
                 </p>
               </div>
             </div>

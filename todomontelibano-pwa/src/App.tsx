@@ -59,6 +59,9 @@ const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPayme
 const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
 const CreateProduct = lazyWithRetry(() => import('./pages/Shop/CreateProduct'));
 const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
+const MyInvoicesPage = lazyWithRetry(() => import('./pages/Billing/MyInvoicesPage'));
+const InvoicePrintPage = lazyWithRetry(() => import('./pages/Billing/InvoicePrintPage'));
+const StoreBillingPage = lazyWithRetry(() => import('./pages/Billing/StoreBillingPage'));
 const EventsList = lazyWithRetry(() => import('./pages/Events/EventsList'));
 const EventDetail = lazyWithRetry(() => import('./pages/Events/EventDetail'));
 const CreateEvent = lazyWithRetry(() => import('./pages/Events/CreateEvent'));
@@ -363,6 +366,31 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="facturas"
+                  element={
+                    <ProtectedRoute>
+                      <MyInvoicesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="facturas/:id"
+                  element={
+                    <ProtectedRoute>
+                      <InvoicePrintPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="dashboard/facturacion"
+                  element={
+                    <ProtectedRoute allowedRoles={['manager', 'admin']}>
+                      <StoreBillingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="admin/facturacion" element={<Navigate to="/dashboard/facturacion" replace />} />
                 <Route path="tienda/:slug" element={<ProductDetail />} />
                 <Route path="productos" element={<Navigate to="/tienda" replace />} />
                 <Route path="productos/:slug" element={<ProductosAliasRedirect />} />

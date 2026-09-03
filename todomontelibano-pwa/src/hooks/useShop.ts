@@ -100,6 +100,52 @@ export const useMyShopOrders = (enabled = true) =>
     staleTime: 30 * 1000,
   });
 
+export const useShopSales = (
+  params?: {
+    status?: string;
+    delivery_status?: string;
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+  },
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: [...shopKeys.orders(), 'sales', params],
+    queryFn: async () => {
+      const { data } = await shopApi.getSales(params);
+      if (Array.isArray(data)) return { count: data.length, results: data };
+      return { count: data.count ?? data.results?.length ?? 0, results: data.results ?? [] };
+    },
+    enabled,
+    staleTime: 20_000,
+  });
+
+export const useShopSalesMetrics = (
+  params?: { date_from?: string; date_to?: string },
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: [...shopKeys.orders(), 'metrics', params],
+    queryFn: async () => {
+      const { data } = await shopApi.getSalesMetrics(params);
+      return data;
+    },
+    enabled,
+    staleTime: 20_000,
+  });
+
+export const useUpdateDelivery = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, delivery_status }: { id: string; delivery_status: string }) =>
+      shopApi.updateDelivery(id, delivery_status).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shopKeys.orders() });
+    },
+  });
+};
+
 export const useShopSettings = () =>
   useQuery({
     queryKey: shopKeys.settings(),

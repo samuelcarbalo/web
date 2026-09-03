@@ -116,7 +116,7 @@ const MainLayout: React.FC = () => {
       <a href="#main-content" className="skip-link">
         Saltar al contenido principal
       </a>
-      <header className="pwa-header" role="banner">
+      <header className="pwa-header print:hidden" role="banner">
         <div className="page-container">
           <div className="flex justify-between items-center h-[4.5rem] md:h-20 py-1.5">
             <Link
@@ -254,6 +254,14 @@ const MainLayout: React.FC = () => {
                         <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Mis pedidos
                         </Link>
+                        <Link to={ROUTES.facturas} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                          Mis facturas
+                        </Link>
+                        {canManageContent(user) && (
+                          <Link to={ROUTES.facturacion} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Facturación y ventas
+                          </Link>
+                        )}
                         <Link to="/messages" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
                           Mensajes
                         </Link>
@@ -328,14 +336,16 @@ const MainLayout: React.FC = () => {
         )}
       </header>
 
-      <StoreSubNavbar />
+      <div className="print:hidden">
+        <StoreSubNavbar />
+      </div>
 
       <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
         <SportsSubscriptionRequiredModal />
       </main>
 
-      <footer className="bg-white dark:bg-gray-900/80 border-t border-gray-200/80 dark:border-gray-800/80 mt-auto transition-colors duration-300" role="contentinfo">
+      <footer className="print:hidden bg-white dark:bg-gray-900/80 border-t border-gray-200/80 dark:border-gray-800/80 mt-auto transition-colors duration-300" role="contentinfo">
         <div className="page-container py-12 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
             <div className="col-span-1 md:col-span-2">

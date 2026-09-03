@@ -13,6 +13,7 @@ import {
   Briefcase,
   Store,
   CreditCard,
+  History,
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
@@ -31,6 +32,7 @@ import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel'
 import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
 import AdminStoreVisualSettings from '../../components/Admin/AdminStoreVisualSettings';
 import AdminMercadoPagoSettings from '../../components/Admin/AdminMercadoPagoSettings';
+import AdminPaymentLedgerPanel from '../../components/Admin/AdminPaymentLedgerPanel';
 
 function adminLevelOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser'> | null | undefined): number {
   const level = Number(u?.admin_level) || 0;
@@ -69,7 +71,7 @@ const AdminUsersPage: React.FC = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
-  const [tab, setTab] = useState<'users' | 'jobs' | 'store' | 'payments'>('users');
+  const [tab, setTab] = useState<'users' | 'jobs' | 'store' | 'payments' | 'ledger'>('users');
   const { canManageAdmins, isDelegatedAdmin } = usePermissions();
 
   const { data, isLoading, isError } = useAdminUsers({
@@ -171,7 +173,7 @@ const AdminUsersPage: React.FC = () => {
             <Shield className="w-8 h-8" /> Panel de administración
           </h1>
           <p className="mt-2 text-violet-100 max-w-2xl font-light">
-            Gestiona usuarios, créditos, empleos y la configuración visual de la tienda.
+            Gestiona usuarios, créditos, empleos, tienda e historial global de pagos.
             {isDelegatedAdmin
               ? ' Como Administrador (Nivel 2) puedes gestionar contenidos, pero no roles de Super Admin.'
               : ' Solo visible para staff / superusuario.'}
@@ -222,6 +224,18 @@ const AdminUsersPage: React.FC = () => {
           >
             <Store className="w-4 h-4" />
             Tienda
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('ledger')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+              tab === 'ledger'
+                ? 'bg-violet-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+            }`}
+          >
+            <History className="w-4 h-4" />
+            Historial
           </button>
           {canManageAdmins && (
             <button
@@ -408,6 +422,8 @@ const AdminUsersPage: React.FC = () => {
       )}
 
       {tab === 'store' && <AdminStoreVisualSettings />}
+
+      {tab === 'ledger' && <AdminPaymentLedgerPanel />}
 
       {tab === 'payments' && canManageAdmins && <AdminMercadoPagoSettings />}
       </div>

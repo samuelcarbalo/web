@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { paymentsApi, moderationApi, type MpAdminConfigUpdate, type PurchaseHistoryItem } from '../lib/paymentsApi';
+import { paymentsApi, moderationApi, type MpAdminConfigUpdate, type PurchaseHistoryItem, type PaymentLedgerRow } from '../lib/paymentsApi';
 import { FALLBACK_PACKAGES, CREDIT_COSTS, type CreditPackage } from '../config/credits';
 import { useAuthStore } from '../store/authStore';
 
@@ -144,6 +144,23 @@ export const useMyPurchases = (enabled = true) =>
     },
     enabled,
     staleTime: 30_000,
+  });
+
+export const usePaymentLedger = (
+  params?: { category?: string; search?: string; date_from?: string; date_to?: string },
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: ['payment-ledger', params],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getLedger(params);
+      return {
+        count: data.count ?? 0,
+        results: (data.results ?? []) as PaymentLedgerRow[],
+      };
+    },
+    enabled,
+    staleTime: 20_000,
   });
 
 export const useRefreshCreditsAfterPayment = () => {
