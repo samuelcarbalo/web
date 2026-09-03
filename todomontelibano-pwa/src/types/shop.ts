@@ -29,6 +29,11 @@ export interface ShopProduct {
   stock: number;
   image_url?: string;
   is_featured?: boolean;
+  is_published?: boolean;
+  is_active?: boolean;
+  created_by?: string | null;
+  createdBy?: string | null;
+  can_manage?: boolean;
   category?: string | null;
   category_name?: string | null;
   category_slug?: string | null;

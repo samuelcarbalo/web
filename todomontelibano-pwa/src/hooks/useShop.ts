@@ -79,6 +79,50 @@ export const useShopProduct = (slug?: string) =>
     throwOnError: false,
   });
 
+export const useUpdateShopProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      slug,
+      payload,
+    }: {
+      slug: string;
+      payload: Partial<ShopProduct> & Record<string, unknown>;
+    }) => shopApi.updateProduct(slug, payload).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+      void qc.invalidateQueries({ queryKey: shopKeys.product(vars.slug) });
+    },
+  });
+};
+
+export const useDeleteShopProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (slug: string) => shopApi.deleteProduct(slug),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+    },
+  });
+};
+
+export const useUpdateShopProductStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      slug,
+      payload,
+    }: {
+      slug: string;
+      payload: { is_published?: boolean; is_active?: boolean; stock?: number };
+    }) => shopApi.updateProductStatus(slug, payload).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+      void qc.invalidateQueries({ queryKey: shopKeys.product(vars.slug) });
+    },
+  });
+};
+
 export const useShopCheckout = () => {
   const qc = useQueryClient();
   return useMutation({

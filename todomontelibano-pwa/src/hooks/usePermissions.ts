@@ -24,6 +24,41 @@ export function isSuperAdminLevel2(user: User | null | undefined): boolean {
   return (user?.admin_level ?? 0) === 2;
 }
 
+const SHOP_SUPER_ADMIN_ROLES = new Set([
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN_L2',
+  'SUPER_ADMIN',
+  'super_admin',
+]);
+
+/** Super Admin Nivel 1 o Nivel 2: moderación global de productos de tienda. */
+export function isShopSuperAdmin(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (isSuperAdminLevel1(user) || isSuperAdminLevel2(user)) return true;
+  return SHOP_SUPER_ADMIN_ROLES.has(String(user.role));
+}
+
+export type ShopProductOwnerFields = {
+  created_by?: string | null;
+  createdBy?: string | null;
+  can_manage?: boolean;
+};
+
+/**
+ * Puede editar/eliminar/desactivar un producto de tienda.
+ * Owner (created_by) o Super Admin L1/L2.
+ */
+export function canManageProduct(
+  user: User | null | undefined,
+  product: ShopProductOwnerFields | null | undefined,
+): boolean {
+  if (!user || !product) return false;
+  const isOwner = String(user.id) === String(product.created_by ?? product.createdBy ?? '');
+  if (isShopSuperAdmin(user) || isOwner) return true;
+  // Productos legacy sin created_by: el backend marca can_manage para el manager de la tienda.
+  return product.can_manage === true;
+}
+
 /** Puede crear/editar contenido de módulos (manager, admin o superuser/staff). */
 export function canManageContent(user: User | null | undefined): boolean {
   if (!user) return false;
@@ -124,5 +159,7 @@ export const usePermissions = () => {
     isSuperAdminLevel1: canManageAdmins,
     isSuperAdminLevel2: isDelegatedAdmin,
     canManageTournament,
+    canManageProduct: (product: ShopProductOwnerFields | null | undefined) =>
+      canManageProduct(user, product),
   };
 };

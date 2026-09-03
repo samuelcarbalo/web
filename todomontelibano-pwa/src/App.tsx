@@ -58,6 +58,7 @@ const CheckoutPage = lazyWithRetry(() => import('./pages/Shop/CheckoutPage'));
 const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPaymentResultPage'));
 const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
 const CreateProduct = lazyWithRetry(() => import('./pages/Shop/CreateProduct'));
+const EditProduct = lazyWithRetry(() => import('./pages/Shop/EditProduct'));
 const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
 const MyInvoicesPage = lazyWithRetry(() => import('./pages/Billing/MyInvoicesPage'));
 const InvoicePrintPage = lazyWithRetry(() => import('./pages/Billing/InvoicePrintPage'));
@@ -345,6 +346,14 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute allowedRoles={['manager', 'admin']}>
                       <CreateProduct />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="tienda/editar/:slug"
+                  element={
+                    <ProtectedRoute>
+                      <EditProduct />
                     </ProtectedRoute>
                   }
                 />

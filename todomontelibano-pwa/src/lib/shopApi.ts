@@ -98,6 +98,16 @@ export const shopApi = {
     }
   },
 
+  updateProduct: (slug: string, payload: Partial<ShopProduct> & Record<string, unknown>) =>
+    api.patch<ShopProduct>(`/ecommerce/products/${slug}/`, payload),
+
+  deleteProduct: (slug: string) => api.delete(`/ecommerce/products/${slug}/`),
+
+  updateProductStatus: (
+    slug: string,
+    payload: { is_published?: boolean; is_active?: boolean; stock?: number },
+  ) => api.patch<ShopProduct>(`/ecommerce/products/${slug}/status/`, payload),
+
   checkout: (payload: {
     items: Array<{ product_id: string; quantity: number }>;
     discount_code?: string;
