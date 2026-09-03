@@ -119,6 +119,22 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
               Mis pedidos
             </Link>
             <Link
+              to={ROUTES.facturas}
+              className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200"
+              onClick={onClose}
+            >
+              Mis facturas
+            </Link>
+            {canManageContent(user) && (
+              <Link
+                to={ROUTES.facturacion}
+                className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200"
+                onClick={onClose}
+              >
+                Facturación y ventas
+              </Link>
+            )}
+            <Link
               to="/messages"
               className="block py-3 text-base font-bold text-gray-700 dark:text-gray-200"
               onClick={onClose}

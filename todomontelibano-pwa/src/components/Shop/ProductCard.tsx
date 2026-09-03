@@ -5,6 +5,7 @@ import { getMediaUrl } from '../../lib/api';
 import { ROUTES } from '../../config/seo';
 import type { ShopProduct } from '../../types/shop';
 import FlashSaleCountdown from './FlashSaleCountdown';
+import ProductManageActions from './ProductManageActions';
 
 const formatCop = (value: number | string) =>
   new Intl.NumberFormat('es-CO', {
@@ -34,10 +35,14 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         : null;
 
   return (
-    <Link
-      to={ROUTES.tiendaProducto(product.slug)}
-      className="group card-static overflow-hidden hover:shadow-2xl hover:scale-[1.02] transition-all !p-0"
-    >
+    <article className="group card-static overflow-hidden hover:shadow-2xl hover:scale-[1.02] transition-all !p-0 relative">
+      <div className="absolute top-3 right-3 z-20">
+        <ProductManageActions product={product} />
+      </div>
+      <Link
+        to={ROUTES.tiendaProducto(product.slug)}
+        className="block"
+      >
       <div className="aspect-[16/10] bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
         {product.image_url ? (
           <img
@@ -69,10 +74,10 @@ const ProductCard: React.FC<Props> = ({ product }) => {
               <Sparkles className="w-3 h-3" /> Destacado
             </span>
           )}
+          <span className="px-2.5 py-1 text-xs font-bold bg-white/90 dark:bg-gray-900/90 rounded-full">
+            {product.subcategory_name || product.category_name || 'General'}
+          </span>
         </div>
-        <span className="absolute top-3 right-3 px-2.5 py-1 text-xs font-bold bg-white/90 dark:bg-gray-900/90 rounded-full">
-          {product.subcategory_name || product.category_name || 'General'}
-        </span>
         {pct != null && pct > 0 && (
           <span className="absolute bottom-3 right-3 px-2.5 py-1 text-xs font-extrabold bg-secondary-700 text-white rounded-full">
             -{pct}%
@@ -109,6 +114,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         )}
       </div>
     </Link>
+    </article>
   );
 };
 

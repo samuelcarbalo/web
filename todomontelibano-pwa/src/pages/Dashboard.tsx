@@ -18,6 +18,7 @@ import {
   Package,
   Shield,
   CreditCard,
+  Receipt,
   CheckCircle2,
   Clock,
   XCircle,
@@ -382,12 +383,37 @@ const Dashboard: React.FC = () => {
                   <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Administración</p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white">Panel de usuarios</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                    Listar, editar créditos, bloquear o eliminar cuentas
+                    Usuarios, créditos e historial global de pagos (tienda, deportes, eventos)
                   </p>
                 </div>
               </div>
               <span className="hidden sm:inline-flex rounded-2xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white">
                 Abrir panel
+              </span>
+            </div>
+          </Link>
+        )}
+
+        {isManagerOrAdmin && (
+          <Link
+            to={ROUTES.facturacion}
+            className="card mb-8 border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 hover:shadow-2xl transition-shadow block"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-3xl bg-emerald-600 text-white">
+                  <Receipt className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Facturación y ventas</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Gestión financiera de la tienda</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                    Pedidos recibidos, métricas, ticket promedio y facturas
+                  </p>
+                </div>
+              </div>
+              <span className="hidden sm:inline-flex rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
+                Abrir
               </span>
             </div>
           </Link>
@@ -624,7 +650,7 @@ const Dashboard: React.FC = () => {
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link to={ROUTES.tienda} className="card hover:shadow-2xl transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-3xl bg-violet-600">
@@ -655,6 +681,17 @@ const Dashboard: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mis pedidos</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{shopOrders.length}</p>
+                </div>
+              </div>
+            </Link>
+            <Link to={ROUTES.facturas} className="card hover:shadow-2xl transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-3xl bg-amber-500">
+                  <Receipt className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mis facturas</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Descargar / ver</p>
                 </div>
               </div>
             </Link>

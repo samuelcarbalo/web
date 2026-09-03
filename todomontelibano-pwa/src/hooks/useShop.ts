@@ -79,6 +79,50 @@ export const useShopProduct = (slug?: string) =>
     throwOnError: false,
   });
 
+export const useUpdateShopProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      slug,
+      payload,
+    }: {
+      slug: string;
+      payload: Partial<ShopProduct> & Record<string, unknown>;
+    }) => shopApi.updateProduct(slug, payload).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+      void qc.invalidateQueries({ queryKey: shopKeys.product(vars.slug) });
+    },
+  });
+};
+
+export const useDeleteShopProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (slug: string) => shopApi.deleteProduct(slug),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+    },
+  });
+};
+
+export const useUpdateShopProductStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      slug,
+      payload,
+    }: {
+      slug: string;
+      payload: { is_published?: boolean; is_active?: boolean; stock?: number };
+    }) => shopApi.updateProductStatus(slug, payload).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: shopKeys.all });
+      void qc.invalidateQueries({ queryKey: shopKeys.product(vars.slug) });
+    },
+  });
+};
+
 export const useShopCheckout = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -99,6 +143,52 @@ export const useMyShopOrders = (enabled = true) =>
     enabled,
     staleTime: 30 * 1000,
   });
+
+export const useShopSales = (
+  params?: {
+    status?: string;
+    delivery_status?: string;
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+  },
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: [...shopKeys.orders(), 'sales', params],
+    queryFn: async () => {
+      const { data } = await shopApi.getSales(params);
+      if (Array.isArray(data)) return { count: data.length, results: data };
+      return { count: data.count ?? data.results?.length ?? 0, results: data.results ?? [] };
+    },
+    enabled,
+    staleTime: 20_000,
+  });
+
+export const useShopSalesMetrics = (
+  params?: { date_from?: string; date_to?: string },
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: [...shopKeys.orders(), 'metrics', params],
+    queryFn: async () => {
+      const { data } = await shopApi.getSalesMetrics(params);
+      return data;
+    },
+    enabled,
+    staleTime: 20_000,
+  });
+
+export const useUpdateDelivery = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, delivery_status }: { id: string; delivery_status: string }) =>
+      shopApi.updateDelivery(id, delivery_status).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shopKeys.orders() });
+    },
+  });
+};
 
 export const useShopSettings = () =>
   useQuery({

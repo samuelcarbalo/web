@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from 'axios';
 import { api } from './api';
-import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
+import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct, ShopSalesMetrics, StoreSettings } from '../types/shop';
 
 export interface ProductListParams {
   category?: string;
@@ -98,12 +98,42 @@ export const shopApi = {
     }
   },
 
+  updateProduct: (slug: string, payload: Partial<ShopProduct> & Record<string, unknown>) =>
+    api.patch<ShopProduct>(`/ecommerce/products/${slug}/`, payload),
+
+  deleteProduct: (slug: string) => api.delete(`/ecommerce/products/${slug}/`),
+
+  updateProductStatus: (
+    slug: string,
+    payload: { is_published?: boolean; is_active?: boolean; stock?: number },
+  ) => api.patch<ShopProduct>(`/ecommerce/products/${slug}/status/`, payload),
+
   checkout: (payload: {
     items: Array<{ product_id: string; quantity: number }>;
     discount_code?: string;
   }) => api.post<ShopCheckoutResponse>('/ecommerce/orders/checkout/', payload),
 
   getMyOrders: () => api.get<ShopOrder[] | { results: ShopOrder[] }>('/ecommerce/orders/'),
+
+  getOrder: (id: string) => api.get<ShopOrder>(`/ecommerce/orders/${id}/`),
+
+  getSales: (params?: {
+    status?: string;
+    delivery_status?: string;
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+    page?: number;
+  }) =>
+    api.get<ShopOrder[] | { count: number; results: ShopOrder[] }>('/ecommerce/orders/sales/', {
+      params,
+    }),
+
+  getSalesMetrics: (params?: { date_from?: string; date_to?: string }) =>
+    api.get<ShopSalesMetrics>('/ecommerce/orders/metrics/', { params }),
+
+  updateDelivery: (id: string, delivery_status: string) =>
+    api.patch<ShopOrder>(`/ecommerce/orders/${id}/delivery/`, { delivery_status }),
 
   getSettings: async (): Promise<SoftListResult<StoreSettings>> => {
     try {

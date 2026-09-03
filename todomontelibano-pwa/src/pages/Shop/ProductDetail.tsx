@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { useShopProduct } from '../../hooks/useShop';
 import { useCartStore } from '../../store/cartStore';
+import { useAuthStore } from '../../store/authStore';
+import { canManageProduct } from '../../hooks/usePermissions';
 import { getMediaUrl } from '../../lib/api';
 import { ROUTES, SITE_NAME } from '../../config/seo';
 import SeoHead from '../../components/SEO/SeoHead';
 import CatalogErrorState from '../../components/Shop/CatalogErrorState';
+import ProductManageActions from '../../components/Shop/ProductManageActions';
 
 const formatCop = (value: number | string) =>
   new Intl.NumberFormat('es-CO', {
@@ -20,6 +23,7 @@ const ProductDetail: React.FC = () => {
   const { data, isLoading, isError, isFetching, refetch } = useShopProduct(slug);
   const product = data?.product ?? null;
   const addItem = useCartStore((s) => s.addItem);
+  const user = useAuthStore((s) => s.user);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -83,6 +87,11 @@ const ProductDetail: React.FC = () => {
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mt-2">
               {product.name}
             </h1>
+            {canManageProduct(user, product) && (
+              <div className="mt-4">
+                <ProductManageActions product={product} variant="buttons" />
+              </div>
+            )}
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-black text-violet-600">{formatCop(product.price_cop)}</span>
               {product.compare_at_price_cop &&

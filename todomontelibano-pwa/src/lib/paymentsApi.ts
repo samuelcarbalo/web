@@ -56,6 +56,24 @@ export const paymentsApi = {
   /** Historial de compras enriquecido del usuario autenticado. */
   getMyPurchases: () => api.get<PurchaseHistoryItem[]>('/payments/my-purchases/'),
 
+  getLedger: (params?: {
+    category?: string;
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+  }) => api.get<PaymentLedgerResponse>('/payments/ledger/', { params }),
+
+  downloadLedgerCsv: (params?: {
+    category?: string;
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+  }) =>
+    api.get<Blob>('/payments/ledger/', {
+      params: { ...params, export: 'csv' },
+      responseType: 'blob',
+    }),
+
   getSportsSubscriptionStatus: () =>
     api.get<SportsSubscriptionStatus>('/subscriptions/sports-status/'),
 
@@ -91,6 +109,27 @@ export interface PurchaseHistoryItem {
   credits_applied: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface PaymentLedgerRow {
+  id: string;
+  category: string;
+  category_label: string;
+  payer_name: string;
+  payer_email: string;
+  amount: number;
+  amount_unit: string;
+  amount_label: string;
+  payment_method: string;
+  status: string;
+  status_label: string;
+  created_at: string;
+  reference: string;
+}
+
+export interface PaymentLedgerResponse {
+  count: number;
+  results: PaymentLedgerRow[];
 }
 
 export const moderationApi = {

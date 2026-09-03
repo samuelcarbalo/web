@@ -29,6 +29,11 @@ export interface ShopProduct {
   stock: number;
   image_url?: string;
   is_featured?: boolean;
+  is_published?: boolean;
+  is_active?: boolean;
+  created_by?: string | null;
+  createdBy?: string | null;
+  can_manage?: boolean;
   category?: string | null;
   category_name?: string | null;
   category_slug?: string | null;
@@ -49,13 +54,34 @@ export interface CartLine {
   stock: number;
 }
 
+export interface ShopInvoice {
+  id: string;
+  number: string;
+  seller_name: string;
+  buyer_name: string;
+  buyer_email: string;
+  payment_method: string;
+  subtotal_cop: number | string;
+  discount_cop: number | string;
+  total_cop: number | string;
+  comision_mercado_pago: number | string;
+  iva_comision: number | string;
+  monto_neto_recibido: number | string;
+  status: string;
+  issued_at?: string | null;
+  created_at: string;
+}
+
 export interface ShopOrder {
   id: string;
   status: string;
+  delivery_status?: string;
   subtotal_cop: number | string;
   discount_cop: number | string;
   total_cop: number | string;
   discount_code?: string;
+  mp_preference_id?: string;
+  mp_payment_id?: string;
   fulfilled: boolean;
   items: Array<{
     id: string;
@@ -64,7 +90,23 @@ export interface ShopOrder {
     unit_price_cop: number | string;
     line_total_cop: number | string;
   }>;
+  invoice?: ShopInvoice | null;
+  invoice_number?: string;
+  store_name?: string;
+  buyer_name?: string;
+  buyer_email?: string;
   created_at: string;
+}
+
+export interface ShopSalesMetrics {
+  total_sales_cop: number | string;
+  order_count: number;
+  avg_ticket_cop: number | string;
+  top_sellers: Array<{
+    product_name: string;
+    quantity: number;
+    revenue: number | string;
+  }>;
 }
 
 export interface ShopCheckoutResponse {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, ShoppingBag } from 'lucide-react';
+import { FileText, Package, ShoppingBag } from 'lucide-react';
 import { useMyShopOrders } from '../../hooks/useShop';
 import { ROUTES } from '../../config/seo';
 
@@ -34,6 +34,13 @@ const MyOrdersPage: React.FC = () => {
           <p className="mt-2 text-violet-100 max-w-xl font-light">
             Historial de compras realizadas en el catálogo Chever.
           </p>
+          <Link
+            to={ROUTES.facturas}
+            className="inline-flex items-center gap-2 mt-4 rounded-2xl bg-white/15 px-4 py-2 text-sm font-bold hover:bg-white/25"
+          >
+            <FileText className="w-4 h-4" />
+            Ver mis facturas
+          </Link>
         </div>
       </div>
 
@@ -88,6 +95,11 @@ const MyOrdersPage: React.FC = () => {
                   </li>
                 ))}
               </ul>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to={`/facturas/${order.id}`} className="btn-secondary text-xs py-1.5 px-3">
+                  Ver factura
+                </Link>
+              </div>
             </div>
           ))}
         </div>
