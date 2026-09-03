@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { CreditPackage } from '../config/credits';
+import { CREDIT_COSTS, type CreditPackage } from '../config/credits';
 
 export interface MpPublicConfig {
   public_key: string;
@@ -59,9 +59,10 @@ export const paymentsApi = {
   getSportsSubscriptionStatus: () =>
     api.get<SportsSubscriptionStatus>('/subscriptions/sports-status/'),
 
-  activateSportsModule: () =>
+  activateSportsModule: (creditsAmount: number = CREDIT_COSTS.sportsModule) =>
     api.post<SportsSubscriptionStatus & { success: boolean; message: string; credits: number }>(
       '/subscriptions/activate-sports/',
+      { credits_amount: creditsAmount, credits: creditsAmount },
     ),
 };
 
