@@ -15,6 +15,8 @@ export const SPORTS_MODULE_DAYS = 30;
 export const SPORTS_MODULE_COPY = {
   title: 'Plan Administración Deportiva Completa',
   priceLabel: '200 Créditos / Mes',
+  description:
+    'Acceso ilimitado por 30 días a la creación, edición, eliminación y gestión de torneos, calendarios, equipos y jugadores por 200 créditos.',
   benefits: [
     'Creación, edición y eliminación ilimitada de torneos por 30 días.',
     'Gestión completa de equipos, plantillas y jugadores.',
@@ -118,9 +120,9 @@ export const FALLBACK_PACKAGES: CreditPackage[] = [
     name: 'Paquete Plata',
     credits: 50,
     price_cop: 45000,
-    badge: '¡Ideal para 1 Torneo!',
+    badge: 'Paquete intermedio',
     savings_cop: 5000,
-    description: '50 créditos — avance hacia el Plan Administración Deportiva (200 créditos / 30 días).',
+    description: '50 créditos para empleos, inmuebles o eventos. El Módulo Deportivo cuesta 200 créditos / 30 días.',
     standard_price_cop: 50000,
   },
   {

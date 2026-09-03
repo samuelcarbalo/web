@@ -54,6 +54,10 @@ const SportsModulePlanCard: React.FC = () => {
             <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
               {SPORTS_MODULE_COPY.priceLabel}
             </p>
+            <p className="text-3xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
+              {CREDIT_COSTS.sportsModule}
+              <span className="text-base font-bold text-gray-500 dark:text-gray-400 ml-1">créditos</span>
+            </p>
           </div>
         </div>
         {active && expires && (
@@ -62,6 +66,10 @@ const SportsModulePlanCard: React.FC = () => {
           </span>
         )}
       </div>
+
+      <p className="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        {SPORTS_MODULE_COPY.description}
+      </p>
 
       <ul className="mt-5 space-y-2">
         {SPORTS_MODULE_COPY.benefits.map((benefit) => (

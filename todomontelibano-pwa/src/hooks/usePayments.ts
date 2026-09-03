@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi, moderationApi, type MpAdminConfigUpdate, type PurchaseHistoryItem } from '../lib/paymentsApi';
-import { FALLBACK_PACKAGES, type CreditPackage } from '../config/credits';
+import { FALLBACK_PACKAGES, CREDIT_COSTS, type CreditPackage } from '../config/credits';
 import { useAuthStore } from '../store/authStore';
 
 function normalizePackages(data: unknown): CreditPackage[] {
@@ -110,7 +110,8 @@ export const useReportPublication = () =>
 export const useActivateSportsModule = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => paymentsApi.activateSportsModule().then((r) => r.data),
+    mutationFn: () =>
+      paymentsApi.activateSportsModule(CREDIT_COSTS.sportsModule).then((r) => r.data),
     onSuccess: (data) => {
       useAuthStore.getState().updateUser({
         credits: data.credits,
