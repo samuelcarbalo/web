@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTournament, useUpdateTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
+import { isSportsSuperAdmin, isPlatformElevatedUser } from '../../hooks/usePermissions';
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType } from '../../types/sports'; //sportTypeLabels
@@ -17,6 +18,9 @@ const EditTournament: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+
+  // Solo Admin o Super Admin pueden cambiar el estado del torneo
+  const canChangeStatus = isSportsSuperAdmin(user) || isPlatformElevatedUser(user);
   
   const { data: tournament, isLoading } = useTournament(slug || '');
   const updateMutation = useUpdateTournament();
@@ -49,9 +53,10 @@ const EditTournament: React.FC = () => {
   ];
 
   const statuses = [
-    { value: 'upcoming', label: 'Próximo' },
-    { value: 'ongoing', label: 'En curso' },
-    { value: 'completed', label: 'Finalizado' },
+    { value: 'draft', label: 'Borrador' },
+    { value: 'registration', label: 'Inscripción abierta' },
+    { value: 'active', label: 'En curso (Activo)' },
+    { value: 'finished', label: 'Finalizado' },
     { value: 'cancelled', label: 'Cancelado' },
   ];
 
@@ -59,8 +64,13 @@ const EditTournament: React.FC = () => {
 
   useEffect(() => {
     if (tournament) {
-      // Verificar ownership
-      if (user?.organization !== tournament.organization && user?.role !== 'admin') {
+      // Verificar ownership: Super Admin pasa siempre; también admins o creadores del torneo
+      const canEdit =
+        isSportsSuperAdmin(user) ||
+        user?.role === 'admin' ||
+        user?.is_superuser ||
+        user?.organization === tournament.organization;
+      if (!canEdit) {
         navigate('/sports');
         return;
       }
@@ -101,13 +111,16 @@ const EditTournament: React.FC = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     
+    // Si el usuario no puede cambiar el estado, lo excluimos del payload
+    // para no disparar el 403 del backend innecesariamente.
+    const { status: _statusField, ...restFormData } = formData;
+    const payload = canChangeStatus
+      ? { ...formData, logo: formData.logo.trim(), banner: formData.banner.trim() }
+      : { ...restFormData, logo: formData.logo.trim(), banner: formData.banner.trim() };
+
     updateMutation.mutate({
       slug,
-      data: {
-        ...formData,
-        logo: formData.logo.trim(),
-        banner: formData.banner.trim(),
-      },
+      data: payload,
     }, {
       onSuccess: () => {
         navigate(`/sports/tournaments/${slug}`);
@@ -210,20 +223,39 @@ const EditTournament: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Estado
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => handleChange('status', e.target.value)}
-                  className="input-field"
-                >
-                  {statuses.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Estado: solo visible y editable para Admin / Super Admin */}
+              {canChangeStatus ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Estado
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                    className="input-field"
+                  >
+                    {statuses.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <span>⚠</span> Solo admins pueden cambiar el estado del torneo.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Estado
+                  </label>
+                  <div className="input-field bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 cursor-not-allowed flex items-center justify-between">
+                    <span>{statuses.find(s => s.value === formData.status)?.label ?? formData.status}</span>
+                    <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">Solo admin</span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    Solo un administrador puede cambiar el estado del torneo.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">

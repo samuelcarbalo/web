@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { paymentsApi, moderationApi, type MpAdminConfigUpdate } from '../lib/paymentsApi';
+import { paymentsApi, moderationApi, type MpAdminConfigUpdate, type PurchaseHistoryItem } from '../lib/paymentsApi';
 import { FALLBACK_PACKAGES, type CreditPackage } from '../config/credits';
 
 function normalizePackages(data: unknown): CreditPackage[] {
@@ -100,6 +100,21 @@ export const useMyPaymentOrders = (enabled = true) =>
 export const useReportPublication = () =>
   useMutation({
     mutationFn: moderationApi.reportPublication,
+  });
+
+/**
+ * Historial de compras enriquecido del usuario autenticado.
+ * GET /api/v1/payments/my-purchases/
+ */
+export const useMyPurchases = (enabled = true) =>
+  useQuery({
+    queryKey: ['my-purchases'],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getMyPurchases();
+      return (Array.isArray(data) ? data : []) as PurchaseHistoryItem[];
+    },
+    enabled,
+    staleTime: 30_000,
   });
 
 export const useRefreshCreditsAfterPayment = () => {
