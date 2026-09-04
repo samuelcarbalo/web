@@ -33,6 +33,7 @@ export interface ShopProduct {
   is_active?: boolean;
   created_by?: string | { id?: string | number } | null;
   createdBy?: string | { id?: string | number } | null;
+  created_by_email?: string | null;
   can_manage?: boolean;
   category?: string | null;
   category_name?: string | null;
@@ -78,6 +79,9 @@ export interface ShopOrder {
   delivery_status?: string;
   subtotal_cop: number | string;
   discount_cop: number | string;
+  shipping_cop?: number | string;
+  payment_fee_cop?: number | string;
+  fee_percentage?: string;
   total_cop: number | string;
   discount_code?: string;
   mp_preference_id?: string;
@@ -109,7 +113,17 @@ export interface ShopSalesMetrics {
   }>;
 }
 
-export interface ShopCheckoutResponse {
+export interface ShopCheckoutBreakdown {
+  subtotal: number;
+  discount?: number;
+  payment_fee: number;
+  fee_percentage: string;
+  shipping_cost: number;
+  total_amount: number;
+  currency: string;
+}
+
+export interface ShopCheckoutResponse extends ShopCheckoutBreakdown {
   order: ShopOrder;
   preference_id: string;
   init_point?: string;
@@ -120,5 +134,6 @@ export interface ShopCheckoutResponse {
 export interface StoreSettings {
   id: string | null;
   store_logo: string;
+  shipping_cost_cop?: number | string;
   updated_at: string | null;
 }

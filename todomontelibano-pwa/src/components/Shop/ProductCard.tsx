@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, Sparkles, Timer, Zap } from 'lucide-react';
 import { getMediaUrl } from '../../lib/api';
 import { ROUTES } from '../../config/seo';
-import { canManageProduct } from '../../hooks/usePermissions';
-import { useAuthStore } from '../../store/authStore';
 import type { ShopProduct } from '../../types/shop';
 import FlashSaleCountdown from './FlashSaleCountdown';
 import ProductManageActions from './ProductManageActions';
@@ -18,11 +16,11 @@ const formatCop = (value: number | string) =>
 
 type Props = {
   product: ShopProduct;
+  /** Opcional; si no se pasa, se usa `product.can_manage` del API. */
   canManage?: boolean;
 };
 
 const ProductCard: React.FC<Props> = ({ product, canManage }) => {
-  const user = useAuthStore((s) => s.user);
   const flash = product.active_discount;
   const hasDiscount =
     (!!product.compare_at_price_cop &&
@@ -37,7 +35,8 @@ const ProductCard: React.FC<Props> = ({ product, canManage }) => {
             (1 - Number(product.price_cop) / Number(product.compare_at_price_cop)) * 100,
           )
         : null;
-  const showManage = canManageProduct(user, product) || canManage === true;
+  // Fuente de verdad: flag `can_manage` del backend.
+  const showManage = canManage === true || product.can_manage === true;
 
   return (
     <article className="group card-static hover:shadow-2xl hover:scale-[1.02] transition-all !p-0 relative overflow-visible">

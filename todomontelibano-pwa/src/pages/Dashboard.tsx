@@ -16,6 +16,7 @@ import {
   Coins,
   ShoppingBag,
   Package,
+  Boxes,
   Shield,
   CreditCard,
   Receipt,
@@ -26,13 +27,13 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { canManageContent } from '../hooks/usePermissions';
+import { canManageContent, canSeeMyCreatedProducts } from '../hooks/usePermissions';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
 import { useTournaments } from '../hooks/useSports';
 import { useContactMessages } from '../hooks/useContact';
 import CreditBalanceBadge from '../components/Credits/CreditBalanceBadge';
 import BuyCreditsButton from '../components/Credits/BuyCreditsButton';
-import { useMyShopOrders } from '../hooks/useShop';
+import { useMyShopOrders, useShopProducts } from '../hooks/useShop';
 import { useMyPurchases } from '../hooks/usePayments';
 import type { PurchaseHistoryItem } from '../lib/paymentsApi';
 import { ROUTES } from '../config/seo';
@@ -127,6 +128,12 @@ const Dashboard: React.FC = () => {
   const { data: tournaments } = useTournaments({ status: 'active', enabled: false });
   const { data: manager_tournaments } = useTournaments({ status: 'active', enabled: isManagerOrAdmin });
   const { data: shopOrders = [] } = useMyShopOrders(true);
+  const showMyCreatedProducts = canSeeMyCreatedProducts(user);
+  const { data: myProductsData } = useShopProducts(
+    { created_by_me: true },
+    { enabled: showMyCreatedProducts },
+  );
+  const myProductCount = myProductsData?.count ?? myProductsData?.results?.length ?? 0;
   const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
 
   // Historial de compras
@@ -629,7 +636,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8" id="tienda">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
               <ShoppingBag className="w-6 h-6 mr-2 text-violet-600 dark:text-violet-400" />
@@ -684,6 +691,21 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </Link>
+            {showMyCreatedProducts && (
+              <Link to={ROUTES.tiendaMisProductos} className="card hover:shadow-2xl transition-shadow">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-3xl bg-fuchsia-600">
+                    <Boxes className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mis productos creados</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {myProductCount} producto{myProductCount === 1 ? '' : 's'}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
             <Link to={ROUTES.facturas} className="card hover:shadow-2xl transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-3xl bg-amber-500">

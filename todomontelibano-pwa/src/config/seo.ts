@@ -55,6 +55,8 @@ export const ROUTES = {
   tiendaCheckout: '/tienda/checkout',
   tiendaResultado: '/tienda/resultado',
   tiendaPedidos: '/tienda/pedidos',
+  tiendaMisProductos: '/dashboard/tienda/mis-productos',
+  dashboardTienda: '/dashboard/tienda',
   facturas: '/facturas',
   facturacion: '/dashboard/facturacion',
   adminUsers: '/dashboard/admin',

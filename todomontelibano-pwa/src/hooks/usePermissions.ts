@@ -47,6 +47,30 @@ export function isShopSuperAdmin(user: User | null | undefined): boolean {
   return false;
 }
 
+const MY_CREATED_PRODUCTS_ROLES = new Set([
+  'ADMIN',
+  'admin',
+  'MANAGER',
+  'manager',
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN_L2',
+  'SUPER_ADMIN',
+  'super_admin',
+]);
+
+/**
+ * Tarjeta y ruta "Mis productos creados": Manager / Admin / Super Admin.
+ */
+export function canSeeMyCreatedProducts(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (user.is_admin || user.is_superuser || user.is_staff) return true;
+  if ((user.admin_level ?? 0) >= 1) return true;
+  if (user.is_super_admin_l1 || user.is_super_admin_l2) return true;
+  if (MY_CREATED_PRODUCTS_ROLES.has(String(user.role))) return true;
+  if (MY_CREATED_PRODUCTS_ROLES.has(String(user.hierarchy_role || ''))) return true;
+  return isShopSuperAdmin(user);
+}
+
 export type ShopProductOwnerFields = {
   created_by?: string | { id?: string | number } | null;
   createdBy?: string | { id?: string | number } | null;
@@ -63,14 +87,16 @@ function coerceEntityId(value: unknown): string {
 
 /**
  * Puede editar/eliminar/desactivar un producto de tienda.
- * Owner (created_by), Super Admin L1/L2, o flag `can_manage` del API.
+ * Fuente de verdad: `can_manage` del API. Fallback local solo si el flag no viene.
  */
 export function canManageProduct(
   user: User | null | undefined,
   product: ShopProductOwnerFields | null | undefined,
 ): boolean {
-  if (!user || !product) return false;
+  if (!product) return false;
   if (product.can_manage === true) return true;
+  if (product.can_manage === false) return false;
+  if (!user) return false;
   if (isShopSuperAdmin(user)) return true;
   const ownerId = coerceEntityId(product.created_by ?? product.createdBy);
   const userId = coerceEntityId(user.id);
@@ -180,5 +206,6 @@ export const usePermissions = () => {
     canManageTournament,
     canManageProduct: (product: ShopProductOwnerFields | null | undefined) =>
       canManageProduct(user, product),
+    canSeeMyCreatedProducts: canSeeMyCreatedProducts(user),
   };
 };
