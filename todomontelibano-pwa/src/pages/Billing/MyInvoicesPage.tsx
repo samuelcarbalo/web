@@ -135,6 +135,21 @@ const MyInvoicesPage: React.FC = () => {
                   <span>-{formatCop(open.discount_cop)}</span>
                 </p>
               )}
+              {Number(open.shipping_cop || 0) > 0 && (
+                <p className="flex justify-between">
+                  <span>Costo de envío</span>
+                  <span>{formatCop(open.shipping_cop || 0)}</span>
+                </p>
+              )}
+              {Number(open.payment_fee_cop || 0) > 0 && (
+                <p className="flex justify-between">
+                  <span>
+                    Tarifa Mercado Pago
+                    {open.fee_percentage ? ` (${open.fee_percentage})` : ''}
+                  </span>
+                  <span>+ {formatCop(open.payment_fee_cop || 0)}</span>
+                </p>
+              )}
               <p className="flex justify-between font-extrabold text-base pt-1">
                 <span>Total</span>
                 <span>{formatCop(open.total_cop)}</span>

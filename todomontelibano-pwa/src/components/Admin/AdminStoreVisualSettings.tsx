@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, Store, Trash2, Upload } from 'lucide-react';
 import { getMediaUrl } from '../../lib/api';
-import { useDeleteStoreLogo, useShopSettings, useUpdateStoreLogo } from '../../hooks/useShop';
+import { useDeleteStoreLogo, useShopSettings, useUpdateStoreLogo, useUpdateStoreSettings } from '../../hooks/useShop';
 import ImageUploader from '../UI/ImageUploader';
 
 const AdminStoreVisualSettings: React.FC = () => {
   const { data, isLoading } = useShopSettings();
   const updateLogo = useUpdateStoreLogo();
+  const updateSettings = useUpdateStoreSettings();
   const deleteLogo = useDeleteStoreLogo();
 
   const savedUrl = getMediaUrl(data?.settings.store_logo) ?? '';
+  const savedShipping = String(Number(data?.settings.shipping_cost_cop || 0));
   const [logoUrl, setLogoUrl] = useState('');
+  const [shippingCost, setShippingCost] = useState('0');
   const [errorMsg, setErrorMsg] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
@@ -18,10 +21,15 @@ const AdminStoreVisualSettings: React.FC = () => {
     setLogoUrl(savedUrl);
   }, [savedUrl]);
 
+  useEffect(() => {
+    setShippingCost(savedShipping);
+  }, [savedShipping]);
+
   const dirty = logoUrl.trim() !== savedUrl.trim();
+  const shippingDirty = shippingCost.trim() !== savedShipping;
   const canSave = dirty && Boolean(logoUrl.trim());
   const canReset = Boolean(savedUrl) || dirty;
-  const busy = updateLogo.isPending || deleteLogo.isPending;
+  const busy = updateLogo.isPending || deleteLogo.isPending || updateSettings.isPending;
 
   const save = async () => {
     if (!logoUrl.trim()) {
@@ -123,6 +131,54 @@ const AdminStoreVisualSettings: React.FC = () => {
           </div>
         </div>
       )}
+
+      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <label className="auth-label" htmlFor="store-shipping">
+          Costo de envío (COP)
+        </label>
+        <p className="text-xs text-gray-500 mb-2">
+          Se muestra en checkout y se envía a Mercado Pago como ítem aparte. Usa 0 si no aplica.
+        </p>
+        <div className="flex flex-wrap gap-2 items-end">
+          <input
+            id="store-shipping"
+            type="number"
+            min={0}
+            step={1}
+            className="input-field max-w-xs"
+            value={shippingCost}
+            onChange={(e) => {
+              setShippingCost(e.target.value);
+              setErrorMsg('');
+              setOkMsg('');
+            }}
+          />
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={!shippingDirty || busy}
+            onClick={async () => {
+              const amount = Math.max(0, Math.round(Number(shippingCost || 0)));
+              setErrorMsg('');
+              setOkMsg('');
+              try {
+                await updateSettings.mutateAsync({ shipping_cost_cop: amount });
+                setShippingCost(String(amount));
+                setOkMsg('Costo de envío actualizado. El checkout usará este valor.');
+              } catch (err) {
+                const axiosDetail = (err as { response?: { data?: { detail?: string } } })?.response
+                  ?.data?.detail;
+                setErrorMsg(
+                  axiosDetail ||
+                    (err instanceof Error ? err.message : 'No se pudo guardar el costo de envío.'),
+                );
+              }
+            }}
+          >
+            Guardar envío
+          </button>
+        </div>
+      </div>
 
       {okMsg && (
         <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">

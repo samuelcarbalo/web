@@ -102,7 +102,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ enabled = true })
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 glass rounded-3xl shadow-2xl z-50 overflow-hidden border border-gray-200/80 dark:border-gray-700/80">
+        <div className="absolute right-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] sm:w-96 glass rounded-3xl shadow-2xl z-[70] overflow-hidden border border-gray-200/80 dark:border-gray-700/80">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200/80 dark:border-gray-700/80">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm">Notificaciones</h3>
             {unreadCount > 0 && (

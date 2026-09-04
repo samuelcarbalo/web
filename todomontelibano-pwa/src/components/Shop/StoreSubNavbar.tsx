@@ -19,7 +19,7 @@ const StoreSubNavbar: React.FC = () => {
 
   return (
     <div
-      className="sticky top-[4.5rem] md:top-20 z-40 border-b border-secondary-200/70 dark:border-secondary-900/50 bg-secondary-50/95 dark:bg-primary-950/95 backdrop-blur-md"
+      className="sticky top-[4.5rem] md:top-20 z-30 border-b border-secondary-200/70 dark:border-secondary-900/50 bg-secondary-50/95 dark:bg-primary-950/95 backdrop-blur-md"
       role="navigation"
       aria-label="Navegación de Tienda Chéver"
     >

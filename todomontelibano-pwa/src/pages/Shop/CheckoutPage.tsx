@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
+import CheckoutBreakdown, {
+  type CheckoutBreakdownValues,
+} from '../../components/Shop/CheckoutBreakdown';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
-import { useShopCheckout } from '../../hooks/useShop';
+import { useShopCheckout, useShopCheckoutQuote } from '../../hooks/useShop';
 import { useMpConfig } from '../../hooks/usePayments';
 import { resolveMpInitPoint } from '../../lib/mpCheckout';
 import { buildLoginUrl } from '../../lib/authRedirect';
 import { ROUTES } from '../../config/seo';
+import type { ShopCheckoutBreakdown } from '../../types/shop';
 
-const formatCop = (value: number | string) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
+const toBreakdown = (data: ShopCheckoutBreakdown): CheckoutBreakdownValues => ({
+  subtotal: Number(data.subtotal || 0),
+  discount: Number(data.discount || 0),
+  shippingCost: Number(data.shipping_cost || 0),
+  paymentFee: Number(data.payment_fee || 0),
+  feePercentage: data.fee_percentage,
+  totalAmount: Number(data.total_amount || 0),
+});
 
 const CheckoutPage: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
@@ -25,9 +31,21 @@ const CheckoutPage: React.FC = () => {
   const checkout = useShopCheckout();
   const { data: mpConfig } = useMpConfig();
   const [discountCode, setDiscountCode] = useState('');
+  const [debouncedCode, setDebouncedCode] = useState('');
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [initPoint, setInitPoint] = useState<string | null>(null);
-  const [orderTotal, setOrderTotal] = useState<number | null>(null);
+  const [paidBreakdown, setPaidBreakdown] = useState<CheckoutBreakdownValues | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedCode(discountCode.trim()), 400);
+    return () => window.clearTimeout(timer);
+  }, [discountCode]);
+
+  const quoteItems = useMemo(
+    () => items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
+    [items],
+  );
+  const quote = useShopCheckoutQuote(quoteItems, debouncedCode, isAuthenticated && !preferenceId);
 
   if (!isAuthenticated) {
     return <Navigate to={buildLoginUrl(ROUTES.tiendaCheckout)} replace />;
@@ -50,12 +68,23 @@ const CheckoutPage: React.FC = () => {
           data.is_production ?? mpConfig?.is_production ?? false,
         ),
       );
-      setOrderTotal(Number(data.order.total_cop));
+      setPaidBreakdown(toBreakdown(data));
       clear();
     } catch {
       /* error shown below */
     }
   };
+
+  const preview = quote.data
+    ? toBreakdown(quote.data)
+    : {
+        subtotal,
+        discount: 0,
+        shippingCost: 0,
+        paymentFee: 0,
+        feePercentage: undefined,
+        totalAmount: subtotal,
+      };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
@@ -64,10 +93,6 @@ const CheckoutPage: React.FC = () => {
         <div className="card-static space-y-4">
           {!preferenceId && (
             <>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Subtotal carrito</span>
-                <span className="font-bold">{formatCop(subtotal)}</span>
-              </div>
               <div>
                 <label className="auth-label" htmlFor="discount">
                   Cupón de descuento
@@ -80,6 +105,10 @@ const CheckoutPage: React.FC = () => {
                   placeholder="SAVE10"
                 />
               </div>
+              <CheckoutBreakdown {...preview} />
+              {quote.isFetching && (
+                <p className="text-xs text-gray-500">Actualizando desglose de costos…</p>
+              )}
               <button
                 type="button"
                 className="btn-primary w-full justify-center"
@@ -98,11 +127,7 @@ const CheckoutPage: React.FC = () => {
 
           {preferenceId && (
             <>
-              {orderTotal != null && (
-                <p className="text-sm text-gray-600">
-                  Total a pagar: <strong>{formatCop(orderTotal)}</strong>
-                </p>
-              )}
+              {paidBreakdown && <CheckoutBreakdown {...paidBreakdown} />}
               <MercadoPagoCheckout preferenceId={preferenceId} initPoint={initPoint} />
             </>
           )}
