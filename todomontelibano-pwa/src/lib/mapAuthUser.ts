@@ -97,6 +97,12 @@ export function mapAuthUser(
     hierarchy_role: hierarchy && hierarchy !== 'null' ? hierarchy : null,
     is_superuser: isSuperuser,
     is_staff: asBool(payload.is_staff) || isSuperuser || isL2,
+    is_admin:
+      asBool(payload.is_admin) ||
+      asBool(payload.is_staff) ||
+      orgRoleOf(rawRole) === 'admin' ||
+      isSuperuser ||
+      isL2,
     is_super_admin_l1: adminLevel === 1 || asBool(payload.is_super_admin_l1),
     is_super_admin_l2: adminLevel === 2 || asBool(payload.is_super_admin_l2),
     admin_level: adminLevel,

@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, MoreVertical, Pencil, Power, Trash2 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
-import { canManageProduct } from '../../hooks/usePermissions';
 import { useDeleteShopProduct, useUpdateShopProductStatus } from '../../hooks/useShop';
 import { ROUTES } from '../../config/seo';
 import type { ShopProduct } from '../../types/shop';
@@ -13,17 +11,18 @@ type Props = {
   product: ShopProduct;
   variant?: 'menu' | 'buttons';
   canManage?: boolean;
+  onDeleted?: () => void;
 };
 
-const ProductManageActions: React.FC<Props> = ({ product, variant = 'menu', canManage }) => {
-  const user = useAuthStore((s) => s.user);
+const ProductManageActions: React.FC<Props> = ({ product, variant = 'menu', canManage, onDeleted }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const del = useDeleteShopProduct();
   const status = useUpdateShopProductStatus();
-  const allowed = canManageProduct(user, product) || canManage === true;
+  // Fuente de verdad: `can_manage` del API (o prop explícita del padre).
+  const allowed = canManage === true || product.can_manage === true;
   const published = product.is_published !== false && product.is_active !== false;
 
   useEffect(() => {
@@ -46,7 +45,8 @@ const ProductManageActions: React.FC<Props> = ({ product, variant = 'menu', canM
     del.mutate(product.slug, {
       onSuccess: () => {
         setConfirmDelete(false);
-        navigate(ROUTES.tienda);
+        if (onDeleted) onDeleted();
+        else navigate(ROUTES.tienda);
       },
       onError: (error: unknown) => {
         const data = (error as { response?: { data?: { message?: string; detail?: string } } })

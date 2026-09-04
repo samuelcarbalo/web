@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from 'axios';
 import { api } from './api';
-import type { ShopCategory, ShopCheckoutResponse, ShopOrder, ShopProduct, ShopSalesMetrics, StoreSettings } from '../types/shop';
+import type { ShopCategory, ShopCheckoutBreakdown, ShopCheckoutResponse, ShopOrder, ShopProduct, ShopSalesMetrics, StoreSettings } from '../types/shop';
 
 export interface ProductListParams {
   category?: string;
@@ -14,6 +14,12 @@ export interface ProductListParams {
   flash_sale?: boolean;
   page?: number;
   ordering?: string;
+  mine?: boolean;
+  my_products?: boolean;
+  created_by_me?: boolean;
+  created_by?: string;
+  manage?: boolean;
+  all?: boolean;
 }
 
 export type SoftListResult<T> = {
@@ -63,9 +69,13 @@ export const shopApi = {
     params?: ProductListParams,
   ): Promise<SoftListResult<{ count: number; results: ShopProduct[] } | ShopProduct[]>> => {
     try {
+      const query = { ...params };
+      if (query.mine || query.my_products || query.created_by_me) {
+        query.created_by_me = true;
+      }
       const { data } = await api.get<{ count: number; results: ShopProduct[] } | ShopProduct[]>(
         '/ecommerce/products/',
-        { params },
+        { params: query },
       );
       return { data, degraded: false };
     } catch (error) {
@@ -113,6 +123,11 @@ export const shopApi = {
     discount_code?: string;
   }) => api.post<ShopCheckoutResponse>('/ecommerce/orders/checkout/', payload),
 
+  quoteCheckout: (payload: {
+    items: Array<{ product_id: string; quantity: number }>;
+    discount_code?: string;
+  }) => api.post<ShopCheckoutBreakdown>('/ecommerce/orders/quote/', payload),
+
   getMyOrders: () => api.get<ShopOrder[] | { results: ShopOrder[] }>('/ecommerce/orders/'),
 
   getOrder: (id: string) => api.get<ShopOrder>(`/ecommerce/orders/${id}/`),
@@ -142,6 +157,7 @@ export const shopApi = {
         data: {
           id: data?.id ?? null,
           store_logo: data?.store_logo ?? '',
+          shipping_cost_cop: data?.shipping_cost_cop ?? 0,
           updated_at: data?.updated_at ?? null,
         },
         degraded: false,
@@ -149,14 +165,14 @@ export const shopApi = {
     } catch (error) {
       console.warn('[shopApi] store settings degraded:', serverErrorMessage(error));
       return {
-        data: { id: null, store_logo: '', updated_at: null },
+        data: { id: null, store_logo: '', shipping_cost_cop: 0, updated_at: null },
         warning: 'No se pudo cargar la configuración visual de la tienda',
         degraded: true,
       };
     }
   },
 
-  updateSettings: (payload: { store_logo: string }) =>
+  updateSettings: (payload: { store_logo?: string; shipping_cost_cop?: number | string }) =>
     api.patch<StoreSettings>('/store/settings/', payload),
 
   uploadLogo: (payload: { store_logo: string }) =>

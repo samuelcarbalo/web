@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { shopApi, type ProductListParams } from '../lib/shopApi';
 import { useAuthStore } from '../store/authStore';
-import type { ShopCategory, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
+import type { ShopCategory, ShopCheckoutBreakdown, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
 
 function normalizeList<T>(data: T[] | { results: T[] } | undefined): T[] {
   if (!data) return [];
@@ -17,6 +17,8 @@ export const shopKeys = {
   product: (slug: string) => [...shopKeys.all, 'product', slug] as const,
   orders: () => [...shopKeys.all, 'orders'] as const,
   settings: () => [...shopKeys.all, 'settings'] as const,
+  checkoutQuote: (itemsKey: string, discountCode: string) =>
+    [...shopKeys.all, 'checkout-quote', itemsKey, discountCode] as const,
 };
 
 export const useShopCategories = () =>
@@ -37,7 +39,7 @@ export const useShopCategories = () =>
     throwOnError: false,
   });
 
-export const useShopProducts = (params?: ProductListParams) => {
+export const useShopProducts = (params?: ProductListParams, options?: { enabled?: boolean }) => {
   const userId = useAuthStore((s) => s.user?.id);
   return useQuery({
     queryKey: [...shopKeys.products(params), userId ?? 'anon'],
@@ -62,6 +64,7 @@ export const useShopProducts = (params?: ProductListParams) => {
     staleTime: 60 * 1000,
     retry: false,
     throwOnError: false,
+    enabled: options?.enabled ?? true,
   });
 };
 
@@ -137,6 +140,28 @@ export const useShopCheckout = () => {
     },
   });
 };
+
+export const useShopCheckoutQuote = (
+  items: Array<{ product_id: string; quantity: number }>,
+  discountCode: string,
+  enabled = true,
+) =>
+  useQuery({
+    queryKey: shopKeys.checkoutQuote(
+      items.map((i) => `${i.product_id}:${i.quantity}`).join(','),
+      discountCode.trim().toUpperCase(),
+    ),
+    queryFn: async () => {
+      const { data } = await shopApi.quoteCheckout({
+        items,
+        discount_code: discountCode.trim() || undefined,
+      });
+      return data as ShopCheckoutBreakdown;
+    },
+    enabled: enabled && items.length > 0,
+    staleTime: 15 * 1000,
+    retry: false,
+  });
 
 export const useMyShopOrders = (enabled = true) =>
   useQuery({
@@ -218,6 +243,20 @@ function cacheStoreSettings(qc: QueryClient, settings: StoreSettings) {
     degraded: false,
   });
 }
+
+export const useUpdateStoreSettings = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { store_logo?: string; shipping_cost_cop?: number | string }) => {
+      const { data } = await shopApi.updateSettings(payload);
+      return data;
+    },
+    onSuccess: (data) => {
+      cacheStoreSettings(qc, data);
+      void qc.invalidateQueries({ queryKey: shopKeys.settings() });
+    },
+  });
+};
 
 export const useUpdateStoreLogo = () => {
   const qc = useQueryClient();

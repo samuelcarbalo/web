@@ -48,6 +48,7 @@ export interface User {
   hierarchy_role?: string | null;
   is_superuser?: boolean;
   is_staff?: boolean;
+  is_admin?: boolean;
   is_super_admin_l1?: boolean;
   is_super_admin_l2?: boolean;
   /** 0=usuario, 1=Super Admin Root, 2=Administrador delegado */

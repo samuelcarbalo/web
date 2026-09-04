@@ -59,6 +59,7 @@ const ShopPaymentResultPage = lazyWithRetry(() => import('./pages/Shop/ShopPayme
 const MyOrdersPage = lazyWithRetry(() => import('./pages/Shop/MyOrdersPage'));
 const CreateProduct = lazyWithRetry(() => import('./pages/Shop/CreateProduct'));
 const EditProduct = lazyWithRetry(() => import('./pages/Shop/EditProduct'));
+const MyProductsPage = lazyWithRetry(() => import('./pages/Shop/MyProductsPage'));
 const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
 const MyInvoicesPage = lazyWithRetry(() => import('./pages/Billing/MyInvoicesPage'));
 const InvoicePrintPage = lazyWithRetry(() => import('./pages/Billing/InvoicePrintPage'));
@@ -72,7 +73,7 @@ const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
-import { canManageContent } from './hooks/usePermissions';
+import { canManageContent, canSeeMyCreatedProducts } from './hooks/usePermissions';
 import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
 import ColdStartNotice from './components/UI/ColdStartNotice';
 import { startRenderKeepAlive } from './lib/renderKeepAlive';
@@ -179,11 +180,13 @@ const ProtectedRoute: React.FC<{
   allowedRoles?: string[];
   requireSuperuser?: boolean;
   requireAdmin?: boolean;
+  requireShopAdmin?: boolean;
 }> = ({
   children,
   allowedRoles,
   requireSuperuser,
   requireAdmin,
+  requireShopAdmin,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
@@ -210,6 +213,10 @@ const ProtectedRoute: React.FC<{
   }
 
   if (requireAdmin && !(user?.is_superuser || user?.is_staff || (user?.admin_level ?? 0) >= 1)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireShopAdmin && !canSeeMyCreatedProducts(user)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -396,6 +403,22 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute allowedRoles={['manager', 'admin']}>
                       <StoreBillingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="dashboard/tienda"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="dashboard/tienda/mis-productos"
+                  element={
+                    <ProtectedRoute requireShopAdmin>
+                      <MyProductsPage />
                     </ProtectedRoute>
                   }
                 />
