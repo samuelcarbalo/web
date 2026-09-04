@@ -36,11 +36,15 @@ const SHOP_SUPER_ADMIN_ROLES = new Set([
   'super_admin',
 ]);
 
-/** Super Admin Nivel 1 o Nivel 2: moderación global de productos de tienda. */
+/** Super Admin Nivel 1 o Nivel 2, o Administrador (role=admin). */
 export function isShopSuperAdmin(user: User | null | undefined): boolean {
   if (!user) return false;
+  if (user.is_super_admin_l1 || user.is_super_admin_l2) return true;
   if (isSuperAdminLevel1(user) || isSuperAdminLevel2(user)) return true;
-  return SHOP_SUPER_ADMIN_ROLES.has(String(user.role));
+  if (SHOP_SUPER_ADMIN_ROLES.has(String(user.hierarchy_role || ''))) return true;
+  if (SHOP_SUPER_ADMIN_ROLES.has(String(user.role))) return true;
+  if (String(user.role) === 'admin' || user.is_staff) return true;
+  return false;
 }
 
 export type ShopProductOwnerFields = {
