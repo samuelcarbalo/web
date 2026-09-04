@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { shopApi, type ProductListParams } from '../lib/shopApi';
+import { useAuthStore } from '../store/authStore';
 import type { ShopCategory, ShopOrder, ShopProduct, StoreSettings } from '../types/shop';
 
 function normalizeList<T>(data: T[] | { results: T[] } | undefined): T[] {
@@ -36,9 +37,10 @@ export const useShopCategories = () =>
     throwOnError: false,
   });
 
-export const useShopProducts = (params?: ProductListParams) =>
-  useQuery({
-    queryKey: shopKeys.products(params),
+export const useShopProducts = (params?: ProductListParams) => {
+  const userId = useAuthStore((s) => s.user?.id);
+  return useQuery({
+    queryKey: [...shopKeys.products(params), userId ?? 'anon'],
     queryFn: async () => {
       const soft = await shopApi.getProducts(params);
       if (Array.isArray(soft.data)) {
@@ -61,10 +63,12 @@ export const useShopProducts = (params?: ProductListParams) =>
     retry: false,
     throwOnError: false,
   });
+};
 
-export const useShopProduct = (slug?: string) =>
-  useQuery({
-    queryKey: shopKeys.product(slug || ''),
+export const useShopProduct = (slug?: string) => {
+  const userId = useAuthStore((s) => s.user?.id);
+  return useQuery({
+    queryKey: [...shopKeys.product(slug || ''), userId ?? 'anon'],
     queryFn: async () => {
       const soft = await shopApi.getProduct(slug!);
       return {
@@ -78,6 +82,7 @@ export const useShopProduct = (slug?: string) =>
     retry: false,
     throwOnError: false,
   });
+};
 
 export const useUpdateShopProduct = () => {
   const qc = useQueryClient();

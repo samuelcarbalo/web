@@ -89,7 +89,11 @@ const ProductDetail: React.FC = () => {
             </h1>
             {canManageProduct(user, product) && (
               <div className="mt-4">
-                <ProductManageActions product={product} variant="buttons" />
+                <ProductManageActions
+                  product={product}
+                  variant="buttons"
+                  canManage
+                />
               </div>
             )}
             <div className="mt-4 flex items-baseline gap-3">
