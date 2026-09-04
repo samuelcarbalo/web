@@ -44,8 +44,12 @@ export interface User {
   organization?: string;
   organization_name?: string;
   role: 'user' | 'manager' | 'admin';
+  /** Super Admin L1/L2. Independiente del role de organización. */
+  hierarchy_role?: string | null;
   is_superuser?: boolean;
   is_staff?: boolean;
+  is_super_admin_l1?: boolean;
+  is_super_admin_l2?: boolean;
   /** 0=usuario, 1=Super Admin Root, 2=Administrador delegado */
   admin_level?: 0 | 1 | 2;
   is_unlimited_credits?: boolean;

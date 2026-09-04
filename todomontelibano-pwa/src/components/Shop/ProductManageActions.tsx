@@ -23,7 +23,7 @@ const ProductManageActions: React.FC<Props> = ({ product, variant = 'menu', canM
   const rootRef = useRef<HTMLDivElement | null>(null);
   const del = useDeleteShopProduct();
   const status = useUpdateShopProductStatus();
-  const allowed = canManage ?? canManageProduct(user, product);
+  const allowed = canManageProduct(user, product) || canManage === true;
   const published = product.is_published !== false && product.is_active !== false;
 
   useEffect(() => {

@@ -37,7 +37,7 @@ const ProductCard: React.FC<Props> = ({ product, canManage }) => {
             (1 - Number(product.price_cop) / Number(product.compare_at_price_cop)) * 100,
           )
         : null;
-  const showManage = canManage ?? canManageProduct(user, product);
+  const showManage = canManageProduct(user, product) || canManage === true;
 
   return (
     <article className="group card-static hover:shadow-2xl hover:scale-[1.02] transition-all !p-0 relative overflow-visible">
