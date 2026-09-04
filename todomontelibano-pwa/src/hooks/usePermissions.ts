@@ -47,11 +47,10 @@ export function isShopSuperAdmin(user: User | null | undefined): boolean {
   return false;
 }
 
+/** Roles con acceso a "Mis productos creados" (Admin / Super Admin L1–L2). Sin managers. */
 const MY_CREATED_PRODUCTS_ROLES = new Set([
   'ADMIN',
   'admin',
-  'MANAGER',
-  'manager',
   'SUPER_ADMIN_L1',
   'SUPER_ADMIN_L2',
   'SUPER_ADMIN',
@@ -59,16 +58,16 @@ const MY_CREATED_PRODUCTS_ROLES = new Set([
 ]);
 
 /**
- * Tarjeta y ruta "Mis productos creados": Manager / Admin / Super Admin.
+ * Tarjeta y ruta "Mis productos creados": solo Admin y Super Admin (Nivel 1 / 2).
  */
 export function canSeeMyCreatedProducts(user: User | null | undefined): boolean {
   if (!user) return false;
-  if (user.is_admin || user.is_superuser || user.is_staff) return true;
-  if ((user.admin_level ?? 0) >= 1) return true;
+  if (user.is_admin || user.is_superuser) return true;
   if (user.is_super_admin_l1 || user.is_super_admin_l2) return true;
+  if ((user.admin_level ?? 0) >= 1) return true;
   if (MY_CREATED_PRODUCTS_ROLES.has(String(user.role))) return true;
   if (MY_CREATED_PRODUCTS_ROLES.has(String(user.hierarchy_role || ''))) return true;
-  return isShopSuperAdmin(user);
+  return false;
 }
 
 export type ShopProductOwnerFields = {
