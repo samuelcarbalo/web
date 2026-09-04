@@ -104,10 +104,24 @@ const InvoicePrintPage: React.FC = () => {
             <span>Subtotal</span>
             <span>{formatCop(order.subtotal_cop)}</span>
           </p>
-          <p className="flex justify-between">
-            <span>Descuento</span>
-            <span>{formatCop(order.discount_cop)}</span>
-          </p>
+          {Number(order.discount_cop) > 0 && (
+            <p className="flex justify-between">
+              <span>Descuento</span>
+              <span>-{formatCop(order.discount_cop)}</span>
+            </p>
+          )}
+          {Number(order.shipping_cop || 0) > 0 && (
+            <p className="flex justify-between">
+              <span>Costo de envío</span>
+              <span>{formatCop(order.shipping_cop || 0)}</span>
+            </p>
+          )}
+          {Number(order.payment_fee_cop || 0) > 0 && (
+            <p className="flex justify-between">
+              <span>Tarifa Mercado Pago{order.fee_percentage ? ` (${order.fee_percentage})` : ''}</span>
+              <span>+ {formatCop(order.payment_fee_cop || 0)}</span>
+            </p>
+          )}
           <p className="flex justify-between text-lg font-extrabold pt-2 border-t">
             <span>Total</span>
             <span>{formatCop(order.total_cop)}</span>
