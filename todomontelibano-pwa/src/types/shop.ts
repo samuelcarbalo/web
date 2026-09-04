@@ -31,8 +31,8 @@ export interface ShopProduct {
   is_featured?: boolean;
   is_published?: boolean;
   is_active?: boolean;
-  created_by?: string | null;
-  createdBy?: string | null;
+  created_by?: string | { id?: string | number } | null;
+  createdBy?: string | { id?: string | number } | null;
   can_manage?: boolean;
   category?: string | null;
   category_name?: string | null;

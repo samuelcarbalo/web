@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, ShoppingBag, Filter, ChevronDown } from 'lucide-react';
 import { useShopCategories, useShopProducts } from '../../hooks/useShop';
+import { canManageProduct } from '../../hooks/usePermissions';
+import { useAuthStore } from '../../store/authStore';
 import { ROUTES, SITE_NAME } from '../../config/seo';
 import ProductCard from '../../components/Shop/ProductCard';
 import CatalogErrorState from '../../components/Shop/CatalogErrorState';
@@ -12,6 +14,7 @@ const CategoryChipSkeleton: React.FC = () => (
 );
 
 const ShopList: React.FC = () => {
+  const user = useAuthStore((s) => s.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [showFilters, setShowFilters] = useState(false);
@@ -210,7 +213,11 @@ const ShopList: React.FC = () => {
         {!isLoading && !catalogError && !catalogDegraded && products.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                canManage={canManageProduct(user, product)}
+              />
             ))}
           </div>
         )}

@@ -46,7 +46,7 @@ import { useQueryClient } from '@tanstack/react-query';
 const TournamentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user, isOwner: checkIsOwner, canManageTournament: checkCanManage } = usePermissions();
+  const { user, canManageTournament: checkCanManage } = usePermissions();
   const queryClient = useQueryClient();
 
   const { data: tournament, isLoading } = useTournament(slug || '');
@@ -65,7 +65,6 @@ const TournamentDetail: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
-  const isOwner = checkIsOwner(tournament);
   // canManage: Super Admin puede gestionar cualquier torneo aunque no sea el creador
   const canManage = checkCanManage(tournament) && hasActiveSportsModule(user);
   // Super Admin puede agregar equipos aunque las inscripciones estén cerradas
