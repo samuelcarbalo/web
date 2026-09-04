@@ -248,11 +248,23 @@
            border border-secondary-200/60 dark:border-secondary-800/60;
   }
 
+  /* overflow-visible: los dropdowns (Servicios / Perfil) deben pintar fuera del header.
+     z-[60] queda por encima de StoreSubNavbar (z-40) y de las tarjetas del dashboard. */
   .pwa-header {
-    @apply sticky top-0 z-50
+    @apply sticky top-0 z-[60] overflow-visible isolate
            bg-white/80 dark:bg-primary-950/80 backdrop-blur-xl
            border-b border-[var(--color-border)]
            shadow-sm;
+  }
+
+  /* El panel se porta a document.body: position:fixed es relativo al viewport,
+     no al header (backdrop-filter crea containing block y colapsaba la altura a 0). */
+  .mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    top: 4.5rem;
+    z-index: 100;
+    background: rgb(0 0 0 / 0.45);
   }
 
   .mobile-nav-panel {
@@ -260,16 +272,16 @@
     left: 0;
     right: 0;
     top: 4.5rem;
-    bottom: 0;
-    z-index: 45;
-    max-height: calc(100vh - 4.5rem);
-    max-height: calc(100dvh - 4.5rem);
+    z-index: 110;
+    width: 100%;
+    max-height: min(80vh, calc(100vh - 4.5rem));
+    max-height: min(80dvh, calc(100dvh - 4.5rem));
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    transform: translateZ(0);
-    will-change: transform;
+    background-color: var(--color-surface);
+    box-shadow: 0 18px 40px rgb(2 20 51 / 0.28);
     animation: mobile-nav-in 0.22s ease-out;
   }
 

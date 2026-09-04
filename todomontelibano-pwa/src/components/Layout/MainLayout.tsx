@@ -17,6 +17,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useLogout } from "../../hooks/useAuth";
 import { useUnreadCount } from "../../hooks/useChat";
 import { useNotificationSocket } from "../../hooks/useNotificationSocket";
+import { useOnClickOutside } from "../../hooks/useOnClickOutside";
 import UnreadBadge from "../Chat/UnreadBadge";
 import ThemeToggle from "../UI/ThemeToggle";
 import RouteSeo from "../SEO/RouteSeo";
@@ -75,9 +76,14 @@ const MOBILE_SERVICES: MobileNavService[] = [
   },
 ];
 
+const canFineHover = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isServicesOpen, setIsServicesOpen] = React.useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
   const sessionActive = isAuthenticated && hasValidSessionHint();
@@ -86,9 +92,19 @@ const MainLayout: React.FC = () => {
   const unreadCount = unreadData?.unread_count ?? 0;
   useNotificationSocket(sessionActive);
 
+  const headerRef = React.useRef<HTMLElement>(null);
+  const mobileMenuRef = React.useRef<HTMLDivElement>(null);
+  const servicesRef = React.useRef<HTMLDivElement>(null);
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
+
+  const closeMobileMenu = React.useCallback(() => setIsMenuOpen(false), []);
+  const closeServices = React.useCallback(() => setIsServicesOpen(false), []);
+  const closeUserMenu = React.useCallback(() => setIsUserMenuOpen(false), []);
+
   React.useEffect(() => {
     setIsMenuOpen(false);
     setIsServicesOpen(false);
+    setIsUserMenuOpen(false);
   }, [location.pathname]);
 
   React.useEffect(() => {
@@ -101,7 +117,30 @@ const MainLayout: React.FC = () => {
     return () => root.classList.remove("mobile-nav-open");
   }, [isMenuOpen]);
 
-  const closeMobileMenu = React.useCallback(() => setIsMenuOpen(false), []);
+  React.useEffect(() => {
+    if (!isMenuOpen && !isServicesOpen && !isUserMenuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsMenuOpen(false);
+      setIsServicesOpen(false);
+      setIsUserMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMenuOpen, isServicesOpen, isUserMenuOpen]);
+
+  React.useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => {
+      if (mq.matches) setIsMenuOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useOnClickOutside([headerRef, mobileMenuRef], closeMobileMenu, isMenuOpen);
+  useOnClickOutside(servicesRef, closeServices, isServicesOpen);
+  useOnClickOutside(userMenuRef, closeUserMenu, isUserMenuOpen);
 
   const services = MOBILE_SERVICES;
 
@@ -116,7 +155,7 @@ const MainLayout: React.FC = () => {
       <a href="#main-content" className="skip-link">
         Saltar al contenido principal
       </a>
-      <header className="pwa-header print:hidden" role="banner">
+      <header ref={headerRef} className="pwa-header print:hidden" role="banner">
         <div className="page-container">
           <div className="flex justify-between items-center h-[4.5rem] md:h-20 py-1.5">
             <Link
@@ -136,7 +175,7 @@ const MainLayout: React.FC = () => {
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-6 lg:space-x-8" aria-label="Navegación principal">
+            <nav className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8" aria-label="Navegación principal">
               <Link
                 to="/"
                 className={`nav-link ${isActive(ROUTES.home) ? "nav-link-active" : ""}`}
@@ -144,10 +183,30 @@ const MainLayout: React.FC = () => {
                 Inicio
               </Link>
 
-              <div className="relative">
+              <div
+                className="relative"
+                ref={servicesRef}
+                onMouseEnter={() => {
+                  if (canFineHover()) {
+                    setIsUserMenuOpen(false);
+                    setIsServicesOpen(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (canFineHover()) setIsServicesOpen(false);
+                }}
+              >
                 <button
                   type="button"
-                  onClick={() => setIsServicesOpen(!isServicesOpen)}
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    // En desktop el hover ya abre; el clic no debe cerrar el menú.
+                    if (canFineHover()) {
+                      setIsServicesOpen(true);
+                      return;
+                    }
+                    setIsServicesOpen((open) => !open);
+                  }}
                   className="nav-link flex items-center gap-1"
                   aria-expanded={isServicesOpen}
                   aria-haspopup="true"
@@ -165,7 +224,11 @@ const MainLayout: React.FC = () => {
                 </button>
 
                 {isServicesOpen && (
-                  <div id="services-menu" className="absolute top-full left-0 mt-3 w-80 glass rounded-3xl py-3 z-50 animate-in fade-in slide-in-from-top-2" role="menu">
+                  <div
+                    id="services-menu"
+                    className="absolute top-full left-0 mt-2 w-80 glass rounded-3xl py-3 z-[70] shadow-2xl animate-in fade-in slide-in-from-top-2"
+                    role="menu"
+                  >
                     {services.map((service) => (
                       <Link
                         key={service.name}
@@ -209,8 +272,9 @@ const MainLayout: React.FC = () => {
               </Link>
 
               {sessionActive ? (
-                <div className="flex items-center space-x-3">
-                  <CreditBalanceBadge />
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <CreditBalanceBadge className="hidden lg:inline-flex whitespace-nowrap" />
+                  <CreditBalanceBadge showLabel={false} className="lg:hidden" />
                   <BuyCreditsButton compact label="Comprar créditos" />
                   <Link
                     to="/messages"
@@ -225,76 +289,105 @@ const MainLayout: React.FC = () => {
                     )}
                   </Link>
                   <NotificationPanel enabled={sessionActive} />
-                  <div className="relative group">
-                    <button className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-3xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300">
+                  <div
+                    className="relative"
+                    ref={userMenuRef}
+                    onMouseEnter={() => {
+                      if (canFineHover()) {
+                        setIsServicesOpen(false);
+                        setIsUserMenuOpen(true);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (canFineHover()) setIsUserMenuOpen(false);
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-3xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                      aria-expanded={isUserMenuOpen}
+                      aria-haspopup="true"
+                      aria-controls="user-menu"
+                      onClick={() => {
+                        setIsServicesOpen(false);
+                        if (canFineHover()) {
+                          setIsUserMenuOpen(true);
+                          return;
+                        }
+                        setIsUserMenuOpen((open) => !open);
+                      }}
+                    >
                       <div className="w-9 h-9 bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/60 dark:to-indigo-900/60 rounded-3xl flex items-center justify-center">
                         <User className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                       </div>
-                      <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                      <span className="hidden lg:inline text-sm font-bold text-gray-700 dark:text-gray-200">
                         {user?.first_name}
                       </span>
                     </button>
 
-                    <div className="absolute right-0 top-full w-52 pt-3 hidden group-hover:block">
-                      <div className="glass rounded-3xl py-2 overflow-hidden">
-                        <Link to="/profile" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Mi Perfil
-                        </Link>
-                        <Link to="/creditos" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Comprar créditos
-                        </Link>
-                        <Link to="/dashboard" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Dashboard
-                        </Link>
-                        {(user?.is_superuser || user?.is_staff) && (
-                          <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
-                            Panel de administración
+                    {isUserMenuOpen && (
+                      <div id="user-menu" className="absolute right-0 top-full pt-2 z-[70] w-52">
+                        <div className="glass rounded-3xl py-2 overflow-hidden shadow-2xl">
+                          <Link to="/profile" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Mi Perfil
                           </Link>
-                        )}
-                        <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Mis pedidos
-                        </Link>
-                        <Link to={ROUTES.facturas} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Mis facturas
-                        </Link>
-                        {canManageContent(user) && (
-                          <Link to={ROUTES.facturacion} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Facturación y ventas
+                          <Link to="/creditos" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Comprar créditos
                           </Link>
-                        )}
-                        <Link to="/messages" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                          Mensajes
-                        </Link>
-                        {canManageContent(user) && (
-                          <Link to="/real-estate/my_listings" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Mis Propiedades
+                          <Link to="/dashboard" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Dashboard
                           </Link>
-                        )}
-                        {canManageContent(user) && (
-                          <Link to="/jobs/offers/" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Gestionar Empleos
+                          {(user?.is_superuser || user?.is_staff) && (
+                            <Link to="/dashboard/admin" className="block px-5 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
+                              Panel de administración
+                            </Link>
+                          )}
+                          <Link to={ROUTES.tiendaPedidos} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Mis pedidos
                           </Link>
-                        )}
-                        {canManageContent(user) && (
-                          <Link to="/eventos/mis-eventos" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Mis Eventos
+                          <Link to={ROUTES.facturas} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Mis facturas
                           </Link>
-                        )}
-                        {canManageContent(user) && (
-                          <Link to="/tienda/publicar" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
-                            Crear producto
+                          {canManageContent(user) && (
+                            <Link to={ROUTES.facturacion} className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                              Facturación y ventas
+                            </Link>
+                          )}
+                          <Link to="/messages" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                            Mensajes
                           </Link>
-                        )}
-                        <hr className="my-2 border-gray-200 dark:border-gray-700" />
-                        <button
-                          onClick={logout}
-                          className="w-full text-left px-5 py-3 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center transition-colors"
-                        >
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Cerrar Sesión
-                        </button>
+                          {canManageContent(user) && (
+                            <Link to="/real-estate/my_listings" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                              Mis Propiedades
+                            </Link>
+                          )}
+                          {canManageContent(user) && (
+                            <Link to="/jobs/offers/" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                              Gestionar Empleos
+                            </Link>
+                          )}
+                          {canManageContent(user) && (
+                            <Link to="/eventos/mis-eventos" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                              Mis Eventos
+                            </Link>
+                          )}
+                          {canManageContent(user) && (
+                            <Link to="/tienda/publicar" className="block px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors">
+                              Crear producto
+                            </Link>
+                          )}
+                          <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                          <button
+                            type="button"
+                            onClick={logout}
+                            className="w-full text-left px-5 py-3 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center transition-colors"
+                          >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Cerrar Sesión
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -309,7 +402,25 @@ const MainLayout: React.FC = () => {
               )}
             </nav>
 
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1 sm:gap-2 md:hidden">
+              {sessionActive && (
+                <>
+                  <NotificationPanel enabled={sessionActive} />
+                  <Link
+                    to="/messages"
+                    className="relative p-2 rounded-3xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                    title="Mensajes"
+                    aria-label="Mensajes"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5">
+                        <UnreadBadge count={unreadCount} />
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
               <ThemeToggle />
               <button
                 type="button"
@@ -324,17 +435,18 @@ const MainLayout: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {isMenuOpen && (
-          <MobileNavMenu
-            services={MOBILE_SERVICES}
-            sessionActive={sessionActive}
-            user={user}
-            onClose={closeMobileMenu}
-            onLogout={logout}
-          />
-        )}
       </header>
+
+      {isMenuOpen && (
+        <MobileNavMenu
+          services={MOBILE_SERVICES}
+          sessionActive={sessionActive}
+          user={user}
+          onClose={closeMobileMenu}
+          onLogout={logout}
+          panelRef={mobileMenuRef}
+        />
+      )}
 
       <div className="print:hidden">
         <StoreSubNavbar />
