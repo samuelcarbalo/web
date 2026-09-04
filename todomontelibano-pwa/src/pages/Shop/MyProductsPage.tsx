@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Boxes, Eye, Package, Pencil, Plus, Power, Trash2 } from 'lucide-react';
+import { ArrowLeft, Boxes, Eye, Package, Pencil, Plus, Power, Trash2, Upload } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { canSeeMyCreatedProducts, isShopSuperAdmin } from '../../hooks/usePermissions';
 import { useDeleteShopProduct, useShopProducts, useUpdateShopProductStatus } from '../../hooks/useShop';
@@ -9,6 +9,7 @@ import { getMediaUrl } from '../../lib/api';
 import type { ShopProduct } from '../../types/shop';
 import Modal from '../../components/UI/Modal';
 import SeoHead from '../../components/SEO/SeoHead';
+import ProductBatchImportModal from '../../components/Shop/ProductBatchImportModal';
 
 const formatCop = (value: number | string) =>
   new Intl.NumberFormat('es-CO', {
@@ -23,6 +24,7 @@ const MyProductsPage: React.FC = () => {
   const isSuperAdmin = isShopSuperAdmin(user);
   const [seeAll, setSeeAll] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<ShopProduct | null>(null);
+  const [batchOpen, setBatchOpen] = useState(false);
 
   const params = useMemo(() => {
     if (isSuperAdmin && seeAll) return { manage: true, all: true };
@@ -86,12 +88,21 @@ const MyProductsPage: React.FC = () => {
                   : 'Gestiona el inventario que publicaste en la tienda.'}
               </p>
             </div>
-            <Link
-              to={ROUTES.tiendaCreate}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-700 px-4 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl"
-            >
-              <Plus className="w-4 h-4" /> Crear producto
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setBatchOpen(true)}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/15 text-white border border-white/30 px-4 py-2.5 text-sm font-bold hover:bg-white/25"
+              >
+                <Upload className="w-4 h-4" /> Cargar en lote
+              </button>
+              <Link
+                to={ROUTES.tiendaCreate}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-700 px-4 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl"
+              >
+                <Plus className="w-4 h-4" /> Crear producto
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -282,6 +293,12 @@ const MyProductsPage: React.FC = () => {
           </button>
         </div>
       </Modal>
+
+      <ProductBatchImportModal
+        open={batchOpen}
+        onClose={() => setBatchOpen(false)}
+        onImported={() => void refetch()}
+      />
     </div>
   );
 };

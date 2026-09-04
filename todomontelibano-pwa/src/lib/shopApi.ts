@@ -28,6 +28,37 @@ export type SoftListResult<T> = {
   degraded: boolean;
 };
 
+/** Límites Plan Free (alineados con backend ecommerce.batch_import). */
+export const SHOP_BATCH_MAX_BYTES = 2 * 1024 * 1024;
+export const SHOP_BATCH_MAX_ROWS = 200;
+
+export const PRODUCT_IMPORT_HEADERS = [
+  'name',
+  'sku',
+  'description',
+  'short_description',
+  'category',
+  'subcategory',
+  'price_cop',
+  'compare_at_price_cop',
+  'stock',
+  'image_url',
+  'is_featured',
+  'is_published',
+] as const;
+
+export type ProductBatchImportResult = {
+  status?: string;
+  success?: boolean;
+  message?: string;
+  created: number;
+  updated: number;
+  error_count: number;
+  errors: Array<{ row: number; field?: string | null; message: string }>;
+  max_rows?: number;
+  max_bytes?: number;
+};
+
 function isServerError(error: unknown): boolean {
   if (!axios.isAxiosError(error)) return false;
   const status = (error as AxiosError).response?.status;
@@ -118,6 +149,38 @@ export const shopApi = {
     payload: { is_published?: boolean; is_active?: boolean; stock?: number },
   ) => api.patch<ShopProduct>(`/ecommerce/products/${slug}/status/`, payload),
 
+  downloadProductImportTemplate: async (format: 'xlsx' | 'csv' = 'xlsx') => {
+    const response = await api.get(`/ecommerce/products/import-template/`, {
+      params: { format },
+      responseType: 'blob',
+    });
+    const type =
+      format === 'csv'
+        ? 'text/csv;charset=utf-8'
+        : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const blob = new Blob([response.data], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download =
+      format === 'csv'
+        ? 'chever_plantilla_productos.csv'
+        : 'chever_plantilla_productos.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  uploadProductImportBatch: async (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    const { data } = await api.post<ProductBatchImportResult>(
+      '/ecommerce/products/import-batch/',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return data;
+  },
+
   checkout: (payload: {
     items: Array<{ product_id: string; quantity: number }>;
     discount_code?: string;
@@ -180,3 +243,11 @@ export const shopApi = {
 
   deleteLogo: () => api.delete<StoreSettings>('/store/logo/'),
 };
+
+export async function downloadProductImportTemplate(format: 'xlsx' | 'csv' = 'xlsx') {
+  return shopApi.downloadProductImportTemplate(format);
+}
+
+export async function uploadProductImportBatch(file: File) {
+  return shopApi.uploadProductImportBatch(file);
+}
