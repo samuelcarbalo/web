@@ -18,9 +18,10 @@ const toBreakdown = (data: ShopCheckoutBreakdown): CheckoutBreakdownValues => ({
   subtotal: Number(data.subtotal || 0),
   discount: Number(data.discount || 0),
   shippingCost: Number(data.shipping_cost || 0),
-  paymentFee: Number(data.payment_fee || 0),
+  paymentFee: Number(data.fee_amount ?? data.payment_fee ?? 0),
   feePercentage: data.fee_percentage,
   totalAmount: Number(data.total_amount || 0),
+  baseLabel: 'Subtotal (ítem)',
 });
 
 const CheckoutPage: React.FC = () => {
@@ -84,6 +85,7 @@ const CheckoutPage: React.FC = () => {
         paymentFee: 0,
         feePercentage: undefined,
         totalAmount: subtotal,
+        baseLabel: 'Subtotal (ítem)',
       };
 
   return (

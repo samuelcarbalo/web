@@ -120,6 +120,8 @@ export interface ShopCheckoutBreakdown {
   fee_percentage: string;
   shipping_cost: number;
   total_amount: number;
+  base_amount?: number;
+  fee_amount?: number;
   currency: string;
 }
 
