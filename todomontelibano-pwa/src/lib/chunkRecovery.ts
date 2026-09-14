@@ -57,7 +57,7 @@ export async function recoverFromStaleChunks(): Promise<boolean> {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((k) => /workbox|assets|pages|precach/i.test(k))
+          .filter((k) => /workbox|assets|pages|precach|chever-cache/i.test(k))
           .map((k) => caches.delete(k)),
       );
     }

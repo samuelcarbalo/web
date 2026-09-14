@@ -6,6 +6,25 @@ type UpdateFn = (reloadPage?: boolean) => Promise<void>;
 let updateSW: UpdateFn | undefined;
 /** Evita doble reload cuando skipWaiting activa el SW nuevo. */
 let controllerReloadArmed = false;
+let setupDone = false;
+let refreshNotified = false;
+
+function armControllerReload(): void {
+  controllerReloadArmed = true;
+}
+
+function notifyNeedRefresh(): void {
+  if (refreshNotified) return;
+  refreshNotified = true;
+  window.dispatchEvent(new Event('pwa:need-refresh'));
+}
+
+function activateWaitingWorker(worker: ServiceWorker | null | undefined): void {
+  if (!worker) return;
+  armControllerReload();
+  worker.postMessage({ type: 'SKIP_WAITING' });
+  void updateSW?.(false);
+}
 
 /**
  * Registro PWA en modo autoUpdate.
@@ -14,6 +33,8 @@ let controllerReloadArmed = false;
  */
 export function setupPwaUpdates(): void {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+  if (setupDone) return;
+  setupDone = true;
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!controllerReloadArmed) return;
@@ -25,9 +46,8 @@ export function setupPwaUpdates(): void {
     // false = no registra en el arranque síncrono; se llama tras idle desde main.tsx
     immediate: false,
     onNeedRefresh() {
-      // Activa el worker en waiting (skipWaiting). Sin reload forzado.
-      window.dispatchEvent(new Event('pwa:need-refresh'));
-      controllerReloadArmed = true;
+      notifyNeedRefresh();
+      armControllerReload();
       void updateSW?.(false);
     },
     onOfflineReady() {
@@ -35,6 +55,22 @@ export function setupPwaUpdates(): void {
     },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
+
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        notifyNeedRefresh();
+        activateWaitingWorker(registration.waiting);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state !== 'installed') return;
+          if (!navigator.serviceWorker.controller) return;
+          notifyNeedRefresh();
+          activateWaitingWorker(worker);
+        });
+      });
 
       const checkForUpdate = () => {
         registration.update().catch(() => undefined);
@@ -59,7 +95,7 @@ export function setupPwaUpdates(): void {
 export async function applyPwaUpdate(forceReload = false): Promise<void> {
   try {
     if (updateSW) {
-      controllerReloadArmed = true;
+      armControllerReload();
       await updateSW(forceReload);
       return;
     }

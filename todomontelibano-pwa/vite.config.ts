@@ -1,7 +1,42 @@
+import { execSync } from 'node:child_process';
 import { defineConfig, loadEnv, type UserConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+
+/** Identidad estable de la PWA: no debe cambiar entre deploys ni entornos. */
+const PWA_APP_ID = 'chever-pwa-app';
+
+function resolveBuildHash(): string {
+  const fromEnv = (
+    process.env.VITE_BUILD_HASH ||
+    process.env.RENDER_GIT_COMMIT ||
+    process.env.GITHUB_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.CF_PAGES_COMMIT_SHA ||
+    ''
+  ).trim();
+  if (fromEnv) return fromEnv.slice(0, 12);
+
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return Date.now().toString(36);
+  }
+}
+
+function injectBuildHash(hash: string): PluginOption {
+  return {
+    name: 'inject-pwa-build-hash',
+    transformIndexHtml(html) {
+      return html.replaceAll('__BUILD_HASH__', hash);
+    },
+  };
+}
 
 /** Precarga hojas CSS del build para reducir FOUC en producción. */
 function preloadBuiltCss(): PluginOption {
@@ -74,12 +109,18 @@ function manualChunks(id: string): string | undefined {
 export default defineConfig(({ mode }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), '');
   const siteUrl = env.VITE_SITE_URL || 'https://chever.co';
+  const buildHash = resolveBuildHash();
+  process.env.VITE_BUILD_HASH = buildHash;
 
   const plugins: PluginOption[] = [
     react(),
     tailwindcss(),
     preloadBuiltCss(),
+    injectBuildHash(buildHash),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       // Registro manual en src/lib/pwa.ts (evita doble registro)
       injectRegister: false,
@@ -95,7 +136,7 @@ export default defineConfig(({ mode }): UserConfig => {
         'fonts/*.woff2',
       ],
       manifest: {
-        id: `${siteUrl.replace(/\/$/, '')}/`,
+        id: PWA_APP_ID,
         name: 'Chéver',
         short_name: 'Chéver',
         description:
@@ -105,7 +146,7 @@ export default defineConfig(({ mode }): UserConfig => {
         lang: 'es',
         dir: 'ltr',
         scope: '/',
-        start_url: '/?source=pwa',
+        start_url: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
         categories: ['business', 'productivity', 'lifestyle'],
@@ -113,6 +154,7 @@ export default defineConfig(({ mode }): UserConfig => {
           {
             platform: 'webapp',
             url: `${siteUrl.replace(/\/$/, '')}/manifest.webmanifest`,
+            id: PWA_APP_ID,
           },
         ],
         prefer_related_applications: false,
@@ -170,38 +212,10 @@ export default defineConfig(({ mode }): UserConfig => {
           },
         ],
       },
-      workbox: {
-        cacheId: 'chever-pwa-1.0.4',
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true,
-        importScripts: ['/notification-sw.js'],
+      injectManifest: {
         globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [
-          /^\/api\//,
-          /^\/admin\//,
-          /^\/google[^/]+\.html$/,
-          /^\/llms\.txt$/,
-          /^\/robots\.txt$/,
-          /^\/sitemap\.xml$/,
-        ],
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkOnly',
-          },
-          {
-            urlPattern: ({ url }) =>
-              /\.(?:svg|png)$/i.test(url.pathname) && !url.pathname.startsWith('/assets/'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'brand-assets',
-              networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 },
-            },
-          },
-        ],
+        minify: true,
+        rollupFormat: 'iife',
       },
       devOptions: {
         enabled: false,
@@ -211,6 +225,9 @@ export default defineConfig(({ mode }): UserConfig => {
 
   return {
     base: '/',
+    define: {
+      'import.meta.env.VITE_BUILD_HASH': JSON.stringify(buildHash),
+    },
     plugins,
     server: {
       port: 3000,
