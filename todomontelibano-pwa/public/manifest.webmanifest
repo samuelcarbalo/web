@@ -1,17 +1,25 @@
 {
-  "id": "/",
+  "id": "chever-pwa-app",
   "name": "Chéver",
   "short_name": "Chéver",
   "description": "Empleos, deportes, bienes raíces y eventos publicitarios en Córdoba. Plataforma multi-servicios Chéver.",
   "lang": "es",
   "dir": "ltr",
   "scope": "/",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#FFFFFF",
   "background_color": "#FFFFFF",
   "categories": ["business", "productivity", "lifestyle"],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://chever.co/manifest.webmanifest",
+      "id": "chever-pwa-app"
+    }
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/chever-oficial-pwa.svg?v=1.1",

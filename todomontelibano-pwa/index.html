@@ -31,7 +31,7 @@
     <script>
       (function () {
         // Solo marca versión + limpia Cache Storage. Sin location.reload() (evita bucles con el SW).
-        var APP_VERSION = '1.0.3';
+        var APP_VERSION = '__BUILD_HASH__';
         var KEY = 'chever_app_version';
         try {
           var prev = localStorage.getItem(KEY);

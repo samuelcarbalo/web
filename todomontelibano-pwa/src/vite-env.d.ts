@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_OG_IMAGE?: string;
   readonly VITE_IMGBB_API_KEY?: string;
   readonly VITE_MERCADOPAGO_PUBLIC_KEY?: string;
+  readonly VITE_BUILD_HASH: string;
   readonly MODE: string;
   readonly DEV: boolean;
   readonly PROD: boolean;
