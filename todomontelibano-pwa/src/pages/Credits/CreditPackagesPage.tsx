@@ -4,6 +4,9 @@ import { Shield, Coins, Target, History } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
 import SportsModulePlanCard from '../../components/Sports/SportsModulePlanCard';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
+import CheckoutBreakdown, {
+  type CheckoutBreakdownValues,
+} from '../../components/Shop/CheckoutBreakdown';
 import CreditBalanceBadge from '../../components/Credits/CreditBalanceBadge';
 import BuyCreditsButton from '../../components/Credits/BuyCreditsButton';
 import { FALLBACK_PACKAGES } from '../../config/credits';
@@ -44,6 +47,7 @@ const CreditPackagesPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [initPoint, setInitPoint] = useState<string | null>(null);
+  const [paidBreakdown, setPaidBreakdown] = useState<CheckoutBreakdownValues | null>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const resumedPackageRef = useRef<string | null>(null);
@@ -81,6 +85,7 @@ const CreditPackagesPage: React.FC = () => {
     setSelectedId(packageId);
     setPreferenceId(null);
     setInitPoint(null);
+    setPaidBreakdown(null);
     try {
       const result = await createPreference.mutateAsync(packageId);
       setPreferenceId(result.preference_id);
@@ -90,6 +95,17 @@ const CreditPackagesPage: React.FC = () => {
           result.is_production ?? mpConfig?.is_production ?? false,
         ),
       );
+      const selectedPkg = displayPackages.find((p) => p.id === packageId);
+      const baseAmount = Number(result.base_amount ?? selectedPkg?.price_cop ?? 0);
+      const feeAmount = Number(result.fee_amount ?? 0);
+      setPaidBreakdown({
+        subtotal: baseAmount,
+        shippingCost: 0,
+        paymentFee: feeAmount,
+        feePercentage: result.fee_percentage,
+        totalAmount: Number(result.total_amount ?? baseAmount + feeAmount),
+        baseLabel: 'Subtotal (créditos)',
+      });
       requestAnimationFrame(() => {
         checkoutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
@@ -300,6 +316,8 @@ const CreditPackagesPage: React.FC = () => {
                     No se pudo iniciar el pago. Verifica las credenciales de Mercado Pago en el servidor.
                   </p>
                 )}
+
+                {paidBreakdown && <div className="mb-4"><CheckoutBreakdown {...paidBreakdown} /></div>}
 
                 <MercadoPagoCheckout
                   preferenceId={preferenceId}

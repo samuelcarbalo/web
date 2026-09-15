@@ -36,6 +36,11 @@ export interface PreferenceResponse {
   sandbox_init_point?: string;
   is_production?: boolean;
   order_id: string;
+  base_amount: number;
+  fee_amount: number;
+  total_amount: number;
+  fee_percentage?: string;
+  currency?: string;
 }
 
 export const paymentsApi = {
