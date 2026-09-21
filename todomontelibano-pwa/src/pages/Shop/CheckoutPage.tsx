@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
+import PaymentLegalConsent from '../../components/Credits/PaymentLegalConsent';
 import CheckoutBreakdown, {
   type CheckoutBreakdownValues,
 } from '../../components/Shop/CheckoutBreakdown';
@@ -36,6 +36,7 @@ const CheckoutPage: React.FC = () => {
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [initPoint, setInitPoint] = useState<string | null>(null);
   const [paidBreakdown, setPaidBreakdown] = useState<CheckoutBreakdownValues | null>(null);
+  const [legalAccepted, setLegalAccepted] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedCode(discountCode.trim()), 400);
@@ -57,6 +58,7 @@ const CheckoutPage: React.FC = () => {
   }
 
   const handlePay = async () => {
+    if (!legalAccepted) return;
     try {
       const { data } = await checkout.mutateAsync({
         items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
@@ -111,10 +113,15 @@ const CheckoutPage: React.FC = () => {
               {quote.isFetching && (
                 <p className="text-xs text-gray-500">Actualizando desglose de costos…</p>
               )}
+              <PaymentLegalConsent
+                accepted={legalAccepted}
+                onAcceptedChange={setLegalAccepted}
+                id="shop-payment-legal-consent"
+              />
               <button
                 type="button"
-                className="btn-primary w-full justify-center"
-                disabled={checkout.isPending}
+                className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={checkout.isPending || !legalAccepted}
                 onClick={handlePay}
               >
                 {checkout.isPending ? 'Creando preferencia…' : 'Pagar con Mercado Pago'}
@@ -130,14 +137,19 @@ const CheckoutPage: React.FC = () => {
           {preferenceId && (
             <>
               {paidBreakdown && <CheckoutBreakdown {...paidBreakdown} />}
-              <MercadoPagoCheckout preferenceId={preferenceId} initPoint={initPoint} />
+              <PaymentLegalConsent
+                accepted={legalAccepted}
+                onAcceptedChange={setLegalAccepted}
+                id="shop-payment-legal-consent-wallet"
+              />
+              <MercadoPagoCheckout
+                preferenceId={preferenceId}
+                initPoint={initPoint}
+                consentAccepted={legalAccepted}
+              />
             </>
           )}
 
-          <div className="flex items-start gap-2 text-xs text-gray-500 pt-2">
-            <Shield className="w-4 h-4 shrink-0 mt-0.5" />
-            <p>Pago seguro con Mercado Pago. Al aprobarse, el pedido se confirma automáticamente.</p>
-          </div>
           <Link to={ROUTES.tienda} className="block text-center text-sm font-bold text-violet-600">
             Volver a la tienda
           </Link>

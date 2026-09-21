@@ -4,6 +4,7 @@ import { CREDIT_COSTS, type CreditPackage } from '../config/credits';
 export interface MpPublicConfig {
   public_key: string;
   is_production: boolean;
+  environment?: 'sandbox' | 'production';
 }
 
 export interface MpAdminConfig {
@@ -57,6 +58,14 @@ export const paymentsApi = {
     api.post<PreferenceResponse>('/payments/create-preference/', { package_id: packageId }),
 
   getMyOrders: () => api.get('/payments/my-orders/'),
+
+  getPaymentStatus: (params: {
+    order_id?: string;
+    preference_id?: string;
+    payment_id?: string;
+    external_reference?: string;
+    collection_id?: string;
+  }) => api.get<PurchaseHistoryItem>('/payments/status/', { params }),
 
   /** Historial de compras enriquecido del usuario autenticado. */
   getMyPurchases: () => api.get<PurchaseHistoryItem[]>('/payments/my-purchases/'),

@@ -163,7 +163,22 @@ export const useShopCheckoutQuote = (
     retry: false,
   });
 
-export const useMyShopOrders = (enabled = true) =>
+export const useShopOrder = (
+  id?: string | null,
+  options?: {
+    enabled?: boolean;
+    refetchInterval?: number | false | ((query: { state: { data?: ShopOrder } }) => number | false);
+  },
+) =>
+  useQuery({
+    queryKey: [...shopKeys.orders(), 'detail', id],
+    queryFn: () => shopApi.getOrder(id!).then((r) => r.data),
+    enabled: Boolean(id) && (options?.enabled ?? true),
+    refetchInterval: options?.refetchInterval,
+    retry: 1,
+  });
+
+export const useMyShopOrders = (enabled = true, refetchInterval: number | false = false) =>
   useQuery({
     queryKey: shopKeys.orders(),
     queryFn: async () => {
@@ -171,6 +186,7 @@ export const useMyShopOrders = (enabled = true) =>
       return normalizeList<ShopOrder>(data as ShopOrder[] | { results: ShopOrder[] });
     },
     enabled,
+    refetchInterval,
     staleTime: 30 * 1000,
   });
 

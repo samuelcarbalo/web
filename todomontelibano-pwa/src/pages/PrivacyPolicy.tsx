@@ -62,7 +62,7 @@ const PrivacyPolicy: React.FC = () => {
                   <strong className="text-gray-800 dark:text-gray-100">Sección de Empleo:</strong> Hojas de vida, historial de experiencia laboral, habilidades e información complementaria que decidas subir para postularte a vacantes.
                 </li>
                 <li>
-                  <strong className="text-gray-800 dark:text-gray-100">Sección de Deportes:</strong> Apodos deportivos, cédula (para registro oficial en ligas locales), fecha de nacimiento, estadísticas de juego (goles, tarjetas, partidos jugados) y afiliación a equipos.
+                  <strong className="text-gray-800 dark:text-gray-100">Pagos:</strong> Registramos el identificador de la transacción, el monto, la fecha y el estado reportado por Mercado Pago. Chéver no almacena números de tarjeta, CVV ni credenciales bancarias; esos datos los procesa exclusivamente Mercado Pago.
                 </li>
               </ul>
             </div>
@@ -102,7 +102,7 @@ const PrivacyPolicy: React.FC = () => {
                   <strong className="text-gray-800 dark:text-gray-100">Con Empresas Contratantes:</strong> Al postularte a un empleo, la empresa que publicó la oferta tendrá acceso a tu información de contacto y currículum.
                 </li>
                 <li>
-                  <strong className="text-gray-800 dark:text-gray-100">Información Deportiva Pública:</strong> Por la naturaleza de las competiciones locales, los nombres de jugadores, sus estadísticas, lineups y resultados de partidos son accesibles de forma pública para la comunidad que sigue la liga.
+                  <strong className="text-gray-800 dark:text-gray-100">Con Mercado Pago:</strong> Compartimos el correo del pagador, el monto y la referencia de la orden para procesar el cobro. Mercado Pago actúa como pasarela de pago y aplica su propia política de privacidad.
                 </li>
               </ul>
             </div>

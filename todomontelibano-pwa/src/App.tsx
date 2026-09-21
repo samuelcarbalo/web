@@ -345,6 +345,9 @@ const App: React.FC = () => {
 
                 <Route path="creditos" element={<CreditPackagesPage />} />
                 <Route path="creditos/resultado" element={<PaymentResultPage />} />
+                <Route path="payment/success" element={<PaymentResultPage />} />
+                <Route path="payment/pending" element={<PaymentResultPage />} />
+                <Route path="payment/failure" element={<PaymentResultPage />} />
 
                 {/* Tienda pública: catálogo y ficha (como empleos / bienes raíces) */}
                 <Route path="tienda" element={<ShopList />} />

@@ -111,7 +111,26 @@ const TermsOfService: React.FC = () => {
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <ShieldAlert className="w-6 h-6 text-green-600" />
-              4. Limitación de Responsabilidad
+              4. Pagos, créditos y reembolsos
+            </h2>
+            <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
+              <p>
+                Las compras de créditos, entradas y productos en Chéver se procesan de forma segura a través de Mercado Pago. Chéver no almacena los datos de tus tarjetas ni información bancaria confidencial.
+              </p>
+              <ul className="list-disc list-inside space-y-2 pl-2">
+                <li>El resumen de compra muestra el valor del producto o paquete, el recargo por la operación con Mercado Pago y el monto total a pagar.</li>
+                <li>Las compras de créditos o entradas no son reembolsables una vez procesadas, salvo en los casos previstos por estos términos o por la normativa aplicable en Colombia.</li>
+                <li>Si un pago queda pendiente, rechazado o anulado, los créditos o el pedido no se acreditan hasta que Mercado Pago confirme el estado aprobado.</li>
+                <li>Al hacer clic en Pagar, aceptas estos Términos y Condiciones y la Política de Privacidad.</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Sección 5 */}
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
+              <ShieldAlert className="w-6 h-6 text-green-600" />
+              5. Limitación de Responsabilidad
             </h2>
             <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
@@ -125,11 +144,11 @@ const TermsOfService: React.FC = () => {
             </div>
           </div>
 
-          {/* Sección 5 */}
+          {/* Sección 6 */}
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-6 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-green-600" />
-              5. Modificaciones de los Términos
+              6. Modificaciones de los Términos
             </h2>
             <div className="text-gray-600 dark:text-gray-400 space-y-3 leading-relaxed">
               <p>
