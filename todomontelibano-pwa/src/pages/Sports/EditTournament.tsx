@@ -9,11 +9,12 @@ import {
 } from 'lucide-react';
 import { useTournament, useUpdateTournament, useDeleteTournament } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
-import { isSportsSuperAdmin, isPlatformElevatedUser } from '../../hooks/usePermissions';
+import { canManageSportsResource, isSportsSuperAdmin, isPlatformElevatedUser } from '../../hooks/usePermissions';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
-import type { SportType } from '../../types/sports'; //sportTypeLabels
+import type { SportType, TournamentCategory } from '../../types/sports';
+import { TOURNAMENT_CATEGORIES } from '../../types/sports';
 
 const EditTournament: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -31,6 +32,7 @@ const EditTournament: React.FC = () => {
     name: '',
     description: '',
     sport_type: 'football' as SportType,
+    category: 'libre' as TournamentCategory,
     start_date: '',
     end_date: '',
     registration_deadline: '',
@@ -66,11 +68,7 @@ const EditTournament: React.FC = () => {
   useEffect(() => {
     if (tournament) {
       // Verificar ownership: Super Admin pasa siempre; también admins o creadores del torneo
-      const canEdit =
-        isSportsSuperAdmin(user) ||
-        user?.role === 'admin' ||
-        user?.is_superuser ||
-        user?.organization === tournament.organization;
+      const canEdit = canManageSportsResource(user, tournament);
       if (!canEdit) {
         navigate('/sports');
         return;
@@ -80,6 +78,7 @@ const EditTournament: React.FC = () => {
         name: tournament.name,
         description: tournament.description,
         sport_type: tournament.sport_type,
+        category: (tournament.category || 'libre') as TournamentCategory,
         start_date: tournament.start_date,
         end_date: tournament.end_date,
         registration_deadline: tournament.registration_deadline,
@@ -221,6 +220,21 @@ const EditTournament: React.FC = () => {
                 >
                   {sports.map(s => (
                     <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Categoría
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleChange('category', e.target.value)}
+                  className="input-field"
+                >
+                  {TOURNAMENT_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
               </div>

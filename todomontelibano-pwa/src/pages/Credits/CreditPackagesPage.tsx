@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Shield, Coins, Target, History } from 'lucide-react';
+import { Coins, Target, History } from 'lucide-react';
 import CreditPackageCard from '../../components/Credits/CreditPackageCard';
 import SportsModulePlanCard from '../../components/Sports/SportsModulePlanCard';
 import MercadoPagoCheckout from '../../components/Credits/MercadoPagoCheckout';
+import PaymentLegalConsent from '../../components/Credits/PaymentLegalConsent';
 import CheckoutBreakdown, {
   type CheckoutBreakdownValues,
 } from '../../components/Shop/CheckoutBreakdown';
@@ -48,6 +49,7 @@ const CreditPackagesPage: React.FC = () => {
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [initPoint, setInitPoint] = useState<string | null>(null);
   const [paidBreakdown, setPaidBreakdown] = useState<CheckoutBreakdownValues | null>(null);
+  const [legalAccepted, setLegalAccepted] = useState(false);
   const checkoutRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const resumedPackageRef = useRef<string | null>(null);
@@ -86,6 +88,7 @@ const CreditPackagesPage: React.FC = () => {
     setPreferenceId(null);
     setInitPoint(null);
     setPaidBreakdown(null);
+    setLegalAccepted(false);
     try {
       const result = await createPreference.mutateAsync(packageId);
       setPreferenceId(result.preference_id);
@@ -249,6 +252,7 @@ const CreditPackagesPage: React.FC = () => {
                       <p className="text-xs text-gray-500">
                         {statusLabel[order.status] || order.status}
                         {order.credits_applied ? ' · acreditado' : ''}
+                        {order.mp_payment_id ? ` · ${order.mp_payment_id}` : ''}
                       </p>
                     </div>
                   </li>
@@ -319,19 +323,18 @@ const CreditPackagesPage: React.FC = () => {
 
                 {paidBreakdown && <div className="mb-4"><CheckoutBreakdown {...paidBreakdown} /></div>}
 
+                {preferenceId && (
+                  <div className="mb-4">
+                    <PaymentLegalConsent accepted={legalAccepted} onAcceptedChange={setLegalAccepted} />
+                  </div>
+                )}
+
                 <MercadoPagoCheckout
                   preferenceId={preferenceId}
                   initPoint={initPoint}
                   isLoading={createPreference.isPending}
+                  consentAccepted={legalAccepted}
                 />
-
-                <div className="mt-4 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <Shield className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>
-                    Los pagos son procesados por Mercado Pago. Al aprobarse, los créditos se acreditan
-                    automáticamente en tu cuenta.
-                  </p>
-                </div>
               </div>
             ) : (
               <div className="mt-10 card-static max-w-lg mx-auto text-center">

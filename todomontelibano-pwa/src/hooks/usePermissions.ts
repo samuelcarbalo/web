@@ -166,19 +166,7 @@ export const usePermissions = () => {
    * Propietario del recurso O administrador de plataforma (CRUD completo).
    */
   const isOwner = (resource: Resource | null | undefined): boolean => {
-    if (!user || !resource) return false;
-    // Super Admin de Deportes: propietario de cualquier recurso
-    if (isSportsSuperAdmin(user)) return true;
-    if (isPlatformElevatedUser(user)) return true;
-
-    const postedById =
-      resource.posted_by && typeof resource.posted_by === 'object'
-        ? resource.posted_by.id
-        : resource.posted_by;
-
-    if (user.role === 'manager' && user.id === postedById) return true;
-    if (user.role === 'admin' && user.id === postedById) return true;
-    return false;
+    return canManageSportsResource(user, resource);
   };
 
   /**

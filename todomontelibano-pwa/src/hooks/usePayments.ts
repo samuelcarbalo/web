@@ -82,9 +82,12 @@ export interface PaymentOrderRow {
   package_id: string;
   credits_amount: number;
   amount_cop: string | number;
+  mp_preference_id?: string;
+  mp_payment_id?: string | null;
   status: string;
   credits_applied: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 export const useMyPaymentOrders = (enabled = true) =>
@@ -163,11 +166,45 @@ export const usePaymentLedger = (
     staleTime: 20_000,
   });
 
+export const usePaymentStatus = (
+  params: { orderId?: string; preferenceId?: string; paymentId?: string },
+  enabled = true,
+) => {
+  const orderId = params.orderId?.trim() || '';
+  const preferenceId = params.preferenceId?.trim() || '';
+  const paymentId = params.paymentId?.trim() || '';
+  const canQuery = Boolean(orderId || preferenceId || paymentId);
+
+  return useQuery({
+    queryKey: ['payment-status', orderId, preferenceId, paymentId],
+    queryFn: async () => {
+      const { data } = await paymentsApi.getPaymentStatus({
+        order_id: orderId || undefined,
+        preference_id: preferenceId || undefined,
+        payment_id: paymentId || undefined,
+      });
+      return data;
+    },
+    enabled: enabled && canQuery,
+    refetchInterval: (query) => {
+      const row = query.state.data;
+      if (!row) return 2000;
+      if (row.credits_applied || ['approved', 'rejected', 'cancelled', 'refunded'].includes(row.status)) {
+        return false;
+      }
+      return 2000;
+    },
+    retry: 1,
+  });
+};
+
 export const useRefreshCreditsAfterPayment = () => {
   const queryClient = useQueryClient();
   return () => {
     queryClient.invalidateQueries({ queryKey: ['me'] });
     queryClient.invalidateQueries({ queryKey: ['payment-orders'] });
+    queryClient.invalidateQueries({ queryKey: ['my-purchases'] });
+    queryClient.invalidateQueries({ queryKey: ['payment-status'] });
     // El webhook crea Notification(payment_*); refrescar campana/historial
     queryClient.invalidateQueries({ queryKey: ['notifications'] });
   };

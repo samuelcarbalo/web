@@ -96,11 +96,10 @@ const CheckoutBreakdown: React.FC<CheckoutBreakdownValues> = ({
           </p>
         </div>
         <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-          <Row
-            label="Total a pagar"
-            value={`${formatCop(totalAmount)} COP`}
-            emphasis
-          />
+          <div className="rounded-2xl bg-violet-600 text-white px-4 py-3 flex items-center justify-between gap-3">
+            <span className="text-sm font-extrabold uppercase tracking-wide">Total a pagar</span>
+            <span className="text-xl font-black tabular-nums">{formatCop(totalAmount)}</span>
+          </div>
         </div>
       </div>
     </div>

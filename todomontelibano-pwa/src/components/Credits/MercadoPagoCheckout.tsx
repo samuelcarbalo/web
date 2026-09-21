@@ -7,15 +7,18 @@ interface MercadoPagoCheckoutProps {
   preferenceId: string | null;
   initPoint?: string | null;
   isLoading?: boolean;
+  consentAccepted?: boolean;
 }
 
 const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
   preferenceId,
   initPoint = null,
   isLoading = false,
+  consentAccepted = true,
 }) => {
   const { data: mpConfig, isLoading: isMpConfigLoading, isError: isMpConfigError } = useMpConfig();
   const [mpReady, setMpReady] = useState(false);
+  const isSandbox = mpConfig?.is_production === false;
 
   useEffect(() => {
     const publicKey = mpConfig?.public_key?.trim() || '';
@@ -44,9 +47,24 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
     );
   }
 
+  if (!consentAccepted) {
+    return (
+      <p className="text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl px-4 py-3">
+        Debes aceptar los Términos y Condiciones para habilitar el pago con Mercado Pago.
+      </p>
+    );
+  }
+
+  const sandboxBadge = isSandbox ? (
+    <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+      Entorno de prueba (Sandbox)
+    </p>
+  ) : null;
+
   if (!mpReady) {
     return (
       <div className="space-y-3">
+        {sandboxBadge}
         {initPoint && (
           <a
             href={initPoint}
@@ -70,6 +88,7 @@ const MercadoPagoCheckout: React.FC<MercadoPagoCheckoutProps> = ({
 
   return (
     <div className="mp-checkout-container w-full min-h-[48px]">
+      {sandboxBadge}
       <Wallet initialization={{ preferenceId }} />
 
       {initPoint && (
