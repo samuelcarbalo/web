@@ -515,17 +515,27 @@ const TournamentDetail: React.FC = () => {
                           </div>
 
                           {canManage && (
-                            <button 
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDeleteTeam(team.slug);
-                              }}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-colors"
-                              title="Eliminar equipo"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <>
+                              <Link
+                                to={`/sports/tournaments/${tournament.slug}/teams/${team.slug}/roster`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-3xl transition-colors"
+                                title="Agregar jugador / plantilla"
+                              >
+                                <Users className="w-4 h-4" />
+                              </Link>
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteTeam(team.slug);
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-colors"
+                                title="Eliminar equipo"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -590,7 +600,7 @@ const TournamentDetail: React.FC = () => {
                       </button>
                     ) : myTeam ? (
                       <Link
-                        to={`/sports/tournaments/${tournament.slug}/teams/${myTeam.id}/roster`}
+                        to={`/sports/tournaments/${tournament.slug}/teams/${myTeam.slug}/roster`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold rounded-3xl text-white bg-green-600 hover:bg-green-700 shadow-sm shadow-green-200 transition-all"
                       >
                         <Users className="w-4 h-4" />

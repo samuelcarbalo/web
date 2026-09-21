@@ -14,7 +14,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useTournament, useTeam, usePlayers } from '../../hooks/useSports';
-import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions, canManageSportsResource } from '../../hooks/usePermissions';
 import { sportTypeLabels } from '../../types/sports';
 
 const TeamDetailPage: React.FC = () => {
@@ -30,7 +30,9 @@ const TeamDetailPage: React.FC = () => {
 
   // Verificar si el usuario es el coach o dueño del equipo
   const isTeamCoach = user?.email === team?.coach_email;
-  const isOwner = checkIsOwner(tournament);
+  const isOwner =
+    checkIsOwner(tournament) ||
+    canManageSportsResource(user, team);
 
   if (isLoading) {
     return (

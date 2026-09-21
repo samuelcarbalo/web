@@ -13,7 +13,8 @@ import SportsSubscriptionBanner from '../../components/Sports/SportsSubscription
 import HybridImageUrlInput from '../../components/UI/HybridImageUrlInput';
 import { CREDIT_COSTS, ROUTES_CREDITS, hasActiveSportsModule } from '../../config/credits';
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
-import type { SportType } from '../../types/sports';
+import type { SportType, TournamentCategory } from '../../types/sports';
+import { TOURNAMENT_CATEGORIES } from '../../types/sports';
 
 const CreateTournament: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ const CreateTournament: React.FC = () => {
     name: '',
     description: '',
     sport_type: 'football' as SportType,
-    format_template: 'legacy_league',
+    category: 'libre' as TournamentCategory,
+    format_template: 'round_robin_single',
     format_group_count: 2,
     start_date: '',
     end_date: '',
@@ -209,6 +211,24 @@ const CreateTournament: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Categoría *
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleChange('category', e.target.value)}
+                  className="input-field"
+                >
+                  {TOURNAMENT_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Define la categoría competitiva (Libre, Sub-17, Femenino, etc.).
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Layers className="w-4 h-4 inline mr-1" />
                   Formato del torneo *
                 </label>
@@ -226,6 +246,9 @@ const CreateTournament: React.FC = () => {
                     {formatTemplates.find((t) => t.id === formData.format_template)?.description}
                   </p>
                 )}
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Elige todos contra todos, eliminación directa u otro formato mixto.
+                </p>
               </div>
 
               {formData.format_template === 'multi_quadrangular' && (

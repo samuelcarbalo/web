@@ -207,7 +207,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                   onChange={(url) => handleChange('logo', url)}
                   error={errors.logo}
                   preview="square"
-                  hint="Máximo 2 MB. PNG, JPG, GIF o WEBP."
+                  hint="Pega una URL https o sube el archivo (ImgBB). PNG, JPG, GIF o WEBP. Máximo 2 MB."
                 />
 
                 {/* Datos del entrenador */}

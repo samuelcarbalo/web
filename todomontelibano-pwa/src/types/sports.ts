@@ -1,4 +1,24 @@
 export type SportType = 'football' | 'softball' | 'basketball' | 'volleyball';
+export type TournamentCategory =
+  | 'libre'
+  | 'sub-13'
+  | 'sub-15'
+  | 'sub-17'
+  | 'sub-20'
+  | 'femenino'
+  | 'mixto'
+  | 'veteranos';
+
+export const TOURNAMENT_CATEGORIES: { value: TournamentCategory; label: string }[] = [
+  { value: 'libre', label: 'Libre' },
+  { value: 'sub-13', label: 'Sub-13' },
+  { value: 'sub-15', label: 'Sub-15' },
+  { value: 'sub-17', label: 'Sub-17' },
+  { value: 'sub-20', label: 'Sub-20' },
+  { value: 'femenino', label: 'Femenino' },
+  { value: 'mixto', label: 'Mixto' },
+  { value: 'veteranos', label: 'Veteranos' },
+];
 export type StructureMode = 'legacy' | 'structured';
 export type PhaseType = 'group_stage' | 'round_robin' | 'knockout' | 'placement';
 export type MatchType = 'group' | 'knockout' | 'friendly' | 'legacy';
@@ -9,6 +29,8 @@ export interface Tournament {
   slug: string;
   description: string;
   sport_type: SportType;
+  category?: TournamentCategory;
+  category_display?: string;
   organization: string;
   organization_name?: string;
   start_date: string;
@@ -54,6 +76,7 @@ export interface CreateTournamentData {
   name: string;
   description: string;
   sport_type: SportType;
+  category?: TournamentCategory;
   start_date: string;
   end_date: string;
   registration_deadline: string;
@@ -207,6 +230,7 @@ export interface Team {
   strikes_out_against: number;
   goal_difference: number;
   is_active: boolean;
+  posted_by?: string;
   created_at: string;
   updated_at: string;
 }
@@ -240,6 +264,8 @@ export interface Player {
   email: string;
   team_name: string;
   team_slug: string;
+  team_logo?: string | null;
+  team_abbreviation?: string;
   photo: string | null;
   birth_date: string | null;
   nationality: string | null;
@@ -252,6 +278,7 @@ export interface Player {
   tournament: string;
   tournament_name: string;
   tournament_slug: string;
+  tournament_category?: string;
   sport_type: SportType;
   yellow_cards: number;
   red_cards: number;

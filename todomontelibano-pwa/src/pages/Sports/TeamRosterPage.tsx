@@ -19,6 +19,7 @@ import {
   Activity,
   UserX,
   Sparkles,
+  Download,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -29,8 +30,10 @@ import {
   useDeletePlayer,
   useTeams,
 } from '../../hooks/useSports';
-import type { Player, CreatePlayerData } from '../../types/sports';
+import { canManageSportsResource, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import type { Player, CreatePlayerData, Team } from '../../types/sports';
 import ImageUploader from '../../components/UI/ImageUploader';
+import { downloadPlayerCardsPdf } from '../../lib/generatePlayerCardsPdf';
 
 /* ═══════════════════════════════════════════
    POSITIONS CONFIG
@@ -140,10 +143,20 @@ const TeamRosterPage: React.FC = () => {
   /* ── Data hooks ── */
   const { data: tournament } = useTournament(tournamentSlug || '');
   const { data: teams } = useTeams(tournamentSlug || '');
-  const myTeam = teams?.results?.find((team: any) => team.coach_email === user?.email);
-  const teamId = teamSlug || myTeam?.id;
+  const currentTeam: Team | undefined = teams?.results?.find(
+    (team: Team) => team.slug === teamSlug || team.id === teamSlug
+  );
+  const isCoachOfCurrent =
+    !!user?.email &&
+    !!currentTeam?.coach_email &&
+    user.email.toLowerCase() === currentTeam.coach_email.toLowerCase();
+  const canManageRoster =
+    isCoachOfCurrent ||
+    canManageSportsResource(user, currentTeam) ||
+    canManageSportsResource(user, tournament);
+  const teamId = currentTeam?.id || '';
 
-  const { data: playersData, isLoading: loadingPlayers } = usePlayers(teamId);
+  const { data: playersData, isLoading: loadingPlayers } = usePlayers(teamId || undefined);
   const createMutation = useCreatePlayer();
   const updateMutation = useUpdatePlayer();
   const deleteMutation = useDeletePlayer();
@@ -168,6 +181,7 @@ const TeamRosterPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [downloadingCards, setDownloadingCards] = useState(false);
 
   const positions =
     tournament?.sport_type === 'softball' ? SOFTBALL_POSITIONS : SOCCER_POSITIONS;
@@ -286,6 +300,22 @@ const TeamRosterPage: React.FC = () => {
   const players: Player[] = playersData?.results || [];
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+  const handleDownloadCards = async () => {
+    if (!players.length || downloadingCards) return;
+    setDownloadingCards(true);
+    try {
+      await downloadPlayerCardsPdf(players, {
+        team: currentTeam,
+        tournament,
+      });
+    } catch (error) {
+      console.error(error);
+      alert('No se pudo generar el PDF de carnets. Intenta de nuevo.');
+    } finally {
+      setDownloadingCards(false);
+    }
+  };
+
   const activePlayers = players.filter((p) => p.is_active).length;
   const captains = players.filter((p) => p.is_captain).length;
   const totalGoals = players.reduce((sum, p) => sum + (p.goals || 0), 0);
@@ -311,18 +341,22 @@ const TeamRosterPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                {myTeam?.name || 'Plantilla del Equipo'}
+                {currentTeam?.name || 'Plantilla del Equipo'}
               </h1>
               <p className="text-xs text-slate-400 font-medium">
                 {tournament?.name}
               </p>
             </div>
           </div>
-          {myTeam && (
+          {canManageRoster && (
             <div className="ml-auto hidden sm:flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
                 <Sparkles className="w-3 h-3" />
-                Entrenador
+                {isSportsSuperAdmin(user)
+                  ? 'Super Admin'
+                  : isCoachOfCurrent
+                    ? 'Entrenador'
+                    : 'Organizador'}
               </span>
             </div>
           )}
@@ -332,7 +366,7 @@ const TeamRosterPage: React.FC = () => {
       <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* ═══════════ SIDEBAR FORM ═══════════ */}
-          {myTeam ? (
+          {canManageRoster ? (
             <div className="lg:col-span-4 xl:col-span-3">
               <div className="sticky top-24 space-y-6">
                 {/* Form Card */}
@@ -698,7 +732,7 @@ const TeamRosterPage: React.FC = () => {
                     Acceso Restringido
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-gray-400 mb-1">
-                    No eres entrenador de ningún equipo
+                    Contacta al administrador para gestionar jugadores
                   </p>
                   <p className="text-xs text-slate-400">
                     Contacta al administrador para gestionar jugadores
@@ -713,7 +747,7 @@ const TeamRosterPage: React.FC = () => {
             {/* Players Card */}
             <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-gray-800/80 overflow-hidden">
               {/* Card Header */}
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-3xl bg-emerald-50 flex items-center justify-center">
                     <Users className="w-5 h-5 text-emerald-600" />
@@ -727,9 +761,26 @@ const TeamRosterPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-black rounded-3xl border border-emerald-200">
-                  {players.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  {players.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleDownloadCards}
+                      disabled={downloadingCards}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
+                    >
+                      {downloadingCards ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                      Descargar Carnets (PDF)
+                    </button>
+                  )}
+                  <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-black rounded-3xl border border-emerald-200">
+                    {players.length}
+                  </span>
+                </div>
               </div>
 
               {/* Loading State */}
@@ -867,22 +918,24 @@ const TeamRosterPage: React.FC = () => {
 
                             {/* Actions */}
                             <td className="px-5 py-4 text-right">
-                              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => handleEdit(player)}
-                                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-3xl transition-all"
-                                  title="Editar"
-                                >
-                                  <Edit3 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(player.id)}
-                                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-all"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                              {canManageRoster && (
+                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => handleEdit(player)}
+                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-3xl transition-all"
+                                    title="Editar"
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(player.id)}
+                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-3xl transition-all"
+                                    title="Eliminar"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );
