@@ -166,15 +166,41 @@ export const formatCop = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
+const SPORTS_MODULE_BYPASS_ROLES = new Set([
+  'SUPER_ADMIN',
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN_L2',
+  'SUPER_ADMIN_LEVEL_1',
+  'SUPER_ADMIN_LEVEL_2',
+]);
+
 export function hasActiveSportsModule(user?: {
   sports_module_active?: boolean;
   sports_module_expires_at?: string | null;
   is_unlimited_credits?: boolean;
   is_superuser?: boolean;
+  is_super_admin_l1?: boolean;
+  is_super_admin_l2?: boolean;
   admin_level?: number;
+  role?: string;
+  hierarchy_role?: string | null;
 } | null): boolean {
   if (!user) return false;
-  if (user.is_unlimited_credits || user.is_superuser || user.admin_level === 1) return true;
+  const level = Number(user.admin_level ?? 0);
+  const role = String(user.role || '').toUpperCase();
+  const hierarchy = String(user.hierarchy_role || '').toUpperCase();
+  if (
+    user.is_unlimited_credits ||
+    user.is_superuser ||
+    user.is_super_admin_l1 ||
+    user.is_super_admin_l2 ||
+    level === 1 ||
+    level === 2 ||
+    SPORTS_MODULE_BYPASS_ROLES.has(role) ||
+    SPORTS_MODULE_BYPASS_ROLES.has(hierarchy)
+  ) {
+    return true;
+  }
   if (!user.sports_module_expires_at) return false;
   return new Date(user.sports_module_expires_at).getTime() > Date.now();
 }

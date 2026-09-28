@@ -7,9 +7,26 @@ export interface Resource {
   owner_id?: string | number | null;
 }
 
+const PLATFORM_SUPER_ADMIN_ROLES = new Set([
+  'SUPER_ADMIN',
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN_L2',
+  'SUPER_ADMIN_LEVEL_1',
+  'SUPER_ADMIN_LEVEL_2',
+]);
+
+function hasPlatformSuperAdminRole(user: User): boolean {
+  const role = String(user.role || '').toUpperCase();
+  const hierarchy = String(user.hierarchy_role || '').toUpperCase();
+  return PLATFORM_SUPER_ADMIN_ROLES.has(role) || PLATFORM_SUPER_ADMIN_ROLES.has(hierarchy);
+}
+
 export function isPlatformElevatedUser(user: User | null | undefined): boolean {
   if (!user) return false;
-  return !!(user.is_superuser || user.is_staff || user.role === 'admin');
+  if (user.is_superuser || user.is_staff || user.role === 'admin') return true;
+  if (adminLevelOf(user) >= 1) return true;
+  if (user.is_super_admin_l1 || user.is_super_admin_l2) return true;
+  return hasPlatformSuperAdminRole(user);
 }
 
 function adminLevelOf(user: User | null | undefined): number {
@@ -102,24 +119,20 @@ export function canManageProduct(
   return Boolean(ownerId && userId && ownerId === userId);
 }
 
-/** Puede crear/editar contenido de módulos (manager, admin o superuser/staff). */
+/** Puede crear/editar contenido de módulos (manager, admin o Super Admin L1/L2). */
 export function canManageContent(user: User | null | undefined): boolean {
   if (!user) return false;
   return isPlatformElevatedUser(user) || user.role === 'manager';
 }
 
 /**
- * Determina si el usuario es Super Admin del módulo de Deportes/Torneos.
- * Equivalente al helper `_is_sports_super_admin` del backend.
- * Nivel 1: is_superuser, admin_level === 1 o role SUPER_ADMIN.
+ * Super Admin del módulo de Deportes/Torneos (Nivel 1 y Nivel 2).
+ * Equivalente a `_is_sports_super_admin` del backend.
  */
 export function isSportsSuperAdmin(user: User | null | undefined): boolean {
   if (!user) return false;
-  if (user.is_superuser) return true;
-  if (adminLevelOf(user) === 1) return true;
-  const role = String(user.role);
-  if (role === 'SUPER_ADMIN' || role === 'super_admin') return true;
-  return false;
+  if (isSuperAdminLevel1(user) || isSuperAdminLevel2(user)) return true;
+  return hasPlatformSuperAdminRole(user);
 }
 
 /**
