@@ -14,7 +14,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useTournament, useTeam, usePlayers } from '../../hooks/useSports';
-import { usePermissions, canManageSportsResource } from '../../hooks/usePermissions';
+import { usePermissions, canManageSportsResource, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { sportTypeLabels } from '../../types/sports';
 
 const TeamDetailPage: React.FC = () => {
@@ -33,6 +33,12 @@ const TeamDetailPage: React.FC = () => {
   const isOwner =
     checkIsOwner(tournament) ||
     canManageSportsResource(user, team);
+  const canSeeCoachPhone =
+    isSportsSuperAdmin(user) ||
+    (user?.id != null && team?.posted_by != null && String(user.id) === String(team.posted_by)) ||
+    (user?.id != null &&
+      tournament?.posted_by != null &&
+      String(user.id) === String(tournament.posted_by));
 
   if (isLoading) {
     return (
@@ -186,7 +192,7 @@ const TeamDetailPage: React.FC = () => {
                     {team.coach_email}
                   </div>
                 )}
-                {team.coach_phone && (
+                {canSeeCoachPhone && team.coach_phone && (
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Phone className="w-4 h-4" />
                     {team.coach_phone}
