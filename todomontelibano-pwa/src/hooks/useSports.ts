@@ -43,6 +43,7 @@ import {
   advancePhase,
   getSecondPhasePreview,
   generateSecondPhase,
+  configureSecondPhase,
   getTournamentBracket,
   getPlayerStats,
   getTournamentPlayerStats,
@@ -55,7 +56,7 @@ import {
   revokePlayerSuspension,
   getTeamPlayers,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData, ConfigureSecondPhaseData } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
@@ -573,6 +574,18 @@ export const useTournamentSchedule = (
     queryKey: [TOURNAMENTS_KEY, 'schedule', slug, params],
     queryFn: () => getTournamentSchedule(slug, params),
     enabled: !!slug,
+  });
+};
+
+export const useConfigureSecondPhase = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ConfigureSecondPhaseData) => configureSecondPhase(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, slug] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'second-phase', slug] });
+    },
   });
 };
 

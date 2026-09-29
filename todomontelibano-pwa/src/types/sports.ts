@@ -170,7 +170,21 @@ export interface TournamentPhase {
 export interface TournamentStructure {
   structure_mode: StructureMode;
   format_template: string;
+  format_label?: string;
+  supports_second_group_phase?: boolean;
+  has_second_group_phase?: boolean;
+  first_phase_qualified_per_group?: number;
+  second_phase_groups_count?: number | null;
+  second_phase_qualified_per_group?: number | null;
+  second_phase_assignment_method?: 'RANDOM' | 'MANUAL' | '';
   phases: TournamentPhase[];
+}
+
+export interface ConfigureSecondPhaseData {
+  first_phase_qualified_per_group: number;
+  second_phase_groups_count: 1 | 2;
+  second_phase_qualified_per_group: number;
+  second_phase_assignment_method: 'RANDOM' | 'MANUAL';
 }
 
 export interface BracketNode {
