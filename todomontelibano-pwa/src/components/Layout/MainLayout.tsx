@@ -516,8 +516,8 @@ const MainLayout: React.FC = () => {
                 Legal
               </h3>
               <ul className="space-y-3 text-sm font-medium text-gray-600 dark:text-gray-400">
-                <li><Link to="/privacy" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Privacidad</Link></li>
-                <li><Link to="/terms" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Términos</Link></li>
+                <li><Link to="/politica-de-privacidad" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Privacidad</Link></li>
+                <li><Link to="/terminos-y-condiciones" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Términos</Link></li>
                 <li><Link to="/contact" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Contacto</Link></li>
               </ul>
             </div>

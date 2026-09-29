@@ -18,10 +18,12 @@ import AuthBackHomeLink from "../../components/Auth/AuthBackHomeLink";
 import AuthSubmitStatus from "../../components/Auth/AuthSubmitStatus";
 import SeoHead from "../../components/SEO/SeoHead";
 import { buildLoginUrl, isSafeInternalPath, setAuthRedirect } from "../../lib/authRedirect";
+import LegalConsent from "../../components/Legal/LegalConsent";
 
 const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState(1);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [userType, setUserType] = useState<"person" | "company">("person");
   const [searchParams] = useSearchParams();
   const nextParam = searchParams.get("next");
@@ -47,10 +49,12 @@ const Register: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     register.reset();
+    if (!acceptedTerms) return;
     register.mutate({
       ...formData,
       user_type: userType,
       organization_slug: "conectando-empleo",
+      accepted_terms: true,
     });
   };
 
@@ -423,34 +427,11 @@ const Register: React.FC = () => {
                     )}
                 </div>
 
-                <div className="flex items-start">
-                  <input
-                    id="terms"
-                    name="terms"
-                    type="checkbox"
-                    required
-                    className="auth-checkbox"
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="auth-checkbox-label"
-                  >
-                    Acepto los{" "}
-                    <Link
-                      to="/terms"
-                      className="text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:text-violet-400"
-                    >
-                      Términos de servicio
-                    </Link>{" "}
-                    y la{" "}
-                    <Link
-                      to="/privacy"
-                      className="text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:text-violet-400"
-                    >
-                      Política de privacidad
-                    </Link>
-                  </label>
-                </div>
+                <LegalConsent
+                  id="terms"
+                  accepted={acceptedTerms}
+                  onAcceptedChange={setAcceptedTerms}
+                />
 
                 <div className="flex space-x-3">
                   <button
@@ -465,6 +446,7 @@ const Register: React.FC = () => {
                     type="submit"
                     disabled={
                       isSubmitting ||
+                      !acceptedTerms ||
                       formData.password !== formData.password_confirm
                     }
                     aria-busy={isSubmitting}

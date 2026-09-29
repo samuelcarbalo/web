@@ -16,6 +16,7 @@ import { useCreateJob } from '../../hooks/useJobs';
 import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
+import LegalConsent from '../../components/Legal/LegalConsent';
 
 type JobType = 'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship';
 
@@ -23,6 +24,7 @@ const CreateJob: React.FC = () => {
   const navigate = useNavigate();
   const createJob = useCreateJob();
   const { user } = useAuthStore();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const userCredits = user?.credits ?? 0;
   const hasEnoughCredits = userCredits >= CREDIT_COSTS.job;
@@ -102,6 +104,7 @@ const CreateJob: React.FC = () => {
       navigate(ROUTES_CREDITS.packages);
       return;
     }
+    if (!acceptedTerms) return;
     
     if (formData.is_external && !formData.external_apply_url.trim()) {
       return;
@@ -579,6 +582,8 @@ const CreateJob: React.FC = () => {
             </div>
           )}
 
+          <LegalConsent id="job-terms" accepted={acceptedTerms} onAcceptedChange={setAcceptedTerms} />
+
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <button
@@ -590,7 +595,7 @@ const CreateJob: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createJob.isPending || !hasEnoughCredits}
+              disabled={createJob.isPending || !hasEnoughCredits || !acceptedTerms}
               className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createJob.isPending ? (

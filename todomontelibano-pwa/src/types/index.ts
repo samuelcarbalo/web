@@ -231,6 +231,7 @@ export interface RegisterData {
   user_type: 'person' | 'company';
   organization_name?: string;
   organization_slug?: string;
+  accepted_terms?: boolean;
 }
 
 export interface Tokens {

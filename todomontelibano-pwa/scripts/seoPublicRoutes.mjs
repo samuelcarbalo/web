@@ -92,7 +92,7 @@ export const SITEMAP_ROUTES = [
     prerender: true,
   },
   {
-    path: '/privacy',
+    path: '/politica-de-privacidad',
     changefreq: 'yearly',
     priority: '0.3',
     title: 'Política de privacidad | Chéver',
@@ -103,7 +103,7 @@ export const SITEMAP_ROUTES = [
     prerender: true,
   },
   {
-    path: '/terms',
+    path: '/terminos-y-condiciones',
     changefreq: 'yearly',
     priority: '0.3',
     title: 'Términos de servicio | Chéver',

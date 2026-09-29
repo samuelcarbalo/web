@@ -64,8 +64,8 @@ export const ROUTES = {
   facturacion: '/dashboard/facturacion',
   adminUsers: '/dashboard/admin',
   adminCredits: '/dashboard/admin?focus=credits',
-  privacy: '/privacy',
-  terms: '/terms',
+  privacy: '/politica-de-privacidad',
+  terms: '/terminos-y-condiciones',
   contact: '/contact',
 } as const;
 
