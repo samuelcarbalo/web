@@ -8,6 +8,19 @@ export interface SponsorshipPlan {
   description: string;
 }
 
+export interface ActiveSponsorship {
+  id: string;
+  title: string;
+  plan: string;
+  plan_label: string;
+  start_date: string;
+  end_date: string;
+  days_remaining: number;
+  image: string;
+  link_url: string;
+  created_at?: string;
+}
+
 export interface SponsorshipAvailability {
   available: boolean;
   tournament_id: string;
@@ -15,17 +28,11 @@ export interface SponsorshipAvailability {
   tournament_status: string;
   days_remaining: number;
   message: string;
-  active_sponsorship: {
-    id: string;
-    title: string;
-    plan: string;
-    plan_label: string;
-    start_date: string;
-    end_date: string;
-    days_remaining: number;
-    image: string;
-    link_url: string;
-  } | null;
+  slots_total?: number;
+  slots_used?: number;
+  slots_available?: number;
+  active_sponsorship: ActiveSponsorship | null;
+  active_sponsorships?: ActiveSponsorship[];
 }
 
 export interface PurchaseSponsorshipData {
