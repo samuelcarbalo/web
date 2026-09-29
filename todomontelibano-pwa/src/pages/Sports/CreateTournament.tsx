@@ -15,6 +15,7 @@ import { CREDIT_COSTS, ROUTES_CREDITS, hasActiveSportsModule } from '../../confi
 import { isValidHttpImageUrl } from '../../lib/imageUrl';
 import type { SportType, TournamentCategory } from '../../types/sports';
 import { TOURNAMENT_CATEGORIES } from '../../types/sports';
+import LegalConsent from '../../components/Legal/LegalConsent';
 
 const CreateTournament: React.FC = () => {
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ const CreateTournament: React.FC = () => {
   }, [formData.format_template, formData.format_group_count, formatTemplates]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const sports: { value: SportType; label: string }[] = [
     { value: 'football', label: 'Fútbol' },
@@ -148,7 +150,7 @@ const CreateTournament: React.FC = () => {
       return;
     }
     
-    if (!validate()) return;
+    if (!validate() || !acceptedTerms) return;
     
     const slug = formData.name
       .toLowerCase()
@@ -630,6 +632,8 @@ const CreateTournament: React.FC = () => {
             </div>
           )}
 
+          <LegalConsent id="tournament-terms" accepted={acceptedTerms} onAcceptedChange={setAcceptedTerms} />
+
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <button
@@ -641,7 +645,7 @@ const CreateTournament: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending || !canUseSports}
+              disabled={createMutation.isPending || !canUseSports || !acceptedTerms}
               className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createMutation.isPending ? (

@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import InsufficientCreditsAlert from '../../components/Credits/InsufficientCreditsAlert';
 import { CREDIT_COSTS, ROUTES_CREDITS } from '../../config/credits';
 import ImageUploader from '../../components/UI/ImageUploader';
+import LegalConsent from '../../components/Legal/LegalConsent';
 
 const CreateListing: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ const CreateListing: React.FC = () => {
     contact_email: '',
   });
   const [image, setImage] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ const CreateListing: React.FC = () => {
       navigate(ROUTES_CREDITS.packages);
       return;
     }
+    if (!acceptedTerms) return;
     createListing.mutate(
       { ...form, price: Number(form.price), image: image.trim() },
       { onSuccess: (data) => navigate(`/real-estate/${data.id}`) },
@@ -163,9 +166,11 @@ const CreateListing: React.FC = () => {
             </div>
           </div>
 
+          <LegalConsent id="listing-terms" accepted={acceptedTerms} onAcceptedChange={setAcceptedTerms} />
+
           <div className="flex gap-4">
             <button type="button" onClick={() => navigate(-1)} className="flex-1 btn-secondary py-3">Cancelar</button>
-            <button type="submit" disabled={createListing.isPending || !hasEnoughCredits}
+            <button type="submit" disabled={createListing.isPending || !hasEnoughCredits || !acceptedTerms}
               className="flex-1 btn-primary py-3 disabled:opacity-50">
               {createListing.isPending ? 'Publicando...' : hasEnoughCredits ? 'Publicar (5 🪙)' : 'Créditos insuficientes'}
             </button>

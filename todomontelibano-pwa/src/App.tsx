@@ -252,8 +252,10 @@ const App: React.FC = () => {
               {/* Rutas públicas - NO requieren auth */}
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<Home />} />
-                <Route path="privacy" element={<PrivacyPolicy />} />
-                <Route path="terms" element={<TermsOfService />} />
+                <Route path="politica-de-privacidad" element={<PrivacyPolicy />} />
+                <Route path="terminos-y-condiciones" element={<TermsOfService />} />
+                <Route path="privacy" element={<Navigate to="/politica-de-privacidad" replace />} />
+                <Route path="terms" element={<Navigate to="/terminos-y-condiciones" replace />} />
                 <Route path="contact" element={<ContactPage />} />
 
                 {/* Rutas SEO canónicas (español) */}
