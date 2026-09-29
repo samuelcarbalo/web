@@ -59,12 +59,22 @@ const CreateTournament: React.FC = () => {
     }
   }, [formData.sport_type]);
 
+  const selectedFormat = formatTemplates?.find((t) => t.id === formData.format_template);
+  const teamsPerGroup = selectedFormat?.teams_per_group ?? 4;
+
   useEffect(() => {
     const template = formatTemplates?.find((t) => t.id === formData.format_template);
-    if (template?.default_max_teams) {
+    if (!template) return;
+    if (template.allows_group_count) {
+      const perGroup = template.teams_per_group ?? 4;
+      const groups = Math.max(2, formData.format_group_count || 2);
+      setFormData((prev) => ({ ...prev, max_teams: groups * perGroup }));
+      return;
+    }
+    if (template.default_max_teams) {
       setFormData((prev) => ({ ...prev, max_teams: template.default_max_teams! }));
     }
-  }, [formData.format_template, formatTemplates]);
+  }, [formData.format_template, formData.format_group_count, formatTemplates]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -241,29 +251,40 @@ const CreateTournament: React.FC = () => {
                     <option key={t.id} value={t.id}>{t.label}</option>
                   ))}
                 </select>
-                {formatTemplates?.find((t) => t.id === formData.format_template)?.description && (
+                {selectedFormat?.description && (
                   <p className="mt-1.5 text-xs text-gray-500">
-                    {formatTemplates.find((t) => t.id === formData.format_template)?.description}
+                    {selectedFormat.description}
                   </p>
                 )}
-                <p className="mt-1.5 text-xs text-gray-400">
-                  Elige todos contra todos, eliminación directa u otro formato mixto.
-                </p>
               </div>
 
-              {formData.format_template === 'multi_quadrangular' && (
+              {selectedFormat?.grouping === 'single_table' && (
+                <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
+                  Liga simple: un solo grupo general de todos contra todos. No se crean Grupo A, Grupo B ni otras subdivisiones en la primera fase.
+                </div>
+              )}
+
+              {selectedFormat?.allows_group_count && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Cantidad de cuadrangulares
+                    Número de grupos
                   </label>
                   <input
                     type="number"
                     min={2}
-                    max={8}
+                    max={16}
                     value={formData.format_group_count}
                     onChange={(e) => handleChange('format_group_count', parseInt(e.target.value) || 2)}
                     className="input-field"
                   />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Se crean Grupo A, B, C… con {teamsPerGroup} equipos cada uno
+                    ({Math.max(2, formData.format_group_count || 2) * teamsPerGroup} equipos en total).
+                    {selectedFormat.qualifiers_per_group
+                      ? ` Clasifican ${selectedFormat.qualifiers_per_group} por grupo a la eliminatoria. El 1.º de cada grupo juega contra el 2.º del siguiente.`
+                      : ' Cada grupo juega todos contra todos y no hay fase eliminatoria.'}
+                    {' '}El calendario de la fase de grupos no cruza equipos de grupos distintos.
+                  </p>
                 </div>
               )}
 
