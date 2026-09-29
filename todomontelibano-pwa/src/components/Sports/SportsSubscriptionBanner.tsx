@@ -12,7 +12,15 @@ import { ROUTES } from '../../config/seo';
 const SportsSubscriptionBanner: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   if (!user) return null;
-  if (user.is_superuser || user.is_unlimited_credits || user.admin_level === 1) return null;
+  if (
+    user.is_superuser ||
+    user.is_unlimited_credits ||
+    user.is_super_admin_l1 ||
+    user.is_super_admin_l2 ||
+    (user.admin_level ?? 0) >= 1
+  ) {
+    return null;
+  }
 
   const active = hasActiveSportsModule(user);
   const daysLeft = sportsModuleDaysLeft(user);
