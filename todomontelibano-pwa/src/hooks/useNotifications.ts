@@ -39,10 +39,17 @@ export const useNotificationUnreadCount = (enabled = true) => {
 
   return useQuery({
     queryKey: notificationKeys.unread(),
-    queryFn: getNotificationUnreadCount,
+    queryFn: async () => {
+      try {
+        return await getNotificationUnreadCount();
+      } catch {
+        return { unread_count: 0 };
+      }
+    },
     enabled,
     refetchInterval: realtimeLive ? 60_000 : 15_000,
     staleTime: 10_000,
+    retry: false,
     throwOnError: false,
   });
 };

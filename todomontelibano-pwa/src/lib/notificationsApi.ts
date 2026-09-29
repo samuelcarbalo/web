@@ -8,8 +8,16 @@ export const getNotifications = async (params?: { unread?: boolean; page?: numbe
 };
 
 export const getNotificationUnreadCount = async () => {
-  const response = await api.get<{ unread_count: number }>('/notifications/unread-count/');
-  return response.data;
+  try {
+    const response = await api.get<{ unread_count: number }>('/notifications/unread-count/');
+    return response.data;
+  } catch (error) {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status == null || status >= 500) {
+      return { unread_count: 0 };
+    }
+    throw error;
+  }
 };
 
 export const markNotificationRead = async (id: string) => {
