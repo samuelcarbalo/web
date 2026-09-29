@@ -301,6 +301,45 @@
     overflow: hidden;
   }
 
+  /* Rotación vertical de banners patrocinados (entra desde arriba, sale hacia abajo) */
+  .ad-slide-in {
+    animation: ad-slide-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .ad-slide-out {
+    animation: ad-slide-out 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    pointer-events: none;
+  }
+
+  @keyframes ad-slide-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -100%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes ad-slide-out {
+    from {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ad-slide-in,
+    .ad-slide-out {
+      animation-duration: 0.01ms;
+    }
+  }
+
   /* Auth pages */
   .auth-page {
     @apply min-h-screen bg-[var(--color-background)] flex flex-col justify-center
