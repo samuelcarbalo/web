@@ -1,6 +1,6 @@
 import { api } from './api';
 import { getViewerHash } from './viewerHash';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData, SecondPhasePreview } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -365,6 +365,24 @@ export const getTournamentSchedule = async (
   params?: { status?: string; team?: string; phase?: string; group?: string }
 ) => {
   const response = await api.get<Match[]>(`/sports/tournaments/${slug}/schedule/`, { params });
+  return response.data;
+};
+
+export const getSecondPhasePreview = async (slug: string) => {
+  const response = await api.get<SecondPhasePreview>(
+    `/sports/tournaments/${slug}/generate-second-phase/`
+  );
+  return response.data;
+};
+
+export const generateSecondPhase = async (
+  slug: string,
+  groups?: { slug: string; team_ids: string[] }[]
+) => {
+  const response = await api.post(
+    `/sports/tournaments/${slug}/generate-second-phase/`,
+    groups ? { groups } : {}
+  );
   return response.data;
 };
 

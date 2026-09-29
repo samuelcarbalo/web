@@ -63,6 +63,11 @@ export interface Tournament {
   lineup_size?: number;
   regulation_innings?: number;
   mercy_rule_enabled?: boolean;
+  has_second_group_phase?: boolean;
+  first_phase_qualified_per_group?: number;
+  second_phase_groups_count?: number | null;
+  second_phase_qualified_per_group?: number | null;
+  second_phase_assignment_method?: 'RANDOM' | 'MANUAL';
 }
 
 export interface PaginatedResponse<T> {
@@ -90,6 +95,11 @@ export interface CreateTournamentData {
   structure_mode?: StructureMode;
   format_template?: string;
   format_group_count?: number;
+  has_second_group_phase?: boolean;
+  first_phase_qualified_per_group?: number;
+  second_phase_groups_count?: number | null;
+  second_phase_qualified_per_group?: number | null;
+  second_phase_assignment_method?: 'RANDOM' | 'MANUAL';
   scoring_config?: Record<string, unknown>;
   rules_url?: string;
   lineup_size?: number;
@@ -110,6 +120,20 @@ export interface FormatTemplate {
   teams_per_group?: number;
   qualifiers_per_group?: number;
   group_count_locked?: number;
+  supports_second_group_phase?: boolean;
+}
+
+export interface SecondPhaseQualifier {
+  team_id: string;
+  team_name: string;
+  from_group: string;
+  rank: number;
+}
+
+export interface SecondPhasePreview {
+  assignment_method: 'RANDOM' | 'MANUAL';
+  qualifiers: SecondPhaseQualifier[];
+  groups: { id: string; slug: string; name: string; team_ids: string[] }[];
 }
 
 export interface GroupMembership {
