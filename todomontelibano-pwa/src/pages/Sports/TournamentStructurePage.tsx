@@ -10,6 +10,7 @@ import {
   Play,
   Trophy,
   ArrowRight,
+  Plus,
 } from 'lucide-react';
 import {
   useTournament,
@@ -18,13 +19,21 @@ import {
   useAssignGroupTeams,
   useGenerateFixture,
   useAdvancePhase,
+  useConfigureSecondPhase,
+  useGenerateSecondPhase,
 } from '../../hooks/useSports';
 import { useAuthStore } from '../../store/authStore';
 import { canManageContent, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { hasActiveSportsModule } from '../../config/credits';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import SecondPhasePanel from '../../components/Sports/SecondPhasePanel';
-import type { BracketNode, CompetitionGroup, TournamentPhase } from '../../types/sports';
+import SecondPhaseConfigModal from '../../components/Sports/SecondPhaseConfigModal';
+import type {
+  BracketNode,
+  CompetitionGroup,
+  ConfigureSecondPhaseData,
+  TournamentPhase,
+} from '../../types/sports';
 import { getMatchAwayScore, getMatchHomeScore } from '../../lib/matchScoring';
 
 const TournamentStructurePage: React.FC = () => {
@@ -36,6 +45,8 @@ const TournamentStructurePage: React.FC = () => {
   const assignMutation = useAssignGroupTeams(slug || '');
   const fixtureMutation = useGenerateFixture(slug || '');
   const advanceMutation = useAdvancePhase(slug || '');
+  const configureSecondPhase = useConfigureSecondPhase(slug || '');
+  const generateSecondPhase = useGenerateSecondPhase(slug || '');
 
   const [selectedGroup, setSelectedGroup] = useState<CompetitionGroup | null>(null);
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
@@ -45,6 +56,9 @@ const TournamentStructurePage: React.FC = () => {
   const [matchDate, setMatchDate] = useState('');
   const [venue, setVenue] = useState('');
   const [advanceError, setAdvanceError] = useState('');
+  const [secondPhaseOpen, setSecondPhaseOpen] = useState(false);
+  const [secondPhaseError, setSecondPhaseError] = useState('');
+  const [secondPhaseNotice, setSecondPhaseNotice] = useState('');
 
   const sportType = tournament?.sport_type || 'football';
 
@@ -122,6 +136,50 @@ const TournamentStructurePage: React.FC = () => {
     );
   };
 
+  const apiError = (err: unknown, fallback: string) => {
+    const data = (err as { response?: { data?: { error?: unknown; detail?: unknown } } })?.response?.data;
+    const raw = data?.error ?? data?.detail;
+    if (typeof raw === 'string' && raw.trim()) return raw;
+    if (Array.isArray(raw)) {
+      const first = raw[0] as { message?: unknown } | string | undefined;
+      if (typeof first === 'string' && first.trim()) return first;
+      if (first && typeof first === 'object' && typeof first.message === 'string') return first.message;
+    }
+    return fallback;
+  };
+
+  const handleConfigureSecondPhase = (data: ConfigureSecondPhaseData) => {
+    setSecondPhaseError('');
+    setSecondPhaseNotice('');
+    configureSecondPhase.mutate(data, {
+      onSuccess: () => {
+        if (data.second_phase_assignment_method === 'RANDOM') {
+          generateSecondPhase.mutate(undefined, {
+            onSuccess: () => {
+              setSecondPhaseOpen(false);
+              setSecondPhaseNotice('Segunda fase creada y clasificados repartidos.');
+            },
+            onError: (err: unknown) => {
+              setSecondPhaseOpen(false);
+              setSecondPhaseNotice(
+                apiError(
+                  err,
+                  'La segunda fase quedó creada. Asigna equipos a la primera fase para repartir clasificados.'
+                )
+              );
+            },
+          });
+          return;
+        }
+        setSecondPhaseOpen(false);
+        setSecondPhaseNotice('Segunda fase creada. Asigna cada clasificado a su grupo.');
+      },
+      onError: (err: unknown) => {
+        setSecondPhaseError(apiError(err, 'No se pudo configurar la segunda fase.'));
+      },
+    });
+  };
+
   const hasNextPhase = (phase: TournamentPhase) => {
     if (!structure) return false;
     return structure.phases.some((p) => p.order > phase.order);
@@ -192,6 +250,9 @@ const TournamentStructurePage: React.FC = () => {
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
           Torneo de liga simple
         </h2>
+        <p className="text-sm font-semibold text-violet-700 dark:text-violet-300 mb-2">
+          Formato seleccionado: {structure?.format_label || 'Liga simple'}
+        </p>
         <p className="text-gray-500 mb-6">
           Este torneo no usa fases ni cuadrangulares. Crea partidos manualmente desde el calendario.
         </p>
@@ -218,17 +279,57 @@ const TournamentStructurePage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Estructura del torneo</h1>
-          <p className="text-sm text-gray-500">
-            Fases, cuadrangulares y generación de fixture
+          <p className="text-sm font-semibold text-violet-700 dark:text-violet-300 mt-1">
+            Formato seleccionado: {structure.format_label || 'Sin formato'}
           </p>
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-3">
+        {structure.supports_second_group_phase && (
+          <span className="inline-flex items-center rounded-full bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-200 px-3 py-1 text-xs font-medium">
+            Clasifican {structure.first_phase_qualified_per_group || 2} por grupo
+          </span>
+        )}
+        {structure.supports_second_group_phase && (
+          <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 text-xs font-medium">
+            Segunda fase: {structure.has_second_group_phase ? 'Habilitada' : 'Deshabilitada'}
+          </span>
+        )}
+        {structure.has_second_group_phase && structure.second_phase_groups_count && (
+          <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 text-xs font-medium">
+            {structure.second_phase_groups_count} grupo{structure.second_phase_groups_count === 1 ? '' : 's'} en la 2.ª fase
+            {' · '}
+            {structure.second_phase_assignment_method === 'MANUAL' ? 'Manual' : 'Aleatorio'}
+          </span>
+        )}
+      </div>
+
+      {structure.phases.length > 0 && (
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+          {structure.phases.map((phase) => phase.name).join(' → ')}
+        </p>
+      )}
+
       <SportsSubscriptionBanner />
 
+      {secondPhaseNotice && (
+        <p className="text-sm text-violet-700 dark:text-violet-300 mb-4">{secondPhaseNotice}</p>
+      )}
+
       <div className="space-y-6">
-        {isOwner && tournament?.has_second_group_phase && (
-          <SecondPhasePanel tournament={tournament} />
+        {isOwner && tournament && (structure.has_second_group_phase || tournament.has_second_group_phase) && (
+          <SecondPhasePanel
+            tournament={{
+              ...tournament,
+              has_second_group_phase: true,
+              second_phase_assignment_method:
+                structure.second_phase_assignment_method === 'MANUAL' ||
+                tournament.second_phase_assignment_method === 'MANUAL'
+                  ? 'MANUAL'
+                  : 'RANDOM',
+            }}
+          />
         )}
         {structure.phases.map((phase) => (
           <div key={phase.id} className="card">
@@ -263,6 +364,23 @@ const TournamentStructurePage: React.FC = () => {
                     >
                       <ArrowRight className="w-3.5 h-3.5" />
                       Cerrar fase y avanzar
+                    </button>
+                  )}
+                  {structure.supports_second_group_phase &&
+                    phase.phase_type === 'group_stage' &&
+                    phase.slug !== 'segunda-fase' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSecondPhaseError('');
+                        setSecondPhaseOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-violet-300 text-violet-700 dark:text-violet-200 dark:border-violet-800 rounded-full hover:bg-violet-50 dark:hover:bg-violet-950/40"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      {structure.has_second_group_phase
+                        ? 'Configurar 2.ª Fase'
+                        : 'Agregar Segunda Fase de Grupos'}
                     </button>
                   )}
                 </div>
@@ -335,6 +453,21 @@ const TournamentStructurePage: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <SecondPhaseConfigModal
+        open={secondPhaseOpen}
+        pending={configureSecondPhase.isPending || generateSecondPhase.isPending}
+        error={secondPhaseError}
+        initial={{
+          first_phase_qualified_per_group: structure.first_phase_qualified_per_group || 2,
+          second_phase_groups_count: structure.second_phase_groups_count === 1 ? 1 : 2,
+          second_phase_qualified_per_group: structure.second_phase_qualified_per_group || 2,
+          second_phase_assignment_method:
+            structure.second_phase_assignment_method === 'MANUAL' ? 'MANUAL' : 'RANDOM',
+        }}
+        onClose={() => setSecondPhaseOpen(false)}
+        onConfirm={handleConfigureSecondPhase}
+      />
 
       {/* Modal asignar equipos */}
       {selectedGroup && (
