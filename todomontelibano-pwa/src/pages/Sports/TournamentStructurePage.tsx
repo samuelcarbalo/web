@@ -275,7 +275,7 @@ const TournamentStructurePage: React.FC = () => {
               <p className="text-sm text-gray-500">
                 {phase.phase_type === 'knockout'
                   ? 'Los partidos de eliminatoria se generan al cerrar la fase anterior.'
-                  : 'Fase sin grupos — el fixture incluirá todos los equipos del torneo.'}
+                  : 'Liga simple: esta fase no tiene grupos. El calendario incluye a todos los equipos del torneo en una sola tabla.'}
               </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">

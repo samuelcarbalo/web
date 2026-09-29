@@ -104,6 +104,12 @@ export interface FormatTemplate {
   sport_types: SportType[];
   structure_mode: StructureMode;
   default_max_teams?: number;
+  /** single_table: liga sin grupos. multi_group: varios grupos. fixed_group: un grupo. knockout: solo cuadro. */
+  grouping?: 'single_table' | 'multi_group' | 'fixed_group' | 'knockout';
+  allows_group_count?: boolean;
+  teams_per_group?: number;
+  qualifiers_per_group?: number;
+  group_count_locked?: number;
 }
 
 export interface GroupMembership {
