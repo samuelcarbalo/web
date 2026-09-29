@@ -41,6 +41,8 @@ import {
   generateFixture,
   getTournamentSchedule,
   advancePhase,
+  getSecondPhasePreview,
+  generateSecondPhase,
   getTournamentBracket,
   getPlayerStats,
   getTournamentPlayerStats,
@@ -571,6 +573,27 @@ export const useTournamentSchedule = (
     queryKey: [TOURNAMENTS_KEY, 'schedule', slug, params],
     queryFn: () => getTournamentSchedule(slug, params),
     enabled: !!slug,
+  });
+};
+
+export const useSecondPhasePreview = (slug: string, enabled: boolean) => {
+  return useQuery({
+    queryKey: [TOURNAMENTS_KEY, 'second-phase', slug],
+    queryFn: () => getSecondPhasePreview(slug),
+    enabled: !!slug && enabled,
+  });
+};
+
+export const useGenerateSecondPhase = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (groups?: { slug: string; team_ids: string[] }[]) =>
+      generateSecondPhase(slug, groups),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'second-phase', slug] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings', slug] });
+    },
   });
 };
 

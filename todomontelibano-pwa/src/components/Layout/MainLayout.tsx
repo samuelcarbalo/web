@@ -96,9 +96,35 @@ const MainLayout: React.FC = () => {
   const mobileMenuRef = React.useRef<HTMLDivElement>(null);
   const servicesRef = React.useRef<HTMLDivElement>(null);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+  const servicesCloseTimer = React.useRef<number | null>(null);
+
+  const clearServicesClose = React.useCallback(() => {
+    if (servicesCloseTimer.current != null) {
+      window.clearTimeout(servicesCloseTimer.current);
+      servicesCloseTimer.current = null;
+    }
+  }, []);
+
+  const openServices = React.useCallback(() => {
+    clearServicesClose();
+    setIsUserMenuOpen(false);
+    setIsServicesOpen(true);
+  }, [clearServicesClose]);
+
+  const scheduleServicesClose = React.useCallback(() => {
+    clearServicesClose();
+    servicesCloseTimer.current = window.setTimeout(() => {
+      setIsServicesOpen(false);
+    }, 150);
+  }, [clearServicesClose]);
+
+  React.useEffect(() => () => clearServicesClose(), [clearServicesClose]);
 
   const closeMobileMenu = React.useCallback(() => setIsMenuOpen(false), []);
-  const closeServices = React.useCallback(() => setIsServicesOpen(false), []);
+  const closeServices = React.useCallback(() => {
+    clearServicesClose();
+    setIsServicesOpen(false);
+  }, [clearServicesClose]);
   const closeUserMenu = React.useCallback(() => setIsUserMenuOpen(false), []);
 
   React.useEffect(() => {
@@ -184,16 +210,13 @@ const MainLayout: React.FC = () => {
               </Link>
 
               <div
-                className="relative"
+                className="relative group"
                 ref={servicesRef}
                 onMouseEnter={() => {
-                  if (canFineHover()) {
-                    setIsUserMenuOpen(false);
-                    setIsServicesOpen(true);
-                  }
+                  if (canFineHover()) openServices();
                 }}
                 onMouseLeave={() => {
-                  if (canFineHover()) setIsServicesOpen(false);
+                  if (canFineHover()) scheduleServicesClose();
                 }}
               >
                 <button
@@ -202,7 +225,7 @@ const MainLayout: React.FC = () => {
                     setIsUserMenuOpen(false);
                     // En desktop el hover ya abre; el clic no debe cerrar el menú.
                     if (canFineHover()) {
-                      setIsServicesOpen(true);
+                      openServices();
                       return;
                     }
                     setIsServicesOpen((open) => !open);
@@ -226,9 +249,13 @@ const MainLayout: React.FC = () => {
                 {isServicesOpen && (
                   <div
                     id="services-menu"
-                    className="absolute top-full left-0 mt-2 w-80 glass rounded-3xl py-3 z-[70] shadow-2xl animate-in fade-in slide-in-from-top-2"
+                    className="absolute top-full left-0 z-[70] w-80 pt-2"
                     role="menu"
+                    onMouseEnter={() => {
+                      if (canFineHover()) openServices();
+                    }}
                   >
+                    <div className="glass rounded-3xl py-3 shadow-2xl animate-in fade-in slide-in-from-top-2">
                     {services.map((service) => (
                       <Link
                         key={service.name}
@@ -257,6 +284,7 @@ const MainLayout: React.FC = () => {
                         </div>
                       </Link>
                     ))}
+                    </div>
                   </div>
                 )}
               </div>

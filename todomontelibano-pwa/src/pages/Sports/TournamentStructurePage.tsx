@@ -23,6 +23,7 @@ import { useAuthStore } from '../../store/authStore';
 import { canManageContent, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { hasActiveSportsModule } from '../../config/credits';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
+import SecondPhasePanel from '../../components/Sports/SecondPhasePanel';
 import type { BracketNode, CompetitionGroup, TournamentPhase } from '../../types/sports';
 import { getMatchAwayScore, getMatchHomeScore } from '../../lib/matchScoring';
 
@@ -226,6 +227,9 @@ const TournamentStructurePage: React.FC = () => {
       <SportsSubscriptionBanner />
 
       <div className="space-y-6">
+        {isOwner && tournament?.has_second_group_phase && (
+          <SecondPhasePanel tournament={tournament} />
+        )}
         {structure.phases.map((phase) => (
           <div key={phase.id} className="card">
             <div className="flex items-center justify-between mb-4">

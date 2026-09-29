@@ -42,6 +42,11 @@ const CreateTournament: React.FC = () => {
     lineup_size: 9,
     regulation_innings: 7,
     mercy_rule_enabled: true,
+    has_second_group_phase: false,
+    first_phase_qualified_per_group: 2,
+    second_phase_groups_count: 2,
+    second_phase_qualified_per_group: 2,
+    second_phase_assignment_method: 'RANDOM' as 'RANDOM' | 'MANUAL',
   });
 
   const { data: formatTemplates } = useFormatTemplates(formData.sport_type);
@@ -65,15 +70,19 @@ const CreateTournament: React.FC = () => {
   useEffect(() => {
     const template = formatTemplates?.find((t) => t.id === formData.format_template);
     if (!template) return;
-    if (template.allows_group_count) {
-      const perGroup = template.teams_per_group ?? 4;
-      const groups = Math.max(2, formData.format_group_count || 2);
-      setFormData((prev) => ({ ...prev, max_teams: groups * perGroup }));
-      return;
-    }
-    if (template.default_max_teams) {
-      setFormData((prev) => ({ ...prev, max_teams: template.default_max_teams! }));
-    }
+    setFormData((prev) => {
+      const maxTeams = template.allows_group_count
+        ? Math.max(2, prev.format_group_count || 2) * (template.teams_per_group ?? 4)
+        : template.default_max_teams;
+      const clearSecond = !template.supports_second_group_phase && prev.has_second_group_phase;
+      const maxChanged = typeof maxTeams === 'number' && prev.max_teams !== maxTeams;
+      if (!clearSecond && !maxChanged) return prev;
+      return {
+        ...prev,
+        ...(maxChanged ? { max_teams: maxTeams } : {}),
+        ...(clearSecond ? { has_second_group_phase: false } : {}),
+      };
+    });
   }, [formData.format_template, formData.format_group_count, formatTemplates]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -106,6 +115,15 @@ const CreateTournament: React.FC = () => {
       }
     }
     
+    if (formData.has_second_group_phase) {
+      const playoffTeams = formData.second_phase_groups_count * formData.second_phase_qualified_per_group;
+      if (formData.first_phase_qualified_per_group < 1) {
+        newErrors.first_phase_qualified_per_group = 'Indica al menos 1 clasificado por grupo';
+      }
+      if (playoffTeams < 2) {
+        newErrors.second_phase_qualified_per_group = 'Los playoffs necesitan al menos 2 clasificados';
+      }
+    }
     if (formData.max_teams < 2) newErrors.max_teams = 'Mínimo 2 equipos';
     if (formData.min_players_per_team < 1) newErrors.min_players_per_team = 'Mínimo 1 jugador';
     if (formData.max_players_per_team < formData.min_players_per_team) {
@@ -145,6 +163,9 @@ const CreateTournament: React.FC = () => {
       organization: user?.organization || '',
       format_template: formData.format_template,
       format_group_count: formData.format_group_count,
+      has_second_group_phase: Boolean(
+        selectedFormat?.supports_second_group_phase && formData.has_second_group_phase
+      ),
     }, {
       onSuccess: (data) => {
         navigate(`/deportes/tournaments/${data.slug}${formData.format_template !== 'legacy_league' ? '/structure' : ''}`);
@@ -280,11 +301,98 @@ const CreateTournament: React.FC = () => {
                   <p className="mt-1.5 text-xs text-gray-500">
                     Se crean Grupo A, B, C… con {teamsPerGroup} equipos cada uno
                     ({Math.max(2, formData.format_group_count || 2) * teamsPerGroup} equipos en total).
-                    {selectedFormat.qualifiers_per_group
+                    {formData.has_second_group_phase
+                      ? ` Clasifican ${formData.first_phase_qualified_per_group} por grupo a una segunda fase, y de ahí ${formData.second_phase_qualified_per_group} por grupo a playoffs.`
+                      : selectedFormat.qualifiers_per_group
                       ? ` Clasifican ${selectedFormat.qualifiers_per_group} por grupo a la eliminatoria. El 1.º de cada grupo juega contra el 2.º del siguiente.`
                       : ' Cada grupo juega todos contra todos y no hay fase eliminatoria.'}
                     {' '}El calendario de la fase de grupos no cruza equipos de grupos distintos.
                   </p>
+                </div>
+              )}
+
+              {selectedFormat?.supports_second_group_phase && (
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={formData.has_second_group_phase}
+                      onChange={(e) => handleChange('has_second_group_phase', e.target.checked)}
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-gray-800 dark:text-gray-100">
+                        ¿Agregar segunda fase de grupos antes de Playoffs?
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-1">
+                        Opcional. Si la dejas apagada, los clasificados de la primera fase pasan directo a la eliminatoria.
+                      </span>
+                    </span>
+                  </label>
+
+                  {(errors.first_phase_qualified_per_group || errors.second_phase_qualified_per_group) && (
+                    <p className="text-sm text-red-600">
+                      {errors.first_phase_qualified_per_group || errors.second_phase_qualified_per_group}
+                    </p>
+                  )}
+
+                  {formData.has_second_group_phase && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                          Equipos que clasifican por grupo en la 1.ª fase
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={teamsPerGroup}
+                          value={formData.first_phase_qualified_per_group}
+                          onChange={(e) => handleChange('first_phase_qualified_per_group', parseInt(e.target.value) || 1)}
+                          className="input-field"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                          Número de grupos en la 2.ª fase
+                        </label>
+                        <select
+                          value={formData.second_phase_groups_count}
+                          onChange={(e) => handleChange('second_phase_groups_count', parseInt(e.target.value))}
+                          className="input-field"
+                        >
+                          <option value={1}>1 grupo</option>
+                          <option value={2}>2 grupos</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                          Equipos que clasifican a Playoffs desde la 2.ª fase
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={8}
+                          value={formData.second_phase_qualified_per_group}
+                          onChange={(e) => handleChange('second_phase_qualified_per_group', parseInt(e.target.value) || 1)}
+                          className="input-field"
+                        />
+                        <p className="mt-1.5 text-xs text-gray-500">Por cada grupo de la segunda fase.</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                          Asignación a la 2.ª fase
+                        </label>
+                        <select
+                          value={formData.second_phase_assignment_method}
+                          onChange={(e) => handleChange('second_phase_assignment_method', e.target.value)}
+                          className="input-field"
+                        >
+                          <option value="RANDOM">Aleatoria</option>
+                          <option value="MANUAL">Manual</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
