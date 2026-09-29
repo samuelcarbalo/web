@@ -278,6 +278,8 @@ const App: React.FC = () => {
                 />
 
                 <Route path="deportes" element={<TournamentsList />} />
+                <Route path="deportes/torneos" element={<TournamentsList />} />
+                <Route path="deportes/torneos/:slug" element={<TournamentDetail />} />
                 <Route path="deportes/my_tournaments" element={<TournamentsList />} />
                 <Route path="deportes/my_tournaments/active" element={<TournamentsList />} />
                 <Route path="deportes/tournaments/:slug" element={<TournamentDetail />} />

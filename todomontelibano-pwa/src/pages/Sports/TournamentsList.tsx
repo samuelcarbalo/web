@@ -28,8 +28,8 @@ import { hasActiveSportsModule } from '../../config/credits';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import { ROUTES } from '../../config/seo';
 import { getMatches } from '../../lib/sportsApi';
-import type { SportType, Match } from '../../types/sports';
-import { sportTypeColors } from '../../types/sports';
+import type { SportType, Match, Tournament } from '../../types/sports';
+import { sportTypeColors, sportTypeLabels } from '../../types/sports';
 import { useLocation } from 'react-router-dom';
 import BannerAd from '../../components/BannerAd';
 
@@ -107,6 +107,24 @@ const TournamentCardSkeleton: React.FC = () => (
   </div>
 );
 
+const featuredStatusLabel = (status: string) => {
+  if (status === 'active' || status === 'ongoing') return 'En juego';
+  if (status === 'registration') return 'Inscripciones abiertas';
+  if (status === 'upcoming') return 'Próximo';
+  if (status === 'finished' || status === 'completed') return 'Finalizado';
+  return status;
+};
+
+const FeaturedTournamentSkeleton: React.FC = () => (
+  <div className="w-56 shrink-0 snap-start rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden animate-pulse">
+    <div className="h-24 bg-gray-200 dark:bg-gray-800" />
+    <div className="p-3 space-y-2">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+    </div>
+  </div>
+);
+
 const MatchCardSkeleton: React.FC = () => (
   <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-5 animate-pulse space-y-4">
     <div className="flex justify-between">
@@ -131,13 +149,14 @@ const MatchCardSkeleton: React.FC = () => (
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 const TournamentsList: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('matches');
+  const location = useLocation();
+  const isTournamentIndex = location.pathname.replace(/\/$/, '') === '/deportes/torneos';
+  const [activeTab, setActiveTab] = useState<Tab>(isTournamentIndex ? '' : 'matches');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
   const { isManager, isAdmin, user } = usePermissions();
-  const location = useLocation();
   // Super Admin puede crear torneos y ver "Mis torneos" sin ser manager/admin de org
   const isSuperAdmin = isSportsSuperAdmin(user);
   const canCreateTournament = (isManager || isAdmin || isSuperAdmin) && hasActiveSportsModule(user);
@@ -151,6 +170,12 @@ const TournamentsList: React.FC = () => {
     return 'all';
   });
 
+  useEffect(() => {
+    if (location.pathname.replace(/\/$/, '') === '/deportes/torneos') {
+      setActiveTab('');
+    }
+  }, [location.pathname]);
+
   const isMatchesTab = activeTab === 'matches';
 
   // ── Torneos ───────────────────────────────────────────────────────────────
@@ -159,6 +184,11 @@ const TournamentsList: React.FC = () => {
     status: selectedStatus ? selectedStatus : 'active',
     enabled: viewMode === 'mine',
   });
+
+  const { data: featuredData, isLoading: loadingFeatured, isError: featuredError } = useTournaments({
+    status: 'active',
+  });
+  const featuredTournaments = (featuredData?.results ?? []).slice(0, 5);
 
   // ── Banners publicitarios ────────────────────────────────────────────────
   const { data: homeBanners } = useBannersByPosition('home_hero');
@@ -554,6 +584,79 @@ const TournamentsList: React.FC = () => {
             </div>
           )}
         </div>
+
+        {isMatchesTab && (loadingFeatured || featuredTournaments.length > 0 || (showCreateCta && !featuredError)) && !featuredError && (
+          <section className="mb-6" aria-label="Torneos destacados">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="text-sm font-bold text-gray-900 dark:text-white">Torneos destacados</h2>
+              <Link
+                to="/deportes/torneos"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-green-700 dark:text-green-400 hover:underline shrink-0"
+              >
+                Ver todos los torneos
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {loadingFeatured ? (
+              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+                {[...Array(5)].map((_, index) => (
+                  <FeaturedTournamentSkeleton key={index} />
+                ))}
+              </div>
+            ) : featuredTournaments.length === 0 ? (
+              <Link
+                to={canCreateTournament ? '/deportes/tournaments/create' : `${ROUTES.creditos}#sports-module`}
+                className="flex items-center gap-3 w-full sm:w-80 rounded-2xl border border-dashed border-green-300 dark:border-green-800 bg-white dark:bg-gray-900 px-4 py-4 hover:border-green-500 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-950/40 flex items-center justify-center shrink-0">
+                  <Plus className="w-5 h-5 text-green-700 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Crea el primer torneo</p>
+                  <p className="text-xs text-gray-500">Todavía no hay torneos activos. Publica uno para que aparezca aquí.</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory touch-pan-x">
+                {featuredTournaments.map((tournament: Tournament) => {
+                  const image = tournament.banner || tournament.logo;
+                  const sport = tournament.sport_type as SportType;
+                  return (
+                    <Link
+                      key={tournament.id}
+                      to={`/deportes/torneos/${tournament.slug}`}
+                      className="w-56 shrink-0 snap-start rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                    >
+                      <div className="h-24 relative bg-gray-100 dark:bg-gray-800">
+                        {image ? (
+                          <img src={image} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className={`w-full h-full ${sportTypeColors[sport] || 'bg-green-600'} flex items-center justify-center text-white`}>
+                            {getSportIcon(sport)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-10">
+                          {tournament.name}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+                            {sportTypeLabels[sport] || tournament.sport_type}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300">
+                            {featuredStatusLabel(tournament.status)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ── Vista Partidos ──────────────────────────────────────────────────── */}
         {isMatchesTab && (
