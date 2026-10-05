@@ -51,8 +51,10 @@ export const getTeams = async (slug?: string) => {
   return response.data;
 };
 
-export const getTeam = async (slug: string) => {
-  const response = await api.get<Team>(`/sports/teams/${slug}/`);
+export const getTeam = async (slug: string, tournamentSlug?: string) => {
+  const response = await api.get<Team>(`/sports/teams/${slug}/`, {
+    params: tournamentSlug ? { tournament: tournamentSlug } : undefined,
+  });
   return response.data;
 };
 

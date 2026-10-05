@@ -174,6 +174,29 @@ export function canManageSportsResource(
   return false;
 }
 
+export type TeamPermissionFields = Resource & {
+  coach_email?: string | null;
+  can_edit?: boolean;
+};
+
+/**
+ * Edición completa del equipo (logo, nombre, colores, plantilla).
+ * Fuente de verdad: `can_edit` del API (incluye capitanes). Fallback local si no viene.
+ */
+export function canEditTeam(
+  user: User | null | undefined,
+  team: TeamPermissionFields | null | undefined,
+  tournament: Resource | null | undefined,
+): boolean {
+  if (!user || !team) return false;
+  if (team.can_edit === true) return true;
+  if (team.can_edit === false) return false;
+  if (isSportsSuperAdmin(user) || isSportsResourceOwner(user, tournament)) return true;
+  if (isSportsResourceOwner(user, team)) return true;
+  const coachEmail = (team.coach_email || '').trim().toLowerCase();
+  return !!coachEmail && coachEmail === (user.email || '').trim().toLowerCase();
+}
+
 /**
  * Hook para centralizar la gestión de permisos en la aplicación.
  */
