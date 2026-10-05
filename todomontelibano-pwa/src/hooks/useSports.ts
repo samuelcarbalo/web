@@ -136,10 +136,10 @@ export const useTeams = (slug?: string) => {
   });
 };
 
-export const useTeam = (slug: string) => {
+export const useTeam = (slug: string, tournamentSlug?: string) => {
   return useQuery({
-    queryKey: [TEAMS_KEY, slug],
-    queryFn: () => getTeam(slug),
+    queryKey: [TEAMS_KEY, slug, tournamentSlug ?? ''],
+    queryFn: () => getTeam(slug, tournamentSlug),
     enabled: !!slug,
   });
 };

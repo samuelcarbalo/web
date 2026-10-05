@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ChevronLeft,
+  Edit3,
   Users,
   Trophy,
   Target,
@@ -14,25 +15,23 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useTournament, useTeam, usePlayers } from '../../hooks/useSports';
-import { usePermissions, canManageSportsResource, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import { usePermissions, canEditTeam, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { sportTypeLabels } from '../../types/sports';
+import EditTeamModal from '../../components/Sports/EditTeamModal';
 
 const TeamDetailPage: React.FC = () => {
   const { tournamentSlug, teamSlug } = useParams<{ tournamentSlug: string; teamSlug: string }>();
-  const { user, isOwner: checkIsOwner } = usePermissions();
+  const { user } = usePermissions();
+  const [editOpen, setEditOpen] = useState(false);
 
   const { data: tournament, isLoading: loadingTournament } = useTournament(tournamentSlug || '');
-  const { data: team, isLoading: loadingTeam } = useTeam(teamSlug || '');
+  const { data: team, isLoading: loadingTeam } = useTeam(teamSlug || '', tournamentSlug);
   const { data: playersData, isLoading: loadingPlayers } = usePlayers(team?.id);
 
   const isLoading = loadingTournament || loadingTeam || loadingPlayers;
   const players = playersData?.results || [];
 
-  // Verificar si el usuario es el coach o dueño del equipo
-  const isTeamCoach = user?.email === team?.coach_email;
-  const isOwner =
-    checkIsOwner(tournament) ||
-    canManageSportsResource(user, team);
+  const canEdit = canEditTeam(user, team, tournament);
   const canSeeCoachPhone =
     isSportsSuperAdmin(user) ||
     (user?.id != null && team?.posted_by != null && String(user.id) === String(team.posted_by)) ||
@@ -99,10 +98,20 @@ const TeamDetailPage: React.FC = () => {
                 {team.abbreviation}
               </div>
             )}
-            <div>
-              <h1 className="text-3xl font-bold text-white">{team.name}</h1>
+            <div className="min-w-0">
+              <h1 className="text-3xl font-bold text-white truncate">{team.name}</h1>
               <p className="text-white/80 text-sm">{team.abbreviation} • {sportTypeLabels[tournament?.sport_type || 'football']}</p>
             </div>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setEditOpen(true)}
+                className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-semibold backdrop-blur border border-white/20 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Editar equipo</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -222,8 +231,8 @@ const TeamDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Botón para editar plantilla (solo coach/owner) */}
-            {(isTeamCoach || isOwner) && (
+            {/* Gestionar plantilla: Super Admin, creador del torneo, delegado o capitán */}
+            {canEdit && (
               <Link
                 to={`/sports/tournaments/${tournamentSlug}/teams/${teamSlug}/roster`}
                 className="block w-full bg-green-600 text-white text-center py-3 rounded-3xl font-medium hover:bg-green-700 transition-colors shadow-sm"
@@ -391,6 +400,8 @@ const TeamDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {canEdit && editOpen && <EditTeamModal team={team} onClose={() => setEditOpen(false)} />}
     </div>
   );
 };

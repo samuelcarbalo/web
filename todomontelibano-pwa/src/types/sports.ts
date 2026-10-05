@@ -289,6 +289,8 @@ export interface Team {
   goal_difference: number;
   is_active: boolean;
   posted_by?: string;
+  /** Calculado por el backend: Super Admin, creador del torneo, delegado o capitán. */
+  can_edit?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -32,7 +32,7 @@ import {
   useTeams,
 } from '../../hooks/useSports';
 import {
-  canManageSportsResource,
+  canEditTeam,
   isSportsResourceOwner,
   isSportsSuperAdmin,
 } from '../../hooks/usePermissions';
@@ -152,17 +152,10 @@ const TeamRosterPage: React.FC = () => {
   const currentTeam: Team | undefined = teams?.results?.find(
     (team: Team) => team.slug === teamSlug || team.id === teamSlug
   );
-  const isCoachOfCurrent =
-    !!user?.email &&
-    !!currentTeam?.coach_email &&
-    user.email.toLowerCase() === currentTeam.coach_email.toLowerCase();
-  const canManageRoster =
-    isCoachOfCurrent ||
-    canManageSportsResource(user, currentTeam) ||
-    canManageSportsResource(user, tournament);
+  const isTournamentOwner = isSportsResourceOwner(user, tournament);
+  const canManageRoster = canEditTeam(user, currentTeam, tournament);
   const teamId = currentTeam?.id || '';
-  const canImportRoster =
-    !!teamId && (isSportsSuperAdmin(user) || isSportsResourceOwner(user, tournament));
+  const canImportRoster = !!teamId && (isSportsSuperAdmin(user) || isTournamentOwner);
   const [importOpen, setImportOpen] = useState(false);
 
   const { data: playersData, isLoading: loadingPlayers } = usePlayers(teamId || undefined);
@@ -363,9 +356,9 @@ const TeamRosterPage: React.FC = () => {
                 <Sparkles className="w-3 h-3" />
                 {isSportsSuperAdmin(user)
                   ? 'Super Admin'
-                  : isCoachOfCurrent
-                    ? 'Entrenador'
-                    : 'Organizador'}
+                  : isTournamentOwner
+                    ? 'Organizador'
+                    : 'Delegado / Capitán'}
               </span>
             </div>
           )}
