@@ -450,7 +450,11 @@ const TournamentStandingsPage: React.FC = () => {
 
       <div className="space-y-4 mb-6">
 
-        <SponsorshipAvailabilityBanner availability={sponsorshipAvailability} showPurchaseButton={false} />
+        <SponsorshipAvailabilityBanner
+          availability={sponsorshipAvailability}
+          showPurchaseButton={false}
+          tournament={tournament}
+        />
 
         <TournamentAdSlot position="standings_top" tournamentId={tournament?.id} variant="horizontal" />
 

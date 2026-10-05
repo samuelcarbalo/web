@@ -146,6 +146,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
           <SponsorshipAvailabilityBanner
             availability={sponsorshipAvailability}
             showPurchaseButton={false}
+            tournament={tournament}
           />
           <TournamentAdSlot
             position="standings_top"

@@ -648,6 +648,7 @@ const MatchDetailPage: React.FC = () => {
         <SponsorshipAvailabilityBanner
           availability={sponsorshipAvailability}
           showPurchaseButton={false}
+          tournament={tournament}
         />
         <TournamentAdSlot
           position="match_detail"
