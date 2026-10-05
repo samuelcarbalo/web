@@ -27,6 +27,7 @@ const PUBLIC_ENDPOINTS = [
   '/advertising/sponsorships/availability/',
   '/advertising/campaigns/plans/',
   '/sports/banners/config/',
+  '/ads/',
   '/contact/messages/',
   '/auth/users-count/',
   '/auth/password/',

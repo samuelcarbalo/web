@@ -25,9 +25,10 @@ import {
   XCircle,
   AlertCircle,
   ExternalLink,
+  BarChart3,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { canManageContent, canSeeMyCreatedProducts } from '../hooks/usePermissions';
+import { canManageContent, canSeeMyCreatedProducts, isSportsSuperAdmin } from '../hooks/usePermissions';
 import { useMyApplications, useJobs, useAdminJobs } from '../hooks/useJobs';
 import { useTournaments } from '../hooks/useSports';
 import { useContactMessages } from '../hooks/useContact';
@@ -396,6 +397,31 @@ const Dashboard: React.FC = () => {
               </div>
               <span className="hidden sm:inline-flex rounded-2xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white">
                 Abrir panel
+              </span>
+            </div>
+          </Link>
+        )}
+
+        {isSportsSuperAdmin(user) && (
+          <Link
+            to="/admin/publicidad/metricas"
+            className="card mb-8 border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-r from-emerald-50 to-slate-50 dark:from-emerald-950/30 dark:to-slate-950/20 hover:shadow-2xl transition-shadow block"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-3xl bg-emerald-600 text-white">
+                  <BarChart3 className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Publicidad</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Métricas de anuncios</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                    Impresiones reales por anuncio, tendencia diaria y filtro por fechas
+                  </p>
+                </div>
+              </div>
+              <span className="hidden sm:inline-flex rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
+                Ver métricas
               </span>
             </div>
           </Link>

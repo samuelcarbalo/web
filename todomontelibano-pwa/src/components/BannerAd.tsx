@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTrackBannerClick } from '../hooks/useSports';
+import { useAdImpression } from '../hooks/useAdImpression';
 import { ExternalLink } from 'lucide-react';
 
 interface BannerAdProps {
@@ -22,6 +23,7 @@ const BannerAd: React.FC<BannerAdProps> = ({
   className = '',
 }) => {
   const trackClick = useTrackBannerClick();
+  const impressionRef = useAdImpression(id);
 
   const handleClick = () => {
     trackClick.mutate(id);
@@ -35,6 +37,7 @@ const BannerAd: React.FC<BannerAdProps> = ({
 
   const content = (
     <div
+      ref={impressionRef}
       className={`
         relative overflow-hidden rounded-3xl border border-gray-200/60 dark:border-gray-700/60
         bg-white dark:bg-gray-900 shadow-sm hover:shadow-2xl transition-all duration-300
