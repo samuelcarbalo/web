@@ -28,6 +28,7 @@ import { hasActiveSportsModule } from '../../config/credits';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import { ROUTES } from '../../config/seo';
 import { getMatches } from '../../lib/sportsApi';
+import { bogotaDateKey, formatBogotaDate, formatBogotaTime } from '../../lib/bogotaTime';
 import type { SportType, Match, Tournament } from '../../types/sports';
 import { sportTypeColors, sportTypeLabels } from '../../types/sports';
 import { useLocation } from 'react-router-dom';
@@ -195,10 +196,10 @@ const TournamentsList: React.FC = () => {
   const { data: tournamentBanners } = useBannersByPosition('tournament_list');
 
   // ── Partidos por día ──────────────────────────────────────────────────────
+  // Día calendario de Colombia (los días del calendario se manejan como fechas locales a medianoche).
   const today = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
+    const [y, m, d] = bogotaDateKey().split('-').map(Number);
+    return new Date(y, m - 1, d);
   }, []);
 
   const currentDay = useMemo(() => addDays(today, offset), [today, offset]);
@@ -262,14 +263,10 @@ const TournamentsList: React.FC = () => {
     year: 'numeric',
   });
 
-  const formatMatchTime = (dateString: string) =>
-    new Date(dateString).toLocaleTimeString('es-CO', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const formatMatchTime = (dateString: string) => formatBogotaTime(dateString);
 
   const formatMatchDay = (dateString: string) =>
-    new Date(dateString).toLocaleDateString('es-CO', {
+    formatBogotaDate(dateString, {
       weekday: 'short',
       day: 'numeric',
       month: 'short',

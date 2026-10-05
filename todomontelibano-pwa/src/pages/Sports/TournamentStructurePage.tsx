@@ -25,6 +25,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { canManageContent, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { hasActiveSportsModule } from '../../config/credits';
+import { bogotaInputToISO } from '../../lib/bogotaTime';
 import SportsSubscriptionBanner from '../../components/Sports/SportsSubscriptionBanner';
 import SecondPhasePanel from '../../components/Sports/SecondPhasePanel';
 import SecondPhaseConfigModal from '../../components/Sports/SecondPhaseConfigModal';
@@ -103,11 +104,12 @@ const TournamentStructurePage: React.FC = () => {
   };
 
   const handleGenerateFixture = () => {
-    if (!fixturePhase || !matchDate) return;
+    const matchDateISO = bogotaInputToISO(matchDate);
+    if (!fixturePhase || !matchDateISO) return;
     fixtureMutation.mutate({
       phase_id: fixturePhase.id,
       group_id: fixtureGroupId || undefined,
-      match_date: new Date(matchDate).toISOString(),
+      match_date: matchDateISO,
       venue,
     });
   };
@@ -118,7 +120,7 @@ const TournamentStructurePage: React.FC = () => {
     advanceMutation.mutate(
       {
         from_phase: advanceFromPhase.slug,
-        match_date: matchDate ? new Date(matchDate).toISOString() : undefined,
+        match_date: bogotaInputToISO(matchDate) ?? undefined,
         venue,
       },
       {

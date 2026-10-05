@@ -13,6 +13,7 @@ import {
 import { useTournaments, useMatches } from '../../hooks/useSports';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import type { Match, Tournament } from '../../types/sports';
+import { bogotaDateKey, formatBogotaDate, formatBogotaTime } from '../../lib/bogotaTime';
 
 const SportsPublicPage: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState<string>('');
@@ -25,7 +26,7 @@ const SportsPublicPage: React.FC = () => {
   const { data: liveMatchesData } = useMatches({ live: true });
   const { data: upcomingMatchesData } = useMatches({
     status: 'scheduled',
-    from: new Date().toISOString().split('T')[0],
+    from: bogotaDateKey(),
   });
 
   const tournaments = tournamentsData?.results || [];
@@ -40,14 +41,11 @@ const SportsPublicPage: React.FC = () => {
     { value: 'softball', label: 'Softbol', icon: Trophy },
   ];
 
-  const formatMatchDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return {
-      day: date.getDate(),
-      month: date.toLocaleDateString('es-CO', { month: 'short' }),
-      time: date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-    };
-  };
+  const formatMatchDate = (dateString: string) => ({
+    day: formatBogotaDate(dateString, { day: 'numeric' }),
+    month: formatBogotaDate(dateString, { month: 'short' }),
+    time: formatBogotaTime(dateString),
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
