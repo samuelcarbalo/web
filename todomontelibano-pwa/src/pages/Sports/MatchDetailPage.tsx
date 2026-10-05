@@ -26,6 +26,12 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
+  bogotaInputToISO,
+  formatBogotaDate,
+  formatBogotaTime,
+  toBogotaInputValue,
+} from '../../lib/bogotaTime';
+import {
   useMatch,
   useTournament,
   useUpdateMatch,
@@ -170,14 +176,6 @@ const TimelineSkeleton: React.FC = () => (
     ))}
   </div>
 );
-
-/** ISO del servidor → valor de <input type="datetime-local"> en la hora local del navegador. */
-function toDateTimeLocalValue(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -403,7 +401,7 @@ const MatchDetailPage: React.FC = () => {
   const openEditModal = () => {
     if (!match) return;
     setEditData({
-      match_date: toDateTimeLocalValue(match.match_date),
+      match_date: toBogotaInputValue(match.match_date),
       venue: match.venue || '',
       stadium: match.stadium || '',
       round_number: match.round_number,
@@ -444,8 +442,8 @@ const MatchDetailPage: React.FC = () => {
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!match) return;
-    const parsedDate = editData.match_date ? new Date(editData.match_date) : null;
-    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+    const matchDateISO = bogotaInputToISO(editData.match_date);
+    if (!matchDateISO) {
       alert('La fecha y hora del partido no es válida.');
       return;
     }
@@ -454,7 +452,7 @@ const MatchDetailPage: React.FC = () => {
         id: match.id,
         data: {
           ...editData,
-          match_date: parsedDate.toISOString(),
+          match_date: matchDateISO,
           venue: editData.venue.trim(),
           stadium: editData.stadium.trim(),
           round_number: Number(editData.round_number) || 1,
@@ -553,19 +551,16 @@ const MatchDetailPage: React.FC = () => {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return {
-      full: date.toLocaleDateString('es-CO', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }),
-      time: date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-      short: date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }),
-    };
-  };
+  const formatDate = (dateString: string) => ({
+    full: formatBogotaDate(dateString, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
+    time: formatBogotaTime(dateString),
+    short: formatBogotaDate(dateString, { day: 'numeric', month: 'short' }),
+  });
 
   if (isLoading) {
     return (

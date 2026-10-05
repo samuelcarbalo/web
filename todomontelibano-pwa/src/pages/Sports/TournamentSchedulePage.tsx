@@ -21,10 +21,18 @@ import {
   useTeams,
   useMatches,
   useCreateMatch,
+  useUpdateMatch,
   useDeleteMatch,
   useStartMatch,
   useFinishMatch,
 } from '../../hooks/useSports';
+import {
+  bogotaDateKey,
+  bogotaInputToISO,
+  formatBogotaDate,
+  formatBogotaTime,
+  toBogotaInputValue,
+} from '../../lib/bogotaTime';
 import type { CreateMatchData, Match } from '../../types/sports';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
@@ -57,6 +65,7 @@ const TournamentSchedulePage: React.FC = () => {
     tournament: slug || '',
   });
   const createMutation = useCreateMatch();
+  const updateMutation = useUpdateMatch();
   const deleteMutation = useDeleteMatch();
   const startMutation = useStartMatch();
 
@@ -121,11 +130,20 @@ const TournamentSchedulePage: React.FC = () => {
       return;
     }
 
+    const matchDateISO = bogotaInputToISO(formData.match_date);
+    if (!matchDateISO) {
+      alert('La fecha y hora del partido no es válida.');
+      return;
+    }
+    const payload = { ...formData, match_date: matchDateISO };
+
     if (editingMatch) {
-      // Actualizar
-      // useUpdateMatch hook necesario
+      updateMutation.mutate(
+        { id: editingMatch.id, data: payload },
+        { onSuccess: () => resetForm() }
+      );
     } else {
-      createMutation.mutate(formData, {
+      createMutation.mutate(payload, {
         onSuccess: () => resetForm(),
       });
     }
@@ -136,7 +154,7 @@ const TournamentSchedulePage: React.FC = () => {
       tournament: match.tournament,
       home_team: match.home_team,
       away_team: match.away_team,
-      match_date: match.match_date.slice(0, 16), // formato datetime-local
+      match_date: toBogotaInputValue(match.match_date),
       venue: match.venue || '',
       stadium: match.stadium || '',
       round_number: match.round_number,
@@ -159,17 +177,14 @@ const TournamentSchedulePage: React.FC = () => {
     }
   };
 
-  const formatMatchDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return {
-      date: date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }),
-      time: date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-      day: date.toLocaleDateString('es-CO', { weekday: 'long' }),
-    };
-  };
+  const formatMatchDate = (dateString: string) => ({
+    date: formatBogotaDate(dateString),
+    time: formatBogotaTime(dateString),
+    day: formatBogotaDate(dateString, { weekday: 'long' }),
+  });
 
   const groupedMatches = filteredMatches.reduce((acc: Record<string, Match[]>, match: Match) => {
-    const date = new Date(match.match_date).toDateString();
+    const date = bogotaDateKey(match.match_date);
     if (!acc[date]) acc[date] = [];
     acc[date].push(match);
     return acc;
@@ -318,10 +333,10 @@ const TournamentSchedulePage: React.FC = () => {
               <div className="md:col-span-2 lg:col-span-3 flex gap-2">
                 <button
                   type="submit"
-                  disabled={createMutation.isPending}
+                  disabled={createMutation.isPending || updateMutation.isPending}
                   className="px-6 py-2 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-medium"
                 >
-                  {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingMatch ? 'Guardar cambios' : 'Crear partido'}
+                  {createMutation.isPending || updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingMatch ? 'Guardar cambios' : 'Crear partido'}
                 </button>
                 <button
                   type="button"
