@@ -38,18 +38,6 @@ type HomeService = {
 const Home: React.FC = () => {
   const services: HomeService[] = [
     {
-      icon: ShoppingBag,
-      title: "Tienda",
-      description:
-        "Catálogo de productos locales. Navega sin cuenta y paga con Mercado Pago.",
-      gradient: "from-indigo-500 to-violet-600",
-      active: true,
-      path: ROUTES.tienda,
-      stats: "Catálogo abierto",
-      featured: true,
-      badge: "Principal",
-    },
-    {
       icon: Trophy,
       title: "Deportes",
       description:
@@ -58,6 +46,8 @@ const Home: React.FC = () => {
       active: true,
       path: ROUTES.deportes,
       stats: "Ligas activas",
+      featured: true,
+      badge: "Principal",
     },
     {
       icon: Briefcase,
@@ -89,6 +79,16 @@ const Home: React.FC = () => {
       comingSoon: false,
       path: ROUTES.bienesRaices,
       stats: "Propiedades",
+    },
+    {
+      icon: ShoppingBag,
+      title: "Tienda",
+      description:
+        "Catálogo de productos locales. Navega sin cuenta y paga con Mercado Pago.",
+      gradient: "from-indigo-500 to-violet-600",
+      active: true,
+      path: ROUTES.tienda,
+      stats: "Catálogo abierto",
     },
   ];
 

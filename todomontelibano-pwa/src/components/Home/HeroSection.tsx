@@ -60,19 +60,8 @@ type HeroSlide = {
   readonly objectPosition: string;
 };
 
+// Deportes es la sección principal: primera diapositiva (activa por defecto); la Tienda va al final.
 const HERO_SLIDES: readonly HeroSlide[] = [
-  {
-    id: 'shop',
-    kicker: 'Tienda Chéver',
-    title: 'Tienda y ofertas destacadas de Córdoba',
-    subtitle:
-      'Productos locales, descuentos y ofertas por tiempo limitado. Compra en Montelíbano sin salir de Chéver.',
-    ctaLabel: 'Ir a la Tienda',
-    ctaTo: ROUTES.tienda,
-    ctaIcon: ShoppingBag,
-    alt: 'Productos locales y comercios de Montelíbano, Córdoba',
-    objectPosition: '22% 58%',
-  },
   {
     id: 'sports',
     kicker: 'Deportes',
@@ -96,6 +85,18 @@ const HERO_SLIDES: readonly HeroSlide[] = [
     ctaIcon: Briefcase,
     alt: 'Personas trabajando en comercios y negocios locales de Montelíbano',
     objectPosition: '28% 45%',
+  },
+  {
+    id: 'shop',
+    kicker: 'Tienda Chéver',
+    title: 'Tienda y ofertas destacadas de Córdoba',
+    subtitle:
+      'Productos locales, descuentos y ofertas por tiempo limitado. Compra en Montelíbano sin salir de Chéver.',
+    ctaLabel: 'Ir a la Tienda',
+    ctaTo: ROUTES.tienda,
+    ctaIcon: ShoppingBag,
+    alt: 'Productos locales y comercios de Montelíbano, Córdoba',
+    objectPosition: '22% 58%',
   },
 ];
 
