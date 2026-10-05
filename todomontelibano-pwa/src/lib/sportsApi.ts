@@ -275,8 +275,21 @@ export const substitutePlayer = async (id: string, data: {
 // ============ ALINEACIONES ============
 
 export const getMatchLineup = async (id: string) => {
-  const response = await api.get(`/sports/matches/${id}/lineup/`);
-  return response.data;
+  try {
+    const response = await api.get(`/sports/matches/${id}/lineup/`);
+    return response.data;
+  } catch (error) {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status && status < 500) throw error;
+    console.error('Error al cargar la alineación del partido:', { id, status, error });
+    return {
+      match_id: id,
+      home_team: { starters: [], substitutes: [] },
+      away_team: { starters: [], substitutes: [] },
+      lineup: [],
+      message: 'Alineación no disponible',
+    };
+  }
 };
 
 export const setMatchLineup = async (id: string, data: {
