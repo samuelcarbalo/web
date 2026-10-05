@@ -61,6 +61,7 @@ const CreateProduct = lazyWithRetry(() => import('./pages/Shop/CreateProduct'));
 const EditProduct = lazyWithRetry(() => import('./pages/Shop/EditProduct'));
 const MyProductsPage = lazyWithRetry(() => import('./pages/Shop/MyProductsPage'));
 const AdminUsersPage = lazyWithRetry(() => import('./pages/Admin/AdminUsersPage'));
+const AdAnalyticsPage = lazyWithRetry(() => import('./pages/Admin/AdAnalyticsPage'));
 const MyInvoicesPage = lazyWithRetry(() => import('./pages/Billing/MyInvoicesPage'));
 const InvoicePrintPage = lazyWithRetry(() => import('./pages/Billing/InvoicePrintPage'));
 const StoreBillingPage = lazyWithRetry(() => import('./pages/Billing/StoreBillingPage'));
@@ -73,7 +74,7 @@ const MyEvents = lazyWithRetry(() => import('./pages/Events/MyEvents'));
 import { useMe } from './hooks/useAuth';
 import { useAuthStore } from './store/authStore';
 import { hasValidSessionHint } from './lib/session';
-import { canManageContent, canSeeMyCreatedProducts } from './hooks/usePermissions';
+import { canManageContent, canSeeMyCreatedProducts, isSportsSuperAdmin } from './hooks/usePermissions';
 import PwaUpdateBanner from './components/PWA/PwaUpdateBanner';
 import ColdStartNotice from './components/UI/ColdStartNotice';
 import { startRenderKeepAlive } from './lib/renderKeepAlive';
@@ -181,12 +182,15 @@ const ProtectedRoute: React.FC<{
   requireSuperuser?: boolean;
   requireAdmin?: boolean;
   requireShopAdmin?: boolean;
+  /** Solo Super Admin Nivel 1 / Nivel 2. */
+  requireSuperAdminL1L2?: boolean;
 }> = ({
   children,
   allowedRoles,
   requireSuperuser,
   requireAdmin,
   requireShopAdmin,
+  requireSuperAdminL1L2,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const location = useLocation();
@@ -217,6 +221,10 @@ const ProtectedRoute: React.FC<{
   }
 
   if (requireShopAdmin && !canSeeMyCreatedProducts(user)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireSuperAdminL1L2 && !isSportsSuperAdmin(user)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -460,6 +468,15 @@ const App: React.FC = () => {
                   }
                 />
                 <Route path="admin-panel" element={<Navigate to="/dashboard/admin" replace />} />
+                <Route
+                  path="admin/publicidad/metricas"
+                  element={
+                    <ProtectedRoute requireSuperAdminL1L2>
+                      <AdAnalyticsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="admin/analytics/ads" element={<Navigate to="/admin/publicidad/metricas" replace />} />
                 <Route
                   path="profile"
                   element={
