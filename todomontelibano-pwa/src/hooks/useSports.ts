@@ -331,6 +331,11 @@ export const useMatch = (id: string) => {
     queryKey: [MATCHES_KEY, id],
     queryFn: () => getMatch(id),
     enabled: !!id,
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status && status >= 400 && status < 500) return false;
+      return failureCount < 2;
+    },
   });
 };
 

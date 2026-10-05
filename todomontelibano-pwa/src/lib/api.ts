@@ -128,12 +128,16 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      // Un visitante sin sesión no tiene nada que purgar: un 401 no debe sacarlo de la página.
+      const hadSession = !!localStorage.getItem('refresh_token');
       try {
         const access = await refreshAccessToken();
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
       } catch {
-        await purgeClientSession({ redirectToHome: true });
+        if (hadSession) {
+          await purgeClientSession({ redirectToHome: !isPublicEndpoint(url) });
+        }
         return Promise.reject(error);
       }
     }

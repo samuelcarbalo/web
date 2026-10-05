@@ -176,7 +176,18 @@ const MatchDetailPage: React.FC = () => {
   const { isOwner: checkIsOwner } = usePermissions();
   const navigate = useNavigate();
 
-  const { data: match, isLoading } = useMatch(id || '');
+  const { data: match, isLoading, error: matchError, refetch: refetchMatch } = useMatch(id || '');
+  const matchErrorStatus = (matchError as { response?: { status?: number } } | null)?.response?.status;
+
+  useEffect(() => {
+    if (matchError) {
+      console.error('Error al cargar detalle del partido:', {
+        id,
+        status: matchErrorStatus ?? 'sin respuesta',
+        error: matchError,
+      });
+    }
+  }, [matchError, matchErrorStatus, id]);
   const { data: tournament } = useTournament(match?.tournament_slug || '');
   const { data: sponsorshipAvailability } = useSponsorshipAvailability(match?.tournament_slug || '');
   const { data: homePlayersData } = usePlayers(match?.home_team || '');
@@ -536,21 +547,39 @@ const MatchDetailPage: React.FC = () => {
   }
 
   if (!match) {
+    const isNotFound = !matchError || matchErrorStatus === 404;
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50 flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <Swords className="w-10 h-10 text-gray-300" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Partido no encontrado</h2>
-          <p className="text-gray-500 mb-6">El partido que buscas no existe o ha sido eliminado.</p>
-          <Link 
-            to="/sports/tournaments" 
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-3xl font-medium hover:bg-green-700 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Volver a torneos
-          </Link>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {isNotFound ? 'Partido no disponible' : 'No se pudo cargar el partido'}
+          </h2>
+          <p className="text-gray-500 mb-6">
+            {isNotFound
+              ? 'El partido seleccionado no está disponible o no existe.'
+              : 'Ocurrió un problema al consultar el partido. Intenta de nuevo en unos segundos.'}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            {!isNotFound && (
+              <button
+                type="button"
+                onClick={() => void refetchMatch()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-100 rounded-3xl font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Reintentar
+              </button>
+            )}
+            <Link
+              to="/deportes"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-3xl font-medium hover:bg-green-700 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              Volver al calendario de deportes
+            </Link>
+          </div>
         </div>
       </div>
     );
