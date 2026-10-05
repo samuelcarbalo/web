@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Trophy,
@@ -70,7 +70,7 @@ const useMatchesForDay = (date: Date, enabled: boolean) => {
 
 const useNearbyMatches = (
   date: Date,
-  direction: NearbyDirection | null,
+  direction: NearbyDirection,
   pageOffset: number,
   enabled: boolean
 ) => {
@@ -79,12 +79,12 @@ const useNearbyMatches = (
     queryKey: ['matches-nearby', from_date, direction, pageOffset],
     queryFn: () =>
       getMatches({
-        direction: direction!,
+        direction,
         from_date,
         limit: 5,
         offset: pageOffset,
       }),
-    enabled: enabled && !!direction,
+    enabled,
     staleTime: 1000 * 60 * 2,
   });
 };
@@ -204,12 +204,13 @@ const TournamentsList: React.FC = () => {
   const currentDay = useMemo(() => addDays(today, offset), [today, offset]);
   const { data: matchesData, isLoading: loadingMatches } = useMatchesForDay(currentDay, isMatchesTab);
   const dayMatches: Match[] = matchesData?.results ?? [];
+  const dayIsEmpty = !!matchesData && dayMatches.length === 0;
 
-  const [nearbyDirection, setNearbyDirection] = useState<NearbyDirection | null>(null);
+  const [nearbyDirection, setNearbyDirection] = useState<NearbyDirection>('upcoming');
   const [nearbyOffset, setNearbyOffset] = useState(0);
 
   useEffect(() => {
-    setNearbyDirection(null);
+    setNearbyDirection('upcoming');
     setNearbyOffset(0);
   }, [offset]);
 
@@ -222,7 +223,7 @@ const TournamentsList: React.FC = () => {
     currentDay,
     nearbyDirection,
     nearbyOffset,
-    isMatchesTab && dayMatches.length === 0
+    isMatchesTab && dayIsEmpty
   );
   const nearbyMatches: Match[] = nearbyData?.results ?? [];
   const nearbyHasMore = Boolean(nearbyData?.has_more);
@@ -232,6 +233,19 @@ const TournamentsList: React.FC = () => {
     setNearbyDirection(direction);
     setNearbyOffset(0);
   };
+
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const autoScrolledRef = useRef(isTournamentIndex);
+
+  useEffect(() => {
+    if (!isMatchesTab || autoScrolledRef.current) return;
+    if (loadingFeatured || loadingMatches) return;
+    autoScrolledRef.current = true;
+    const frame = requestAnimationFrame(() => {
+      calendarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isMatchesTab, loadingFeatured, loadingMatches]);
 
   const isToday = isSameDay(currentDay, today);
 
@@ -586,7 +600,7 @@ const TournamentsList: React.FC = () => {
         </div>
 
         {isMatchesTab && (loadingFeatured || featuredTournaments.length > 0 || (showCreateCta && !featuredError)) && !featuredError && (
-          <section className="mb-6" aria-label="Torneos destacados">
+          <section className="relative z-20 mb-6" aria-label="Torneos destacados">
             <div className="flex items-center justify-between gap-3 mb-3">
               <h2 className="text-sm font-bold text-gray-900 dark:text-white">Torneos destacados</h2>
               <Link
@@ -618,7 +632,7 @@ const TournamentsList: React.FC = () => {
                 </div>
               </Link>
             ) : (
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory touch-pan-x">
+              <div className="flex gap-3 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-proximity">
                 {featuredTournaments.map((tournament: Tournament) => {
                   const image = tournament.banner || tournament.logo;
                   const sport = tournament.sport_type as SportType;
@@ -626,18 +640,19 @@ const TournamentsList: React.FC = () => {
                     <Link
                       key={tournament.id}
                       to={`/deportes/torneos/${tournament.slug}`}
-                      className="w-56 shrink-0 snap-start rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                      draggable={false}
+                      className="relative w-56 shrink-0 snap-start cursor-pointer select-none touch-manipulation rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 active:scale-[0.98] transition-all [-webkit-tap-highlight-color:transparent]"
                     >
-                      <div className="h-24 relative bg-gray-100 dark:bg-gray-800">
+                      <div className="h-24 relative bg-gray-100 dark:bg-gray-800 pointer-events-none">
                         {image ? (
-                          <img src={image} alt="" className="w-full h-full object-cover" />
+                          <img src={image} alt="" draggable={false} className="w-full h-full object-cover" />
                         ) : (
                           <div className={`w-full h-full ${sportTypeColors[sport] || 'bg-green-600'} flex items-center justify-center text-white`}>
                             {getSportIcon(sport)}
                           </div>
                         )}
                       </div>
-                      <div className="p-3">
+                      <div className="p-3 pointer-events-none">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-10">
                           {tournament.name}
                         </p>
@@ -660,7 +675,7 @@ const TournamentsList: React.FC = () => {
 
         {/* ── Vista Partidos ──────────────────────────────────────────────────── */}
         {isMatchesTab && (
-          <div className="max-w-3xl mx-auto">
+          <div id="calendar-section" ref={calendarRef} className="max-w-3xl mx-auto scroll-mt-24">
             {/* Navegador de fecha mejorado */}
             <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-4 mb-6">
               <div className="flex items-center gap-4">
@@ -727,67 +742,46 @@ const TournamentsList: React.FC = () => {
               </div>
             ) : dayMatches.length === 0 ? (
               <div className="space-y-4">
-                {!nearbyDirection && (
-                  <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800/80 p-10 sm:p-16 text-center">
-                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Calendar className="w-10 h-10 text-gray-300" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sin partidos este día</h3>
-                    <p className="text-gray-500 mt-2 max-w-sm mx-auto">
-                      No hay partidos programados para {dateLabel}. Busca los más cercanos sin cambiar el selector.
-                    </p>
-                    <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => startNearby('past')}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Ver partidos anteriores
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => startNearby('upcoming')}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
-                      >
-                        Ver próximos partidos
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {offset !== 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setOffset(0)}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-3xl hover:bg-green-700 transition-colors"
-                      >
-                        <Zap className="w-4 h-4" />
-                        Ir a hoy
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {nearbyDirection && (
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div>
+                <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-3xl border border-emerald-200/80 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/20 px-4 py-3">
+                      <div className="flex items-start gap-3">
+                        <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {nearbyDirection === 'past' ? 'Partidos anteriores' : 'Próximos partidos'}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Referencia: {dateLabel} · bloques de 5
+                          {isToday ? 'No hay partidos hoy.' : `No hay partidos el ${dateLabel}.`}{' '}
+                          {nearbyDirection === 'upcoming'
+                            ? 'Próximos encuentros programados:'
+                            : 'Partidos anteriores más recientes:'}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNearbyDirection(null);
-                          setNearbyOffset(0);
-                        }}
-                        className="text-sm font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-                      >
-                        Volver al día vacío
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => startNearby(nearbyDirection === 'upcoming' ? 'past' : 'upcoming')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          {nearbyDirection === 'upcoming' ? (
+                            <>
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                              Ver anteriores
+                            </>
+                          ) : (
+                            <>
+                              Ver próximos
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </>
+                          )}
+                        </button>
+                        {offset !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setOffset(0)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
+                          >
+                            <Zap className="w-3.5 h-3.5" />
+                            Ir a hoy
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {loadingNearby || fetchingNearby ? (
@@ -802,7 +796,11 @@ const TournamentsList: React.FC = () => {
                       </div>
                     ) : nearbyMatches.length === 0 ? (
                       <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center text-sm text-gray-500">
-                        No hay más partidos en esta dirección.
+                        {nearbyOffset > 0
+                          ? 'No hay más partidos en esta dirección.'
+                          : nearbyDirection === 'upcoming'
+                            ? 'Aún no hay próximos partidos programados.'
+                            : 'No hay partidos anteriores registrados.'}
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -831,8 +829,7 @@ const TournamentsList: React.FC = () => {
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
-                  </div>
-                )}
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
