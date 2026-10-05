@@ -33,6 +33,7 @@ import {
   formatBogotaTime,
   toBogotaInputValue,
 } from '../../lib/bogotaTime';
+import TeamName from '../../components/Sports/TeamName';
 import type { CreateMatchData, Match } from '../../types/sports';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
@@ -415,7 +416,11 @@ const TournamentSchedulePage: React.FC = () => {
                               </div>
                             )}
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 dark:text-white truncate">{match.home_team_name}</p>
+                              <TeamName
+                                name={match.home_team_name}
+                                abbreviation={match.home_team_abbreviation}
+                                className="block font-medium text-gray-900 dark:text-white truncate"
+                              />
                               {match.status === 'finished' && (
                                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{match.home_score ?? '-'}</p>
                               )}
@@ -449,7 +454,11 @@ const TournamentSchedulePage: React.FC = () => {
                           {/* Equipo visitante */}
                           <div className="flex items-center gap-3 flex-1 justify-end">
                             <div className="min-w-0 text-right">
-                              <p className="font-medium text-gray-900 dark:text-white truncate">{match.away_team_name}</p>
+                              <TeamName
+                                name={match.away_team_name}
+                                abbreviation={match.away_team_abbreviation}
+                                className="block font-medium text-gray-900 dark:text-white truncate"
+                              />
                               {match.status === 'finished' && (
                                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{match.away_score ?? '-'}</p>
                               )}

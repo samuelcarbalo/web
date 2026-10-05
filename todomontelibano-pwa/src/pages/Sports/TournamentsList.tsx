@@ -29,6 +29,7 @@ import SportsSubscriptionBanner from '../../components/Sports/SportsSubscription
 import { ROUTES } from '../../config/seo';
 import { getMatches } from '../../lib/sportsApi';
 import { bogotaDateKey, formatBogotaDate, formatBogotaTime } from '../../lib/bogotaTime';
+import TeamName from '../../components/Sports/TeamName';
 import type { SportType, Match, Tournament } from '../../types/sports';
 import { sportTypeColors, sportTypeLabels } from '../../types/sports';
 import { useLocation } from 'react-router-dom';
@@ -326,9 +327,11 @@ const TournamentsList: React.FC = () => {
               {match.home_team_name?.[0]}
             </div>
           )}
-          <span className="font-bold text-sm text-gray-900 dark:text-white truncate">
-            {match.home_team_name}
-          </span>
+          <TeamName
+            name={match.home_team_name}
+            abbreviation={match.home_team_abbreviation}
+            className="font-bold text-sm text-gray-900 dark:text-white truncate"
+          />
         </div>
 
         <div className="shrink-0 text-center min-w-[64px]">
@@ -354,9 +357,11 @@ const TournamentsList: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-          <span className="font-bold text-sm text-gray-900 dark:text-white truncate text-right">
-            {match.away_team_name}
-          </span>
+          <TeamName
+            name={match.away_team_name}
+            abbreviation={match.away_team_abbreviation}
+            className="font-bold text-sm text-gray-900 dark:text-white truncate text-right"
+          />
           {match.away_team_logo ? (
             <img
               src={match.away_team_logo}
