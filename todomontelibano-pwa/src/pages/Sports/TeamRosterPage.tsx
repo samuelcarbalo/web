@@ -20,6 +20,7 @@ import {
   UserX,
   Sparkles,
   Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -30,9 +31,14 @@ import {
   useDeletePlayer,
   useTeams,
 } from '../../hooks/useSports';
-import { canManageSportsResource, isSportsSuperAdmin } from '../../hooks/usePermissions';
+import {
+  canManageSportsResource,
+  isSportsResourceOwner,
+  isSportsSuperAdmin,
+} from '../../hooks/usePermissions';
 import type { Player, CreatePlayerData, Team } from '../../types/sports';
 import ImageUploader from '../../components/UI/ImageUploader';
+import RosterImportModal from '../../components/Sports/RosterImportModal';
 import { downloadPlayerCardsPdf } from '../../lib/generatePlayerCardsPdf';
 
 /* ═══════════════════════════════════════════
@@ -155,6 +161,9 @@ const TeamRosterPage: React.FC = () => {
     canManageSportsResource(user, currentTeam) ||
     canManageSportsResource(user, tournament);
   const teamId = currentTeam?.id || '';
+  const canImportRoster =
+    !!teamId && (isSportsSuperAdmin(user) || isSportsResourceOwner(user, tournament));
+  const [importOpen, setImportOpen] = useState(false);
 
   const { data: playersData, isLoading: loadingPlayers } = usePlayers(teamId || undefined);
   const createMutation = useCreatePlayer();
@@ -762,6 +771,16 @@ const TeamRosterPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {canImportRoster && (
+                    <button
+                      type="button"
+                      onClick={() => setImportOpen(true)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 shadow-sm"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      + Cargar plantilla Excel
+                    </button>
+                  )}
                   {players.length > 0 && (
                     <button
                       type="button"
@@ -982,6 +1001,15 @@ const TeamRosterPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {canImportRoster && (
+        <RosterImportModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          teamId={teamId}
+          teamName={currentTeam?.name}
+        />
+      )}
     </div>
   );
 };

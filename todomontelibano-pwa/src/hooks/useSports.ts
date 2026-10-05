@@ -55,6 +55,7 @@ import {
   updatePlayerSuspension,
   revokePlayerSuspension,
   getTeamPlayers,
+  importTeamRoster,
 } from '../lib/sportsApi';
 import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData, ConfigureSecondPhaseData } from '../types/sports';
 
@@ -208,6 +209,20 @@ export const useCreatePlayer = () => {
       queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
       if (variables.team) {
         queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY, { team: variables.team }] });
+      }
+    },
+  });
+};
+
+export const useImportTeamRoster = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: importTeamRoster,
+    onSuccess: (result) => {
+      if (result.created > 0) {
+        queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+        queryClient.invalidateQueries({ queryKey: [TEAMS_KEY] });
       }
     },
   });

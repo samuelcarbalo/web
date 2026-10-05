@@ -1,6 +1,6 @@
 import { api } from './api';
 import { getViewerHash } from './viewerHash';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData, SecondPhasePreview, ConfigureSecondPhaseData } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData, SecondPhasePreview, ConfigureSecondPhaseData, RosterImportResult } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -122,6 +122,32 @@ export const updatePlayer = async (id: string, data: Partial<CreatePlayerData>) 
 
 export const deletePlayer = async (id: string) => {
   await api.delete(`/sports/players/${id}/`);
+};
+
+export const downloadRosterImportTemplate = async () => {
+  const response = await api.get('/sports/teams/import-roster-template/', {
+    responseType: 'blob',
+  });
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'plantilla_jugadores.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+export const importTeamRoster = async ({ teamId, file }: { teamId: string; file: File }) => {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await api.post<RosterImportResult>(
+    `/sports/teams/${teamId}/import-roster/`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+  return response.data;
 };
 
 // --- Funciones para partidos ---
