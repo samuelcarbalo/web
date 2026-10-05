@@ -171,6 +171,14 @@ const TimelineSkeleton: React.FC = () => (
   </div>
 );
 
+/** ISO del servidor → valor de <input type="datetime-local"> en la hora local del navegador. */
+function toDateTimeLocalValue(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { isOwner: checkIsOwner } = usePermissions();
@@ -395,7 +403,7 @@ const MatchDetailPage: React.FC = () => {
   const openEditModal = () => {
     if (!match) return;
     setEditData({
-      match_date: match.match_date.slice(0, 16),
+      match_date: toDateTimeLocalValue(match.match_date),
       venue: match.venue || '',
       stadium: match.stadium || '',
       round_number: match.round_number,
@@ -436,9 +444,35 @@ const MatchDetailPage: React.FC = () => {
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!match) return;
+    const parsedDate = editData.match_date ? new Date(editData.match_date) : null;
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+      alert('La fecha y hora del partido no es válida.');
+      return;
+    }
     updateMutation.mutate(
-      { id: match.id, data: editData },
-      { onSuccess: () => setShowEditModal(false) }
+      {
+        id: match.id,
+        data: {
+          ...editData,
+          match_date: parsedDate.toISOString(),
+          venue: editData.venue.trim(),
+          stadium: editData.stadium.trim(),
+          round_number: Number(editData.round_number) || 1,
+          match_week: Number(editData.match_week) || 1,
+        },
+      },
+      {
+        onSuccess: () => setShowEditModal(false),
+        onError: (error) => {
+          console.error('Error al editar el partido:', error);
+          const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
+          const detail =
+            (typeof data?.message === 'string' && data.message) ||
+            (typeof data?.detail === 'string' && data.detail) ||
+            'No se pudo guardar el partido. Revisa los datos e inténtalo de nuevo.';
+          alert(detail);
+        },
+      }
     );
   };
 
@@ -648,6 +682,7 @@ const MatchDetailPage: React.FC = () => {
         <SponsorshipAvailabilityBanner
           availability={sponsorshipAvailability}
           showPurchaseButton={false}
+          tournament={tournament}
         />
         <TournamentAdSlot
           position="match_detail"

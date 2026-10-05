@@ -1,20 +1,32 @@
 import React from 'react';
 import { Clock, Megaphone, Sparkles } from 'lucide-react';
 import type { SponsorshipAvailability } from '../../lib/advertisingApi';
+import { useAuthStore } from '../../store/authStore';
+import {
+  isPlatformElevatedUser,
+  isSportsResourceOwner,
+  type Resource,
+} from '../../hooks/usePermissions';
 
 interface Props {
   availability?: SponsorshipAvailability;
   onPurchaseClick?: () => void;
   showPurchaseButton?: boolean;
+  /** Torneo actual: su creador también ve el estado de cupos. */
+  tournament?: Resource | null;
 }
 
 const SponsorshipAvailabilityBanner: React.FC<Props> = ({
   availability,
   onPurchaseClick,
   showPurchaseButton = true,
+  tournament,
 }) => {
+  const user = useAuthStore((state) => state.user);
+
   if (!availability) return null;
 
+  const canSeeSlots = isPlatformElevatedUser(user) || isSportsResourceOwner(user, tournament);
   const sponsors =
     availability.active_sponsorships ??
     (availability.active_sponsorship ? [availability.active_sponsorship] : []);
@@ -47,17 +59,19 @@ const SponsorshipAvailabilityBanner: React.FC<Props> = ({
             <p className="font-bold text-gray-900 dark:text-white truncate">
               {sponsors.map((sp) => sp.title).join(' · ')}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1.5">
-              <Clock className="w-4 h-4 shrink-0" />
-              {remaining > 0 ? (
-                <span>
-                  Disponibles <strong>{remaining}</strong> de {total} cupos publicitarios este mes
-                </span>
-              ) : (
-                <strong>Cupo publicitario agotado para este mes</strong>
-              )}
-            </p>
-            {remaining === 0 && (
+            {canSeeSlots && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1.5">
+                <Clock className="w-4 h-4 shrink-0" />
+                {remaining > 0 ? (
+                  <span>
+                    Disponibles <strong>{remaining}</strong> de {total} cupos publicitarios este mes
+                  </span>
+                ) : (
+                  <strong>Cupo publicitario agotado para este mes</strong>
+                )}
+              </p>
+            )}
+            {canSeeSlots && remaining === 0 && (
               <p className="text-xs text-amber-700/80 dark:text-amber-400/90 mt-2">
                 Se libera un cupo el {new Date(first.end_date).toLocaleDateString('es-CO')}.
               </p>
@@ -78,6 +92,8 @@ const SponsorshipAvailabilityBanner: React.FC<Props> = ({
     );
   }
 
+  if (!canSeeSlots && !canReserve) return null;
+
   return (
     <div className="rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/50 p-4 md:p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -87,8 +103,9 @@ const SponsorshipAvailabilityBanner: React.FC<Props> = ({
             Este torneo no tiene patrocinador
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Disponibles {remaining} de {total} cupos publicitarios este mes: tabla, partidos,
-            estadísticas y más.
+            {canSeeSlots
+              ? `Disponibles ${remaining} de ${total} cupos publicitarios este mes: tabla, partidos, estadísticas y más.`
+              : 'Anúnciate en la tabla, los partidos, las estadísticas y más.'}
           </p>
         </div>
         {canReserve && (

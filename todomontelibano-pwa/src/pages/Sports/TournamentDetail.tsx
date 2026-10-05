@@ -312,6 +312,7 @@ const TournamentDetail: React.FC = () => {
                 <SponsorshipAvailabilityBanner
                   availability={sponsorshipAvailability}
                   onPurchaseClick={() => setIsPurchaseSponsorshipOpen(true)}
+                  tournament={tournament}
                 />
                 <TournamentAdSlot
                   position="tournament_detail"
