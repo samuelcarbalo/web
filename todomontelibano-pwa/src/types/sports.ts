@@ -187,6 +187,20 @@ export interface ConfigureSecondPhaseData {
   second_phase_assignment_method: 'RANDOM' | 'MANUAL';
 }
 
+export interface RosterImportRowError {
+  row: number;
+  field: string | null;
+  message: string;
+}
+
+export interface RosterImportResult {
+  total_rows: number;
+  created: number;
+  error_count: number;
+  errors: RosterImportRowError[];
+  message: string;
+}
+
 export interface BracketNode {
   id: string;
   round: 'quarterfinal' | 'semifinal' | 'final' | 'third_place';

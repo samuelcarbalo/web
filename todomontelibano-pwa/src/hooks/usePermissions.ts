@@ -135,6 +135,20 @@ export function isSportsSuperAdmin(user: User | null | undefined): boolean {
   return hasPlatformSuperAdminRole(user);
 }
 
+/** El usuario es el creador (posted_by / owner_id) del recurso. */
+export function isSportsResourceOwner(
+  user: User | null | undefined,
+  resource: Resource | null | undefined,
+): boolean {
+  if (!user || !resource) return false;
+  const postedById =
+    resource.posted_by && typeof resource.posted_by === 'object'
+      ? resource.posted_by.id
+      : resource.posted_by;
+  const ownerId = resource.owner_id ?? postedById;
+  return ownerId != null && String(user.id) === String(ownerId);
+}
+
 /**
  * Puede gestionar un recurso de Deportes (torneo, equipo, partido, jugador).
  * Devuelve true si: es Super Admin, es el creador del recurso o es manager/admin.
