@@ -16,6 +16,7 @@ import {
   History,
   ArrowUp,
   ArrowDown,
+  Megaphone,
 } from 'lucide-react';
 import {
   useAdminUsers,
@@ -26,13 +27,15 @@ import {
   useSetAdminCredits,
   useUpdateAdminUser,
 } from '../../hooks/useAdminUsers';
-import { usePermissions } from '../../hooks/usePermissions';
+import { isSportsSuperAdmin, usePermissions } from '../../hooks/usePermissions';
+import { useAuthStore } from '../../store/authStore';
 import type { AdminUser } from '../../lib/adminApi';
 import AdminExcelImportPanel from '../../components/Admin/AdminExcelImportPanel';
 import AdminJobsHistoryPanel from '../../components/Admin/AdminJobsHistoryPanel';
 import AdminStoreVisualSettings from '../../components/Admin/AdminStoreVisualSettings';
 import AdminMercadoPagoSettings from '../../components/Admin/AdminMercadoPagoSettings';
 import AdminPaymentLedgerPanel from '../../components/Admin/AdminPaymentLedgerPanel';
+import AdminAdsImpressionsPanel from '../../components/Admin/AdminAdsImpressionsPanel';
 
 function adminLevelOf(u: Pick<AdminUser, 'admin_level' | 'is_superuser'> | null | undefined): number {
   const level = Number(u?.admin_level) || 0;
@@ -71,8 +74,9 @@ const AdminUsersPage: React.FC = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creditValue, setCreditValue] = useState('');
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', phone: '', role: 'user' });
-  const [tab, setTab] = useState<'users' | 'jobs' | 'store' | 'payments' | 'ledger'>('users');
+  const [tab, setTab] = useState<'users' | 'jobs' | 'store' | 'payments' | 'ledger' | 'ads'>('users');
   const { canManageAdmins, isDelegatedAdmin } = usePermissions();
+  const canViewAds = isSportsSuperAdmin(useAuthStore((state) => state.user));
 
   const { data, isLoading, isError } = useAdminUsers({
     search: search.trim() || undefined,
@@ -237,6 +241,20 @@ const AdminUsersPage: React.FC = () => {
             <History className="w-4 h-4" />
             Historial
           </button>
+          {canViewAds && (
+            <button
+              type="button"
+              onClick={() => setTab('ads')}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold transition-colors ${
+                tab === 'ads'
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
+              }`}
+            >
+              <Megaphone className="w-4 h-4" />
+              Publicidad
+            </button>
+          )}
           {canManageAdmins && (
             <button
               type="button"
@@ -424,6 +442,8 @@ const AdminUsersPage: React.FC = () => {
       {tab === 'store' && <AdminStoreVisualSettings />}
 
       {tab === 'ledger' && <AdminPaymentLedgerPanel />}
+
+      {tab === 'ads' && canViewAds && <AdminAdsImpressionsPanel />}
 
       {tab === 'payments' && canManageAdmins && <AdminMercadoPagoSettings />}
       </div>
