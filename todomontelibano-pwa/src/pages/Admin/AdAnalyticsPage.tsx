@@ -2,8 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { BarChart3, ChevronLeft, Eye, Loader2, Megaphone, MousePointerClick, TrendingUp } from 'lucide-react';
-import { getAdAnalytics, type AdAnalyticsDay } from '../../lib/adAnalyticsApi';
+import { getAdAnalytics } from '../../lib/adAnalyticsApi';
 import { bogotaDateKey } from '../../lib/bogotaTime';
+import DailyViewsChart from '../../components/Ads/DailyViewsChart';
+import { formatDayKey as formatDay, numberFormat, shiftDateKey as shiftDate } from '../../lib/dateKeys';
 
 type Preset = '7d' | '30d' | 'month' | 'custom';
 
@@ -14,80 +16,12 @@ const PRESETS: { id: Preset; label: string }[] = [
   { id: 'custom', label: 'Personalizado' },
 ];
 
-/** Suma días a una fecha "YYYY-MM-DD" sin depender de la zona del navegador. */
-function shiftDate(key: string, days: number): string {
-  const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d + days));
-  return date.toISOString().slice(0, 10);
-}
-
 function presetRange(preset: Exclude<Preset, 'custom'>): { start: string; end: string } {
   const today = bogotaDateKey();
   if (preset === '7d') return { start: shiftDate(today, -6), end: today };
   if (preset === '30d') return { start: shiftDate(today, -29), end: today };
   return { start: `${today.slice(0, 8)}01`, end: today };
 }
-
-function formatDay(key: string, options: Intl.DateTimeFormatOptions): string {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('es-CO', { ...options, timeZone: 'UTC' });
-}
-
-const numberFormat = new Intl.NumberFormat('es-CO');
-
-const DailyViewsChart: React.FC<{ data: AdAnalyticsDay[]; peakDate?: string }> = ({ data, peakDate }) => {
-  const width = 720;
-  const height = 240;
-  const pad = { top: 16, right: 12, bottom: 32, left: 40 };
-  const innerW = width - pad.left - pad.right;
-  const innerH = height - pad.top - pad.bottom;
-  const max = Math.max(1, ...data.map((d) => d.views));
-  const step = innerW / Math.max(1, data.length);
-  const barW = Math.max(2, Math.min(36, step * 0.7));
-  const labelEvery = Math.ceil(data.length / 10);
-  const ticks = [0, Math.ceil(max / 2), max];
-
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" role="img" aria-label="Visualizaciones diarias">
-      {ticks.map((tick) => {
-        const y = pad.top + innerH - (tick / max) * innerH;
-        return (
-          <g key={tick}>
-            <line x1={pad.left} x2={width - pad.right} y1={y} y2={y} className="stroke-gray-200 dark:stroke-gray-800" />
-            <text x={pad.left - 6} y={y + 4} textAnchor="end" className="fill-gray-400 text-[10px]">
-              {numberFormat.format(tick)}
-            </text>
-          </g>
-        );
-      })}
-      {data.map((day, i) => {
-        const h = (day.views / max) * innerH;
-        const x = pad.left + i * step + (step - barW) / 2;
-        const y = pad.top + innerH - h;
-        const isPeak = day.date === peakDate && day.views > 0;
-        return (
-          <g key={day.date}>
-            <rect
-              x={x}
-              y={y}
-              width={barW}
-              height={Math.max(h, day.views > 0 ? 2 : 0)}
-              rx={Math.min(6, barW / 3)}
-              className={isPeak ? 'fill-emerald-500' : 'fill-violet-500/80'}
-            >
-              <title>{`${formatDay(day.date, { weekday: 'short', day: 'numeric', month: 'short' })}: ${numberFormat.format(day.views)} visualizaciones`}</title>
-            </rect>
-            {i % labelEvery === 0 && (
-              <text x={x + barW / 2} y={height - 10} textAnchor="middle" className="fill-gray-400 text-[10px]">
-                {formatDay(day.date, { day: 'numeric', month: 'short' })}
-              </text>
-            )}
-          </g>
-        );
-      })}
-    </svg>
-  );
-};
 
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; hint?: string }> = ({
   icon,

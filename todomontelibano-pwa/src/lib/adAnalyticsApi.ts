@@ -17,6 +17,8 @@ export interface AdAnalyticsRow {
   end_date: string | null;
   views_in_range: number;
   total_views: number;
+  /** ISO con offset -05:00 (America/Bogota) o null si nunca se ha visto. */
+  last_viewed_at: string | null;
   clicks: number;
 }
 
@@ -44,6 +46,31 @@ export const trackAdImpression = async (adId: string) => {
 export const getAdAnalytics = async (params: AdAnalyticsParams) => {
   const response = await api.get<AdAnalyticsReport>('/admin/ads/analytics/', {
     params: { start: params.start, end: params.end, ad: params.ad || undefined },
+  });
+  return response.data;
+};
+
+export interface AdImpressionsSummary extends AdAnalyticsReport {
+  /** KPIs de todos los anuncios en el rango (no dependen de `ad_id`). */
+  kpis: {
+    active_ads: number;
+    total_ads: number;
+    views_in_range: number;
+    views_all_time: number;
+    top_sponsor: { name: string; views: number } | null;
+  };
+  options: { id: string; title: string; sponsor: string }[];
+}
+
+export interface AdImpressionsSummaryParams {
+  start_date: string;
+  end_date: string;
+  ad_id?: string;
+}
+
+export const getAdImpressionsSummary = async (params: AdImpressionsSummaryParams) => {
+  const response = await api.get<AdImpressionsSummary>('/admin/ads/impressions-summary/', {
+    params: { start_date: params.start_date, end_date: params.end_date, ad_id: params.ad_id || undefined },
   });
   return response.data;
 };
