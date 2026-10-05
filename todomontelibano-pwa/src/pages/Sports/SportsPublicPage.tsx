@@ -14,6 +14,7 @@ import { useTournaments, useMatches } from '../../hooks/useSports';
 import { sportTypeLabels, sportTypeColors } from '../../types/sports';
 import type { Match, Tournament } from '../../types/sports';
 import { bogotaDateKey, formatBogotaDate, formatBogotaTime } from '../../lib/bogotaTime';
+import TeamName from '../../components/Sports/TeamName';
 
 const SportsPublicPage: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState<string>('');
@@ -101,7 +102,11 @@ const SportsPublicPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-center flex-1">
-                      <p className="font-bold text-gray-900 dark:text-white">{match.home_team_name}</p>
+                      <TeamName
+                        name={match.home_team_name}
+                        abbreviation={match.home_team_abbreviation}
+                        className="block font-bold text-gray-900 dark:text-white"
+                      />
                     </div>
                     <div className="px-4">
                       <span className="text-2xl font-bold text-red-600">
@@ -109,7 +114,11 @@ const SportsPublicPage: React.FC = () => {
                       </span>
                     </div>
                     <div className="text-center flex-1">
-                      <p className="font-bold text-gray-900 dark:text-white">{match.away_team_name}</p>
+                      <TeamName
+                        name={match.away_team_name}
+                        abbreviation={match.away_team_abbreviation}
+                        className="block font-bold text-gray-900 dark:text-white"
+                      />
                     </div>
                   </div>
                 </Link>
@@ -224,9 +233,17 @@ const SportsPublicPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-900 dark:text-white">{match.home_team_name}</span>
+                        <TeamName
+                          name={match.home_team_name}
+                          abbreviation={match.home_team_abbreviation}
+                          className="font-medium text-sm text-gray-900 dark:text-white"
+                        />
                         <span className="text-xs text-gray-400 mx-2">vs</span>
-                        <span className="font-medium text-sm text-gray-900 dark:text-white">{match.away_team_name}</span>
+                        <TeamName
+                          name={match.away_team_name}
+                          abbreviation={match.away_team_abbreviation}
+                          className="font-medium text-sm text-gray-900 dark:text-white"
+                        />
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                         <Clock className="w-3 h-3" />

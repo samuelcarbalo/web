@@ -432,10 +432,12 @@ export interface Match {
   home_team: string;
   home_team_logo?: string;
   home_team_name?: string;
+  home_team_abbreviation?: string;
   home_team_detail?: Team;
   away_team_detail?: Team;
   away_team: string;
   away_team_name?: string;
+  away_team_abbreviation?: string;
   away_team_logo?: string;
   home_score: number | null;
   away_score: number | null;

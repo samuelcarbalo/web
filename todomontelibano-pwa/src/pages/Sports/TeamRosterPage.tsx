@@ -155,7 +155,9 @@ const TeamRosterPage: React.FC = () => {
   const isTournamentOwner = isSportsResourceOwner(user, tournament);
   const canManageRoster = canEditTeam(user, currentTeam, tournament);
   const teamId = currentTeam?.id || '';
-  const canImportRoster = !!teamId && (isSportsSuperAdmin(user) || isTournamentOwner);
+  /** Inscribir jugadores (manual o Excel): solo Super Admin y creador del torneo. */
+  const canAddPlayers = !!teamId && (isSportsSuperAdmin(user) || isTournamentOwner);
+  const canImportRoster = canAddPlayers;
   const [importOpen, setImportOpen] = useState(false);
 
   const { data: playersData, isLoading: loadingPlayers } = usePlayers(teamId || undefined);
@@ -368,7 +370,7 @@ const TeamRosterPage: React.FC = () => {
       <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* ═══════════ SIDEBAR FORM ═══════════ */}
-          {canManageRoster ? (
+          {canManageRoster && (canAddPlayers || editingPlayer) ? (
             <div className="lg:col-span-4 xl:col-span-3">
               <div className="sticky top-24 space-y-6">
                 {/* Form Card */}
@@ -731,14 +733,18 @@ const TeamRosterPage: React.FC = () => {
                     <Users className="w-8 h-8 text-slate-400" />
                   </div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
-                    Acceso Restringido
+                    {canManageRoster ? 'Inscripción de jugadores' : 'Acceso Restringido'}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-gray-400 mb-1">
-                    Contacta al administrador para gestionar jugadores
+                    {canManageRoster
+                      ? 'Solo un Super Admin o el organizador del torneo puede inscribir jugadores nuevos.'
+                      : 'Contacta al administrador para gestionar jugadores'}
                   </p>
-                  <p className="text-xs text-slate-400">
-                    Contacta al administrador para gestionar jugadores
-                  </p>
+                  {canManageRoster && (
+                    <p className="text-xs text-slate-400">
+                      Puedes editar los jugadores ya inscritos desde la tabla.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

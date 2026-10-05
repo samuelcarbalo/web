@@ -31,6 +31,7 @@ import {
   formatBogotaTime,
   toBogotaInputValue,
 } from '../../lib/bogotaTime';
+import TeamName from '../../components/Sports/TeamName';
 import {
   useMatch,
   useTournament,
@@ -721,7 +722,10 @@ const MatchDetailPage: React.FC = () => {
                     </div>
                   )}
                   <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-700 transition-colors">
-                    {match.home_team_detail?.name}
+                    <TeamName
+                      name={match.home_team_detail?.name}
+                      abbreviation={match.home_team_detail?.abbreviation}
+                    />
                   </h2>
                 </Link>
               </div>
@@ -788,7 +792,10 @@ const MatchDetailPage: React.FC = () => {
                     </div>
                   )}
                   <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-700 transition-colors">
-                    {match.away_team_detail?.name}
+                    <TeamName
+                      name={match.away_team_detail?.name}
+                      abbreviation={match.away_team_detail?.abbreviation}
+                    />
                   </h2>
                 </Link>
               </div>
@@ -996,7 +1003,11 @@ const MatchDetailPage: React.FC = () => {
                     <span className="text-xs font-bold">{match.home_team_detail?.name?.slice(0, 2)}</span>
                   )}
                 </div>
-                <span className="truncate">{match.home_team_detail?.name}</span>
+                <TeamName
+                  name={match.home_team_detail?.name}
+                  abbreviation={match.home_team_detail?.abbreviation}
+                  className="truncate"
+                />
               </button>
               <button
                 onClick={() => openEventModal(match.away_team)}
@@ -1009,7 +1020,11 @@ const MatchDetailPage: React.FC = () => {
                     <span className="text-xs font-bold">{match.away_team_detail?.name?.slice(0, 2)}</span>
                   )}
                 </div>
-                <span className="truncate">{match.away_team_detail?.name}</span>
+                <TeamName
+                  name={match.away_team_detail?.name}
+                  abbreviation={match.away_team_detail?.abbreviation}
+                  className="truncate"
+                />
               </button>
             </div>
           </div>

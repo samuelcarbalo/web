@@ -35,14 +35,6 @@ import MobileNavMenu, { type MobileNavService } from "./MobileNavMenu";
 
 const MOBILE_SERVICES: MobileNavService[] = [
   {
-    name: "Tienda",
-    icon: ShoppingBag,
-    path: ROUTES.tienda,
-    active: true,
-    description: "Catálogo y compras con Mercado Pago",
-    comingSoon: false,
-  },
-  {
     name: "Deportes",
     icon: Trophy,
     path: ROUTES.deportes,
@@ -72,6 +64,14 @@ const MOBILE_SERVICES: MobileNavService[] = [
     path: ROUTES.bienesRaices,
     active: true,
     description: "Propiedades en venta y alquiler",
+    comingSoon: false,
+  },
+  {
+    name: "Tienda",
+    icon: ShoppingBag,
+    path: ROUTES.tienda,
+    active: true,
+    description: "Catálogo y compras con Mercado Pago",
     comingSoon: false,
   },
 ];
@@ -503,9 +503,9 @@ const MainLayout: React.FC = () => {
                 Servicios
               </h3>
               <ul className="space-y-3 text-sm font-medium text-gray-600 dark:text-gray-400">
-                <li><Link to={ROUTES.tienda} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Tienda</Link></li>
                 <li><Link to={ROUTES.deportes} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Deportes</Link></li>
                 <li><Link to={ROUTES.empleos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Empleos</Link></li>
+                <li><Link to={ROUTES.tienda} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Tienda</Link></li>
                 <li><Link to={ROUTES.eventos} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Eventos</Link></li>
                 <li><Link to={ROUTES.bienesRaices} className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded">Bienes Raíces</Link></li>
               </ul>
