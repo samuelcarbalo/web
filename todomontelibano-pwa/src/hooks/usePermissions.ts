@@ -179,6 +179,101 @@ export type TeamPermissionFields = Resource & {
   can_edit?: boolean;
 };
 
+const MATCH_SUPER_ADMIN_L1_ROLES = new Set([
+  'SUPER_ADMIN_LEVEL_1',
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN',
+]);
+
+const MATCH_SUPER_ADMIN_L2_ROLES = new Set([
+  'SUPER_ADMIN_LEVEL_2',
+  'SUPER_ADMIN_L2',
+]);
+
+function roleTokens(user: User): string[] {
+  return [String(user.role || ''), String(user.hierarchy_role || '')].map((value) =>
+    value.toUpperCase(),
+  );
+}
+
+/** Super Admin Nivel 1: role SUPER_ADMIN_LEVEL_1 o is_superuser (y alias de plataforma). */
+export function isMatchSuperAdminLevel1(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (user.is_superuser) return true;
+  if (roleTokens(user).some((role) => MATCH_SUPER_ADMIN_L1_ROLES.has(role))) return true;
+  return isSuperAdminLevel1(user);
+}
+
+/** Super Admin Nivel 2: role SUPER_ADMIN_LEVEL_2 (y alias de plataforma). */
+export function isMatchSuperAdminLevel2(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (roleTokens(user).some((role) => MATCH_SUPER_ADMIN_L2_ROLES.has(role))) return true;
+  return isSuperAdminLevel2(user);
+}
+
+export type MatchPermissionFields = {
+  tournament?: unknown;
+  tournament_owner_id?: unknown;
+  tournament_created_by?: unknown;
+  tournament_posted_by?: unknown;
+};
+
+function entityId(value: unknown): string {
+  if (value == null || value === '') return '';
+  if (typeof value === 'object') {
+    const record = value as { id?: unknown };
+    if ('id' in record) return String(record.id ?? '');
+  }
+  return String(value);
+}
+
+function tournamentOwnerId(
+  match: MatchPermissionFields,
+  tournament?: Resource | { created_by?: unknown; posted_by?: unknown; owner_id?: unknown } | null,
+): string {
+  const nested =
+    match.tournament && typeof match.tournament === 'object'
+      ? (match.tournament as {
+          owner_id?: unknown;
+          created_by?: unknown;
+          posted_by?: unknown;
+        })
+      : null;
+  const candidates = [
+    tournament?.owner_id,
+    (tournament as { created_by?: unknown } | null | undefined)?.created_by,
+    tournament?.posted_by,
+    nested?.owner_id,
+    nested?.created_by,
+    nested?.posted_by,
+    match.tournament_owner_id,
+    match.tournament_created_by,
+    match.tournament_posted_by,
+  ];
+  for (const candidate of candidates) {
+    const id = entityId(candidate);
+    if (id) return id;
+  }
+  return '';
+}
+
+/**
+ * Gestión en vivo del partido y de la plantilla de ambos equipos.
+ * True si el usuario es Super Admin Nivel 1, Super Admin Nivel 2
+ * o el creador/dueño del torneo del partido.
+ */
+export function canManageMatch(
+  user: User | null | undefined,
+  match: MatchPermissionFields | null | undefined,
+  tournament?: Resource | null,
+): boolean {
+  if (!user || !match) return false;
+  if (isMatchSuperAdminLevel1(user) || isMatchSuperAdminLevel2(user)) return true;
+  const ownerId = tournamentOwnerId(match, tournament);
+  const userId = entityId(user.id);
+  return Boolean(ownerId && userId && ownerId === userId);
+}
+
 /**
  * Edición completa del equipo (logo, nombre, colores, plantilla).
  * Fuente de verdad: `can_edit` del API (incluye capitanes). Fallback local si no viene.
@@ -241,6 +336,10 @@ export const usePermissions = () => {
     isSuperAdminLevel1: canManageAdmins,
     isSuperAdminLevel2: isDelegatedAdmin,
     canManageTournament,
+    canManageMatch: (
+      match: MatchPermissionFields | null | undefined,
+      tournament?: Resource | null,
+    ) => canManageMatch(user, match, tournament),
     canManageProduct: (product: ShopProductOwnerFields | null | undefined) =>
       canManageProduct(user, product),
     canSeeMyCreatedProducts: canSeeMyCreatedProducts(user),

@@ -460,6 +460,9 @@ export interface Match {
   line_score?: LineScore | null;
   notes: string;
   posted_by: string;
+  /** Dueño del torneo (posted_by). Misma persona que created_by en esta API. */
+  tournament_owner_id?: string | null;
+  tournament_created_by?: string | null;
   events: MatchEvent[];
   start_time?: string;
   end_time?: string;

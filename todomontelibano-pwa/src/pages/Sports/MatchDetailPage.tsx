@@ -180,7 +180,7 @@ const TimelineSkeleton: React.FC = () => (
 
 const MatchDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isOwner: checkIsOwner } = usePermissions();
+  const { canManageMatch: checkCanManageMatch } = usePermissions();
   const navigate = useNavigate();
 
   const { data: match, isLoading, error: matchError, refetch: refetchMatch } = useMatch(id || '');
@@ -284,7 +284,7 @@ const MatchDetailPage: React.FC = () => {
     description: '',
   });
 
-  const isOwner = checkIsOwner(match);
+  const canManage = checkCanManageMatch(match, tournament);
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
   const isSoftball = sportType === 'softball';
@@ -643,7 +643,7 @@ const MatchDetailPage: React.FC = () => {
               {statusConfig.label}
             </span>
 
-            {isOwner && (
+            {canManage && (
               <div className="flex items-center gap-1.5">
                 {isScheduled && (
                   <button
@@ -840,7 +840,7 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {/* SOFTBOL: controles de anotación en vivo */}
-        {isSoftball && isLive && isOwner && (
+        {isSoftball && isLive && canManage && (
           <>
             <SoftballLiveControls
               match={match}
@@ -865,7 +865,7 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {/* CONTROLES DE PERÍODOS - Rediseñados (fútbol) */}
-        {isLive && isOwner && !isSoftball && (
+        {isLive && canManage && !isSoftball && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -978,7 +978,7 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {/* Acciones para partido en vivo */}
-        {isLive && isOwner && activePeriod && (
+        {isLive && canManage && activePeriod && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1032,8 +1032,9 @@ const MatchDetailPage: React.FC = () => {
 
         {/* Alineaciones */}
         {sportType && (
-          <MatchLineupSection 
-            match={{ ...match, sport_type: sportType }} 
+          <MatchLineupSection
+            match={{ ...match, sport_type: sportType }}
+            canManage={canManage}
             lineupSize={tournament?.lineup_size ?? 9}
             playerCards={playerCards}
             isPlayerSentOff={isPlayerSentOff}
@@ -1136,7 +1137,7 @@ const MatchDetailPage: React.FC = () => {
       {/* ─── MODALES REDISEÑADOS ───────────────────────────────────────────── */}
 
       {/* Modal: Editar partido */}
-      {showEditModal && (
+      {canManage && showEditModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-6">
@@ -1235,7 +1236,7 @@ const MatchDetailPage: React.FC = () => {
       )}
 
       {/* Modal: Finalizar partido */}
-      {showFinishModal && (
+      {canManage && showFinishModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
@@ -1313,7 +1314,7 @@ const MatchDetailPage: React.FC = () => {
       )}
 
       {/* Modal: Agregar evento */}
-      {showEventModal && (() => {
+      {canManage && showEventModal && (() => {
         const isHomeTeam = eventData.team === match.home_team;
         const players = (isHomeTeam ? homePlayersData : awayPlayersData)?.results ?? [];
 
@@ -1486,7 +1487,7 @@ const MatchDetailPage: React.FC = () => {
       })()}
 
       {/* Modal: Registrar jugada de softbol */}
-      {showSoftballEvent && (
+      {canManage && showSoftballEvent && (
         <SoftballEventModal
           match={match}
           homePlayers={homePlayersData?.results ?? []}
@@ -1496,7 +1497,7 @@ const MatchDetailPage: React.FC = () => {
       )}
 
       {/* Modal: Confirmar eliminación */}
-      {showDeleteConfirm && (
+      {canManage && showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">

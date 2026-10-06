@@ -6,6 +6,7 @@ import {
   useAddMatchEvent,
   useFinishMatch,
 } from '../../hooks/useSports';
+import { canManageMatch, usePermissions } from '../../hooks/usePermissions';
 
 interface MatchEventControlsProps {
   id: string;
@@ -21,8 +22,9 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
   match,
   homeTeamId,
   awayTeamId,
-  isOwner,
 }) => {
+  const { user } = usePermissions();
+  const allowed = canManageMatch(user, match);
   const { mutate: updatePlayer } = useUpdatePlayer();
   const updateScoreMutation = useUpdateScore();
   const addEventMutation = useAddMatchEvent();
@@ -81,7 +83,7 @@ const MatchEventControls: React.FC<MatchEventControlsProps> = ({
     finishMutation.mutate({ id, data: {} });
   };
 
-  if (!isOwner) return null;
+  if (!allowed) return null;
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-8">

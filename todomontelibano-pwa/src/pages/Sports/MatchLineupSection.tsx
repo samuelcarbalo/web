@@ -10,7 +10,7 @@ import {
   Shield,
   X,
 } from 'lucide-react';
-import { usePermissions } from '../../hooks/usePermissions';
+import { canManageMatch, usePermissions } from '../../hooks/usePermissions';
 import {
   useMatchLineup,
   useSetLineup,
@@ -38,6 +38,8 @@ interface MatchLineupSectionProps {
   getPlayerYellowCards?: (playerId: string) => number;
   isLive?: boolean;
   matchTimer?: number;
+  /** Resultado de canManageMatch. Si no llega, se calcula con el partido. */
+  canManage?: boolean;
 }
 
 interface LineupPlayer {
@@ -59,9 +61,10 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   lineupSize = 9,
   playerCards,
   matchTimer,
+  canManage: canManageProp,
 }) => {
-  const { isOwner: checkIsOwner } = usePermissions();
-  const isOwner = checkIsOwner(match);
+  const { user } = usePermissions();
+  const isOwner = canManageProp ?? canManageMatch(user, match);
 
   const isScheduled = match.status === 'scheduled';
   const isLive = match.status === 'live';
