@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2, Plus, Minus, ChevronRight, Trophy } from 'lucide-react';
 import { useRecordInning } from '../../hooks/useSports';
+import { canManageMatch, usePermissions } from '../../hooks/usePermissions';
 import type { LineScore, Match } from '../../types/sports';
 
 interface Props {
@@ -29,6 +30,7 @@ function firstUnplayed(ls: LineScore | null | undefined, regulation: number): Cu
 }
 
 const SoftballLiveControls: React.FC<Props> = ({ match, lineScore, regulationInnings }) => {
+  const { user } = usePermissions();
   const record = useRecordInning();
   const [cursor, setCursor] = useState<Cursor>(() => firstUnplayed(lineScore, regulationInnings));
   const [draft, setDraft] = useState({ runs: 0, hits: 0, errors: 0 });
@@ -75,6 +77,8 @@ const SoftballLiveControls: React.FC<Props> = ({ match, lineScore, regulationInn
     setCursor(nextCursor);
     setDraft({ runs: 0, hits: 0, errors: 0 });
   };
+
+  if (!canManageMatch(user, match)) return null;
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
