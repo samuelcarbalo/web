@@ -20,6 +20,7 @@ import {
   finishMatch,
   updateScore,
   addMatchEvent,
+  createTimelineEvent,
   updateMatchEvent,
   deleteMatchEvent,
   recordInning,
@@ -421,6 +422,32 @@ export const useAddMatchEvent = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => addMatchEvent(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};
+
+export const useCreateTimelineEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        event_type: string;
+        minute: number;
+        team: string;
+        player?: string;
+        description?: string;
+      };
+    }) => createTimelineEvent(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings'] });
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
     },
   });
 };
