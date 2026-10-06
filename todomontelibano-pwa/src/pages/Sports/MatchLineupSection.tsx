@@ -10,7 +10,7 @@ import {
   Shield,
   X,
 } from 'lucide-react';
-import { canManageMatch, usePermissions } from '../../hooks/usePermissions';
+import { canManageMatch, usePermissions, type MatchPermissionFields } from '../../hooks/usePermissions';
 import {
   useMatchLineup,
   useSetLineup,
@@ -31,7 +31,7 @@ interface MatchLineupSectionProps {
     home_team_detail?: { name: string; slug: string };
     away_team_detail?: { name: string; slug: string };
     posted_by?: string;
-  };
+  } & MatchPermissionFields;
   lineupSize?: number;
   playerCards?: Record<string, { yellow: number; red: boolean }>;
   isPlayerSentOff?: (playerId: string) => boolean;
