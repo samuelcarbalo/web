@@ -1208,7 +1208,7 @@ const MatchDetailPage: React.FC = () => {
                     </div>
 
                     {canManage && (
-                      <div className={`flex items-center gap-1 flex-shrink-0 self-center ${isHomeEvent ? '' : 'flex-row-reverse'}`}>
+                      <div className="flex items-center gap-1 flex-shrink-0 self-center">
                         <button
                           type="button"
                           title="Editar"
