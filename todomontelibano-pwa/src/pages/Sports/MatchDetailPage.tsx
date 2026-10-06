@@ -40,6 +40,8 @@ import {
   useStartMatch,
   useFinishMatch,
   useAddMatchEvent,
+  useUpdateMatchEvent,
+  useDeleteMatchEvent,
   usePlayers,
   useMatchPeriods,
   useStartPeriod,
@@ -88,6 +90,24 @@ const EVENT_LABELS: Record<string, string> = {
   assist: 'Asistencia',
   expelled: 'Expulsado',
   other: 'Otro',
+};
+
+const EDITABLE_EVENT_TYPES: Array<{ value: MatchEvent['event_type']; label: string }> = [
+  { value: 'goal', label: 'Gol' },
+  { value: 'yellow_card', label: 'Tarjeta Amarilla' },
+  { value: 'red_card', label: 'Tarjeta Roja' },
+  { value: 'substitution_in', label: 'Cambio (entra)' },
+  { value: 'substitution_out', label: 'Cambio (sale)' },
+];
+
+const eventTypeOptions = (current: string) => {
+  if (EDITABLE_EVENT_TYPES.some((option) => option.value === current)) {
+    return EDITABLE_EVENT_TYPES;
+  }
+  return [
+    { value: current as MatchEvent['event_type'], label: EVENT_LABELS[current] || current },
+    ...EDITABLE_EVENT_TYPES,
+  ];
 };
 
 const EVENT_COLORS: Record<string, string> = {
@@ -208,6 +228,8 @@ const MatchDetailPage: React.FC = () => {
   const startMutation = useStartMatch();
   const finishMutation = useFinishMatch();
   const addEventMutation = useAddMatchEvent();
+  const updateEventMutation = useUpdateMatchEvent();
+  const deleteEventMutation = useDeleteMatchEvent();
   const startPeriodMutation = useStartPeriod();
   const pausePeriodMutation = usePausePeriod();
   const resumePeriodMutation = useResumePeriod();
@@ -217,6 +239,14 @@ const MatchDetailPage: React.FC = () => {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<MatchEvent | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<MatchEvent | null>(null);
+  const [editEventForm, setEditEventForm] = useState({
+    minute: 0,
+    event_type: 'goal' as MatchEvent['event_type'],
+    player: '',
+    team: '',
+  });
   const [playerSearch, setPlayerSearch] = useState('');
   const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
   const [selectedPlayerName, setSelectedPlayerName] = useState('');
@@ -542,6 +572,66 @@ const MatchDetailPage: React.FC = () => {
     addEventMutation.mutate(
       { id: match.id, data: eventData },
       { onSuccess: () => setShowEventModal(false) }
+    );
+  };
+
+  const openEditEventModal = (event: MatchEvent) => {
+    setEditingEvent(event);
+    setEditEventForm({
+      minute: event.minute ?? 0,
+      event_type: event.event_type,
+      player: event.player || '',
+      team: event.team || '',
+    });
+  };
+
+  const handleUpdateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!match || !editingEvent) return;
+    updateEventMutation.mutate(
+      {
+        matchId: match.id,
+        eventId: editingEvent.id,
+        data: {
+          minute: Number.isFinite(editEventForm.minute) ? editEventForm.minute : 0,
+          event_type: editEventForm.event_type,
+          player: editEventForm.player || null,
+          team: editEventForm.team || undefined,
+        },
+      },
+      {
+        onSuccess: () => setEditingEvent(null),
+        onError: (error) => {
+          console.error('Error al editar el evento:', error);
+          const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
+          const playerError = Array.isArray(data?.player) ? data.player[0] : data?.player;
+          const detail =
+            (typeof data?.error === 'string' && data.error) ||
+            (typeof data?.detail === 'string' && data.detail) ||
+            (typeof playerError === 'string' && playerError) ||
+            'No se pudo actualizar el evento.';
+          alert(detail);
+        },
+      },
+    );
+  };
+
+  const handleDeleteEvent = () => {
+    if (!match || !eventToDelete) return;
+    deleteEventMutation.mutate(
+      { matchId: match.id, eventId: eventToDelete.id },
+      {
+        onSuccess: () => setEventToDelete(null),
+        onError: (error) => {
+          console.error('Error al eliminar el evento:', error);
+          const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
+          const detail =
+            (typeof data?.detail === 'string' && data.detail) ||
+            (typeof data?.error === 'string' && data.error) ||
+            'No se pudo eliminar el evento.';
+          alert(detail);
+        },
+      },
     );
   };
 
@@ -1116,6 +1206,29 @@ const MatchDetailPage: React.FC = () => {
                         </p>
                       )}
                     </div>
+
+                    {canManage && (
+                      <div className="flex items-center gap-1 flex-shrink-0 self-center">
+                        <button
+                          type="button"
+                          title="Editar"
+                          aria-label="Editar evento"
+                          onClick={() => openEditEventModal(event)}
+                          className="p-2 rounded-2xl text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          title="Eliminar"
+                          aria-label="Eliminar evento"
+                          onClick={() => setEventToDelete(event)}
+                          className="p-2 rounded-2xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1494,6 +1607,171 @@ const MatchDetailPage: React.FC = () => {
           awayPlayers={awayPlayersData?.results ?? []}
           onClose={() => setShowSoftballEvent(false)}
         />
+      )}
+
+      {/* Modal: Editar evento de la cronología */}
+      {canManage && editingEvent && (() => {
+        const homeRoster = (homePlayersData?.results ?? []).map((player: { id: string; full_name: string; jersey_number?: number }) => ({
+          ...player,
+          teamId: match.home_team,
+          teamName: match.home_team_detail?.name || 'Local',
+        }));
+        const awayRoster = (awayPlayersData?.results ?? []).map((player: { id: string; full_name: string; jersey_number?: number }) => ({
+          ...player,
+          teamId: match.away_team,
+          teamName: match.away_team_detail?.name || 'Visitante',
+        }));
+        const roster = [...homeRoster, ...awayRoster];
+
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                  <Edit3 className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Editar evento</h2>
+                  <p className="text-sm text-gray-500">Corrige el minuto, el tipo o el jugador</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleUpdateEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Tipo de evento</label>
+                  <select
+                    value={editEventForm.event_type}
+                    onChange={(e) => setEditEventForm((prev) => ({
+                      ...prev,
+                      event_type: e.target.value as MatchEvent['event_type'],
+                    }))}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  >
+                    {eventTypeOptions(editingEvent.event_type).map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Minuto</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={editEventForm.minute}
+                    onChange={(e) => setEditEventForm((prev) => ({
+                      ...prev,
+                      minute: parseInt(e.target.value, 10) || 0,
+                    }))}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Jugador</label>
+                  <select
+                    value={editEventForm.player}
+                    onChange={(e) => {
+                      const playerId = e.target.value;
+                      const selected = roster.find((player) => player.id === playerId);
+                      setEditEventForm((prev) => ({
+                        ...prev,
+                        player: playerId,
+                        team: selected?.teamId || prev.team,
+                      }));
+                    }}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  >
+                    <option value="">Sin jugador</option>
+                    {homeRoster.length > 0 && (
+                      <optgroup label={match.home_team_detail?.name || 'Local'}>
+                        {homeRoster.map((player) => (
+                          <option key={player.id} value={player.id}>
+                            {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {awayRoster.length > 0 && (
+                      <optgroup label={match.away_team_detail?.name || 'Visitante'}>
+                        {awayRoster.map((player) => (
+                          <option key={player.id} value={player.id}>
+                            {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={updateEventMutation.isPending}
+                    className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
+                  >
+                    {updateEventMutation.isPending
+                      ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                      : 'Guardar cambios'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingEvent(null)}
+                    className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Modal: Confirmar eliminación de evento */}
+      {canManage && eventToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 rounded-3xl">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">¿Eliminar evento?</h2>
+                <p className="text-sm text-gray-500">Se quitará de la cronología y se ajustará el marcador.</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-100 rounded-3xl p-3 mb-6">
+              <p className="text-sm text-red-700 font-medium">
+                {EVENT_LABELS[eventToDelete.event_type] || eventToDelete.event_type_display}
+                {eventToDelete.minute != null ? ` · ${eventToDelete.minute}'` : ''}
+              </p>
+              <p className="text-xs text-red-500 mt-0.5">
+                {eventToDelete.player_name || 'Sin jugador'} · {eventToDelete.team_name}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteEvent}
+                disabled={deleteEventMutation.isPending}
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-3xl hover:bg-red-700 disabled:opacity-50 font-semibold transition-colors"
+              >
+                {deleteEventMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Eliminar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEventToDelete(null)}
+                className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal: Confirmar eliminación */}

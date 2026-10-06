@@ -20,6 +20,8 @@ import {
   finishMatch,
   updateScore,
   addMatchEvent,
+  updateMatchEvent,
+  deleteMatchEvent,
   recordInning,
   getPlayers,
   getPlayer,
@@ -419,6 +421,47 @@ export const useAddMatchEvent = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => addMatchEvent(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.id] });
+    },
+  });
+};
+
+export const useUpdateMatchEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      data,
+    }: {
+      matchId: string;
+      eventId: string;
+      data: {
+        event_type?: string;
+        minute?: number | null;
+        player?: string | null;
+        team?: string;
+      };
+    }) => updateMatchEvent(eventId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.matchId] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings'] });
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
+    },
+  });
+};
+
+export const useDeleteMatchEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ eventId }: { matchId: string; eventId: string }) =>
+      deleteMatchEvent(eventId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY, variables.matchId] });
+      queryClient.invalidateQueries({ queryKey: [MATCHES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'standings'] });
+      queryClient.invalidateQueries({ queryKey: [PLAYERS_KEY] });
     },
   });
 };

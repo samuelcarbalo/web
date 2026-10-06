@@ -235,6 +235,23 @@ export const addMatchEvent = async (id: string, data: {
   return response.data;
 };
 
+export const updateMatchEvent = async (
+  eventId: string,
+  data: {
+    event_type?: string;
+    minute?: number | null;
+    player?: string | null;
+    team?: string;
+  },
+) => {
+  const response = await api.patch(`/sports/match-events/${eventId}/`, data);
+  return response.data;
+};
+
+export const deleteMatchEvent = async (eventId: string) => {
+  await api.delete(`/sports/match-events/${eventId}/`);
+};
+
 export const recordInning = async (id: string, data: {
   number: number;
   half: 'top' | 'bottom';
