@@ -68,6 +68,8 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
 
   const isScheduled = match.status === 'scheduled';
   const isLive = match.status === 'live';
+  const isFinished = match.status === 'finished';
+  const canEditRoster = isOwner && (isScheduled || isFinished);
   const isSoftball = match.sport_type === 'softball';
 
   // === APIS ===
@@ -98,6 +100,10 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   const [substitutionMinute, setSubstitutionMinute] = useState<number>(0);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [removedPlayers, setRemovedPlayers] = useState<Record<string, string[]>>({
+    home: [],
+    away: [],
+  });
 
   const minStarters = isSoftball
     ? getSoftballStarterCount(lineupSize)
@@ -169,13 +175,17 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
   // Sincronizar seleccionados con lineup existente
   useEffect(() => {
     if (lineupData) {
-      const homeStarters = lineupData.home_team?.starters
-        ?.filter((p: LineupPlayer) => p.status === 'playing')
-        ?.map((p: LineupPlayer) => p.player) || [];
-      const awayStarters = lineupData.away_team?.starters
-        ?.filter((p: LineupPlayer) => p.status === 'playing')
-        ?.map((p: LineupPlayer) => p.player) || [];
-      setSelectedStarters({ home: homeStarters, away: awayStarters });
+      const onFieldIds = (block?: { starters?: LineupPlayer[]; substitutes?: LineupPlayer[] }) => {
+        const rows = [...(block?.starters || []), ...(block?.substitutes || [])];
+        return rows
+          .filter((player) => player.status === 'playing' || player.status === 'entered')
+          .map((player) => player.player);
+      };
+      setSelectedStarters({
+        home: onFieldIds(lineupData.home_team),
+        away: onFieldIds(lineupData.away_team),
+      });
+      setRemovedPlayers({ home: [], away: [] });
     }
   }, [lineupData]);
 
@@ -192,7 +202,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
     : match.away_team_detail?.name;
 
   const handleToggleStarter = (playerId: string) => {
-    if (!isOwner || !isScheduled) return;
+    if (!canEditRoster) return;
     setSelectedStarters((prev) => {
       const current = prev[activeTeam];
       const isSelected = current.includes(playerId);
@@ -201,26 +211,57 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       }
       return { ...prev, [activeTeam]: [...current, playerId] };
     });
+    setRemovedPlayers((prev) => ({
+      ...prev,
+      [activeTeam]: prev[activeTeam].filter((id) => id !== playerId),
+    }));
+    setSaveError(null);
+  };
+
+  const handleRemoveFromRoster = (playerId: string) => {
+    if (!canEditRoster) return;
+    setSelectedStarters((prev) => ({
+      ...prev,
+      [activeTeam]: prev[activeTeam].filter((id) => id !== playerId),
+    }));
+    setRemovedPlayers((prev) => ({
+      ...prev,
+      [activeTeam]: prev[activeTeam].includes(playerId)
+        ? prev[activeTeam]
+        : [...prev[activeTeam], playerId],
+    }));
     setSaveError(null);
   };
 
   const handleSaveLineup = () => {
-    const teamStarters = selectedStarters[activeTeam];
+    const teamStarters = selectedStarters[activeTeam].filter(
+      (playerId) => !removedPlayers[activeTeam].includes(playerId)
+    );
     if (teamStarters.length < minStarters) {
       setSaveError(
         `Debes alinear al menos ${minStarters} jugadores titulares para ${match.sport_type === 'football' ? 'fútbol' : 'este deporte'}.`
       );
       return;
     }
-    const playersData = teamStarters.map((playerId) => {
-      const player = activePlayers.find((p) => p.id === playerId);
+    const toPlayerPayload = (playerId: string, isStarter: boolean) => {
+      const player = activePlayers.find((item) => item.id === playerId);
+      const entry = allLineup.find((item) => item.player === playerId);
       return {
         player: playerId,
-        is_starter: true,
-        position: player?.position || '',
-        jersey_number: player?.jersey_number || 0,
+        is_starter: isStarter,
+        position: entry?.position || player?.position || '',
+        jersey_number: entry?.jersey_number || player?.jersey_number || 0,
       };
-    });
+    };
+    const playersData = teamStarters.map((playerId) => toPlayerPayload(playerId, true));
+    if (isFinished) {
+      const removed = new Set(removedPlayers[activeTeam]);
+      const starterIds = new Set(teamStarters);
+      allLineup.forEach((entry) => {
+        if (starterIds.has(entry.player) || removed.has(entry.player)) return;
+        playersData.push(toPlayerPayload(entry.player, false));
+      });
+    }
 
     setLineupMutation.mutate(
       {
@@ -233,7 +274,13 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
           setSaveError(null);
         },
         onError: (err: any) => {
-          setSaveError(err?.response?.data?.detail || 'Error al guardar la alineación');
+          const data = err?.response?.data;
+          const apiError = data?.error;
+          const detail =
+            (typeof apiError === 'string' && apiError) ||
+            (typeof data?.detail === 'string' && data.detail) ||
+            'Error al guardar la alineación';
+          setSaveError(detail);
         },
       }
     );
@@ -596,7 +643,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       )}
 
       {/* CONFIGURACIÓN INICIAL DE ALINEACIÓN */}
-      {isOwner && isScheduled && isSoftball && (
+      {canEditRoster && isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <SoftballLineupBuilder
             teamName={currentTeamName || 'Equipo'}
@@ -634,7 +681,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
         </div>
       )}
 
-      {isOwner && isScheduled && !isSoftball && (
+      {canEditRoster && !isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -655,45 +702,123 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
             </div>
           </div>
 
+          {isFinished && onFieldPlayers.filter((player) => !removedPlayers[activeTeam].includes(player.player)).length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                En cancha
+              </p>
+              <div className="space-y-2">
+                {onFieldPlayers
+                  .filter((player) => !removedPlayers[activeTeam].includes(player.player))
+                  .map((player: LineupPlayer) => {
+                    const playerInfo = getPlayerById(player.player);
+                    const isSelected = selectedStarters[activeTeam].includes(player.player);
+                    return (
+                      <div
+                        key={`field-${player.id}`}
+                        className={`flex items-center gap-3 p-3 rounded-3xl border transition-all ${
+                          isSelected
+                            ? 'border-green-300 bg-green-50'
+                            : 'border-gray-200 dark:border-gray-800'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStarter(player.player)}
+                          className="flex items-center gap-3 flex-1 text-left"
+                        >
+                          <div
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-700'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                          </div>
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm">
+                            {player.jersey_number || playerInfo?.jersey_number || '—'}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {player.player_name || playerInfo?.full_name || 'Jugador'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {isSelected ? 'Titular' : 'Pasa a suplente al guardar'}
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          title="Quitar de la convocatoria"
+                          aria-label="Quitar de la convocatoria"
+                          onClick={() => handleRemoveFromRoster(player.player)}
+                          className="p-2 rounded-2xl text-gray-400 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           {/* Jugadores ya en lineup (banca) */}
-          {benchPlayers.length > 0 && (
+          {benchPlayers.filter((player) => !removedPlayers[activeTeam].includes(player.player)).length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                 En banca
               </p>
               <div className="space-y-2">
-                {benchPlayers.map((player: LineupPlayer) => {
+                {benchPlayers
+                  .filter((player) => !removedPlayers[activeTeam].includes(player.player))
+                  .map((player: LineupPlayer) => {
                   const playerInfo = getPlayerById(player.player);
                   const isSelected = selectedStarters[activeTeam].includes(player.player);
 
                   return (
                     <div
                       key={player.id}
-                      onClick={() => handleToggleStarter(player.player)}
-                      className={`flex items-center gap-3 p-3 rounded-3xl border cursor-pointer transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-3xl border transition-all ${
                         isSelected
                           ? 'border-green-300 bg-green-50'
                           : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-700'
-                        }`}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStarter(player.player)}
+                        className="flex items-center gap-3 flex-1 text-left"
                       >
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 font-bold text-sm">
-                        {player.jersey_number || playerInfo?.jersey_number || '—'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {player.player_name || playerInfo?.full_name || 'Jugador'}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {player.position || playerInfo?.position || 'Jugador'}
-                        </p>
-                      </div>
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-700'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 font-bold text-sm">
+                          {player.jersey_number || playerInfo?.jersey_number || '—'}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {player.player_name || playerInfo?.full_name || 'Jugador'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {isSelected ? 'Titular' : 'Suplente'}
+                          </p>
+                        </div>
+                      </button>
+                      {isFinished && (
+                        <button
+                          type="button"
+                          title="Quitar de la convocatoria"
+                          aria-label="Quitar de la convocatoria"
+                          onClick={() => handleRemoveFromRoster(player.player)}
+                          className="p-2 rounded-2xl text-gray-400 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -778,7 +903,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
       )}
 
       {/* VISTA SOLO LECTURA */}
-      {(!isOwner || (!isScheduled && !isLive)) && isSoftball && (
+      {!canEditRoster && (!isOwner || !isLive) && isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <SoftballLineupBuilder
             teamName={currentTeamName || 'Equipo'}
@@ -793,7 +918,7 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
         </div>
       )}
 
-      {(!isOwner || (!isScheduled && !isLive)) && !isSoftball && (
+      {!canEditRoster && (!isOwner || !isLive) && !isSoftball && (
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -889,8 +1014,9 @@ const MatchLineupSection: React.FC<MatchLineupSectionProps> = ({
               titulares para <strong>{currentTeamName}</strong>.
             </p>
             <p className="text-xs text-gray-400 mb-6">
-              Una vez guardada, solo podrás hacer cambios mediante sustituciones durante el
-              partido.
+              {isFinished
+                ? 'Se actualizará la convocatoria de este partido finalizado. Los marcados quedan en cancha y el resto, como suplentes.'
+                : 'Una vez guardada, solo podrás hacer cambios mediante sustituciones durante el partido.'}
             </p>
             <div className="flex gap-2">
               <button
