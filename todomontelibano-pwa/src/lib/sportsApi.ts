@@ -235,6 +235,17 @@ export const addMatchEvent = async (id: string, data: {
   return response.data;
 };
 
+export const createTimelineEvent = async (id: string, data: {
+  event_type: string;
+  minute: number;
+  team: string;
+  player?: string;
+  description?: string;
+}) => {
+  const response = await api.post(`/sports/matches/${id}/events/`, data);
+  return response.data;
+};
+
 export const updateMatchEvent = async (
   eventId: string,
   data: {

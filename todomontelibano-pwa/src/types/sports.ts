@@ -526,6 +526,7 @@ export type MatchEventType =
   | 'penalty_missed'
   | 'assist'
   | 'expelled'
+  | 'foul'
   | 'other'
   | SoftballEventType;
 

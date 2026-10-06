@@ -23,6 +23,7 @@ import {
   History,
   Ban,
   ArrowUpRight,
+  Plus,
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
@@ -40,8 +41,10 @@ import {
   useStartMatch,
   useFinishMatch,
   useAddMatchEvent,
+  useCreateTimelineEvent,
   useUpdateMatchEvent,
   useDeleteMatchEvent,
+  useMatchLineup,
   usePlayers,
   useMatchPeriods,
   useStartPeriod,
@@ -75,6 +78,7 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   penalty_missed: <Ban className="w-4 h-4 text-red-400" />,
   assist: <Zap className="w-4 h-4 text-yellow-400" />,
   expelled: <Ban className="w-4 h-4 text-red-600" />,
+  foul: <AlertTriangle className="w-4 h-4 text-orange-500" />,
   other: <Activity className="w-4 h-4 text-gray-500" />,
 };
 
@@ -89,8 +93,21 @@ const EVENT_LABELS: Record<string, string> = {
   penalty_missed: 'Penal Fallado',
   assist: 'Asistencia',
   expelled: 'Expulsado',
+  foul: 'Falta',
   other: 'Otro',
 };
+
+const TIMELINE_EVENT_TYPES: Array<{ value: MatchEvent['event_type']; label: string }> = [
+  { value: 'goal', label: 'Gol' },
+  { value: 'yellow_card', label: 'Tarjeta Amarilla' },
+  { value: 'red_card', label: 'Tarjeta Roja' },
+  { value: 'substitution_in', label: 'Sustitución / Cambio' },
+  { value: 'foul', label: 'Falta' },
+  { value: 'own_goal', label: 'Autogol' },
+  { value: 'penalty_goal', label: 'Gol de Penal' },
+  { value: 'penalty_missed', label: 'Penal Fallado' },
+  { value: 'assist', label: 'Asistencia' },
+];
 
 const EDITABLE_EVENT_TYPES: Array<{ value: MatchEvent['event_type']; label: string }> = [
   { value: 'goal', label: 'Gol' },
@@ -121,6 +138,7 @@ const EVENT_COLORS: Record<string, string> = {
   penalty_missed: 'bg-red-50 border-red-200 text-red-800',
   assist: 'bg-yellow-50 border-yellow-200 text-yellow-800',
   expelled: 'bg-red-50 border-red-200 text-red-800',
+  foul: 'bg-orange-50 border-orange-200 text-orange-800',
   other: 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-100',
 };
 
@@ -219,6 +237,7 @@ const MatchDetailPage: React.FC = () => {
   const { data: sponsorshipAvailability } = useSponsorshipAvailability(match?.tournament_slug || '');
   const { data: homePlayersData } = usePlayers(match?.home_team || '');
   const { data: awayPlayersData } = usePlayers(match?.away_team || '');
+  const { data: lineupForEvents } = useMatchLineup(id || '');
   const isLive = match?.status === 'live';
   const { data: periods } = useMatchPeriods(id || '', isLive);
   const sportType = tournament?.sport_type || 'football';
@@ -228,6 +247,7 @@ const MatchDetailPage: React.FC = () => {
   const startMutation = useStartMatch();
   const finishMutation = useFinishMatch();
   const addEventMutation = useAddMatchEvent();
+  const createTimelineEventMutation = useCreateTimelineEvent();
   const updateEventMutation = useUpdateMatchEvent();
   const deleteEventMutation = useDeleteMatchEvent();
   const startPeriodMutation = useStartPeriod();
@@ -238,6 +258,14 @@ const MatchDetailPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showTimelineEventModal, setShowTimelineEventModal] = useState(false);
+  const [timelineEvent, setTimelineEvent] = useState({
+    event_type: 'goal' as MatchEvent['event_type'],
+    team: '',
+    player: '',
+    minute: 1,
+    description: '',
+  });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<MatchEvent | null>(null);
   const [eventToDelete, setEventToDelete] = useState<MatchEvent | null>(null);
@@ -572,6 +600,47 @@ const MatchDetailPage: React.FC = () => {
     addEventMutation.mutate(
       { id: match.id, data: eventData },
       { onSuccess: () => setShowEventModal(false) }
+    );
+  };
+
+  const openTimelineEventModal = () => {
+    if (!match) return;
+    setTimelineEvent({
+      event_type: 'goal',
+      team: match.home_team,
+      player: '',
+      minute: isLive ? Math.min(120, Math.max(1, matchTimer || 1)) : 1,
+      description: '',
+    });
+    setShowTimelineEventModal(true);
+  };
+
+  const handleCreateTimelineEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!match || !timelineEvent.team) return;
+    createTimelineEventMutation.mutate(
+      {
+        id: match.id,
+        data: {
+          event_type: timelineEvent.event_type,
+          minute: timelineEvent.minute,
+          team: timelineEvent.team,
+          player: timelineEvent.player || undefined,
+          description: timelineEvent.description.trim(),
+        },
+      },
+      {
+        onSuccess: () => setShowTimelineEventModal(false),
+        onError: (error) => {
+          console.error('Error al registrar el evento:', error);
+          const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
+          const detail =
+            (typeof data?.error === 'string' && data.error) ||
+            (typeof data?.detail === 'string' && data.detail) ||
+            'No se pudo registrar el evento.';
+          alert(detail);
+        },
+      },
     );
   };
 
@@ -1135,20 +1204,42 @@ const MatchDetailPage: React.FC = () => {
         )}
 
         {/* Timeline de eventos - REDISEÑADO */}
-        {match.events && match.events.length > 0 && (
+        {(canManage || (match.events && match.events.length > 0)) && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 flex-wrap">
               <div className="p-2 bg-purple-100 rounded-3xl">
                 <History className="w-4 h-4 text-purple-600" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cronología del partido</h3>
-              <span className="ml-auto text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full font-medium">
-                {match.events.length} eventos
-              </span>
+              <div className="ml-auto flex items-center gap-2">
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={openTimelineEventModal}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar Evento
+                  </button>
+                )}
+                <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full font-medium">
+                  {match.events?.length ?? 0} eventos
+                </span>
+              </div>
             </div>
 
+            {(match.events?.length ?? 0) === 0 && (
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <History className="w-8 h-8 text-gray-300" />
+                </div>
+                <h4 className="text-gray-900 dark:text-white font-semibold mb-1">Sin eventos registrados</h4>
+                <p className="text-gray-500 text-sm">Los goles, tarjetas y sustituciones aparecerán aquí.</p>
+              </div>
+            )}
+
             <div className="divide-y divide-gray-100">
-              {match.events.map((event: MatchEvent) => {
+              {(match.events ?? []).map((event: MatchEvent) => {
                 const playerYellowEvents = match.events.filter(
                   (e: MatchEvent) => e.player === event.player && e.event_type === 'yellow_card'
                 );
@@ -1236,7 +1327,7 @@ const MatchDetailPage: React.FC = () => {
           </div>
         )}
 
-        {match.events?.length === 0 && (isLive || isFinished) && (
+        {!canManage && match.events?.length === 0 && (isLive || isFinished) && (
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200/80 dark:border-gray-800/80 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <History className="w-8 h-8 text-gray-300" />
@@ -1608,6 +1699,153 @@ const MatchDetailPage: React.FC = () => {
           onClose={() => setShowSoftballEvent(false)}
         />
       )}
+
+      {/* Modal: Agregar evento a la cronología */}
+      {canManage && showTimelineEventModal && (() => {
+        const selectedTeamIsHome = timelineEvent.team === match.home_team;
+        const lineupBlock = selectedTeamIsHome ? lineupForEvents?.home_team : lineupForEvents?.away_team;
+        const convoked = [
+          ...(lineupBlock?.starters ?? []),
+          ...(lineupBlock?.substitutes ?? []),
+        ] as Array<{ player: string; player_name?: string; jersey_number?: number }>;
+        const rosterSource = selectedTeamIsHome ? homePlayersData?.results : awayPlayersData?.results;
+        const playerOptions = convoked.length > 0
+          ? convoked.map((row) => ({
+              id: row.player,
+              full_name: row.player_name || 'Jugador',
+              jersey_number: row.jersey_number,
+            }))
+          : (rosterSource ?? []).map((player: { id: string; full_name: string; jersey_number?: number }) => ({
+              id: player.id,
+              full_name: player.full_name,
+              jersey_number: player.jersey_number,
+            }));
+
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-3xl">
+                  <Plus className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Agregar evento</h2>
+                  <p className="text-sm text-gray-500">Se añade a la cronología del partido</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateTimelineEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Tipo de evento</label>
+                  <select
+                    value={timelineEvent.event_type}
+                    onChange={(e) => setTimelineEvent((prev) => ({
+                      ...prev,
+                      event_type: e.target.value as MatchEvent['event_type'],
+                    }))}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  >
+                    {TIMELINE_EVENT_TYPES.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <fieldset>
+                  <legend className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Equipo</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: match.home_team, name: match.home_team_detail?.name || 'Local' },
+                      { id: match.away_team, name: match.away_team_detail?.name || 'Visitante' },
+                    ].map((team) => (
+                      <label
+                        key={team.id}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl border cursor-pointer text-sm font-medium ${
+                          timelineEvent.team === team.id
+                            ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/30 text-violet-800 dark:text-violet-200'
+                            : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="timeline-event-team"
+                          value={team.id}
+                          checked={timelineEvent.team === team.id}
+                          onChange={() => setTimelineEvent((prev) => ({ ...prev, team: team.id, player: '' }))}
+                          className="text-violet-600"
+                        />
+                        <span className="truncate">{team.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Jugador</label>
+                  <select
+                    value={timelineEvent.player}
+                    onChange={(e) => setTimelineEvent((prev) => ({ ...prev, player: e.target.value }))}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  >
+                    <option value="">Sin jugador</option>
+                    {playerOptions.map((player) => (
+                      <option key={player.id} value={player.id}>
+                        {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Minuto</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={120}
+                    required
+                    value={timelineEvent.minute}
+                    onChange={(e) => setTimelineEvent((prev) => ({
+                      ...prev,
+                      minute: Math.min(120, Math.max(1, parseInt(e.target.value, 10) || 1)),
+                    }))}
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Observación / notas</label>
+                  <textarea
+                    value={timelineEvent.description}
+                    onChange={(e) => setTimelineEvent((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={2}
+                    placeholder='Ej. "Gol de tiro libre" o "Sustituye a Juan Pérez"'
+                    className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={createTimelineEventMutation.isPending || !timelineEvent.team}
+                    className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold transition-colors"
+                  >
+                    {createTimelineEventMutation.isPending
+                      ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                      : 'Guardar evento'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowTimelineEventModal(false)}
+                    className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-3xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Modal: Editar evento de la cronología */}
       {canManage && editingEvent && (() => {
