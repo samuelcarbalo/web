@@ -910,6 +910,16 @@ const MatchDetailPage: React.FC = () => {
                     {sportType === 'softball' && (
                       <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{scoreUnit}</p>
                     )}
+                    {canManage && isFinished && (
+                      <button
+                        type="button"
+                        onClick={openFinishModal}
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 text-xs font-semibold hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        Corregir marcador
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-1">
@@ -1210,7 +1220,12 @@ const MatchDetailPage: React.FC = () => {
               <div className="p-2 bg-purple-100 rounded-3xl">
                 <History className="w-4 h-4 text-purple-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cronología del partido</h3>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cronología del partido</h3>
+                {canManage && isFinished && (
+                  <p className="text-xs text-gray-500">Puedes corregir goles y tarjetas de este partido finalizado.</p>
+                )}
+              </div>
               <div className="ml-auto flex items-center gap-2">
                 {canManage && (
                   <button
@@ -1448,9 +1463,13 @@ const MatchDetailPage: React.FC = () => {
                 <Trophy className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Finalizar partido</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {isFinished ? 'Corregir marcador' : 'Finalizar partido'}
+                </h2>
                 <p className="text-sm text-gray-500">
-                  {match.home_team_detail?.name} vs {match.away_team_detail?.name}
+                  {isFinished
+                    ? 'El partido sigue finalizado. Solo cambia el resultado.'
+                    : `${match.home_team_detail?.name} vs ${match.away_team_detail?.name}`}
                 </p>
               </div>
             </div>
@@ -1504,7 +1523,7 @@ const MatchDetailPage: React.FC = () => {
                 className="flex-1 py-2.5 bg-green-600 text-white rounded-3xl hover:bg-green-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 {finishMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                Confirmar resultado
+                {isFinished ? 'Guardar marcador' : 'Confirmar resultado'}
               </button>
               <button
                 onClick={() => setShowFinishModal(false)}
@@ -1849,17 +1868,38 @@ const MatchDetailPage: React.FC = () => {
 
       {/* Modal: Editar evento de la cronología */}
       {canManage && editingEvent && (() => {
-        const homeRoster = (homePlayersData?.results ?? []).map((player: { id: string; full_name: string; jersey_number?: number }) => ({
-          ...player,
-          teamId: match.home_team,
-          teamName: match.home_team_detail?.name || 'Local',
-        }));
-        const awayRoster = (awayPlayersData?.results ?? []).map((player: { id: string; full_name: string; jersey_number?: number }) => ({
-          ...player,
-          teamId: match.away_team,
-          teamName: match.away_team_detail?.name || 'Visitante',
-        }));
-        const roster = [...homeRoster, ...awayRoster];
+        const selectedTeamIsHome = editEventForm.team === match.home_team;
+        const lineupBlock = selectedTeamIsHome ? lineupForEvents?.home_team : lineupForEvents?.away_team;
+        const convoked = [
+          ...(lineupBlock?.starters ?? []),
+          ...(lineupBlock?.substitutes ?? []),
+        ] as Array<{ player: string; player_name?: string; jersey_number?: number }>;
+        const rosterSource = selectedTeamIsHome ? homePlayersData?.results : awayPlayersData?.results;
+        const playerOptions = [
+          ...convoked.map((row) => ({
+            id: row.player,
+            full_name: row.player_name || 'Jugador',
+            jersey_number: row.jersey_number,
+          })),
+          ...(rosterSource ?? [])
+            .filter((player: { id: string }) => !convoked.some((row) => row.player === player.id))
+            .map((player: { id: string; full_name: string; jersey_number?: number }) => ({
+              id: player.id,
+              full_name: player.full_name,
+              jersey_number: player.jersey_number,
+            })),
+        ];
+        if (
+          editingEvent.player
+          && editingEvent.team === editEventForm.team
+          && !playerOptions.some((player) => player.id === editingEvent.player)
+        ) {
+          playerOptions.unshift({
+            id: editingEvent.player,
+            full_name: editingEvent.player_name || 'Jugador actual',
+            jersey_number: undefined,
+          });
+        }
 
         return (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1870,7 +1910,11 @@ const MatchDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white">Editar evento</h2>
-                  <p className="text-sm text-gray-500">Corrige el minuto, el tipo o el jugador</p>
+                  <p className="text-sm text-gray-500">
+                    {isFinished
+                      ? 'Corrige el gol o la tarjeta. El marcador se actualiza al guardar.'
+                      : 'Corrige el minuto, el tipo, el equipo o el jugador'}
+                  </p>
                 </div>
               </div>
 
@@ -1891,6 +1935,39 @@ const MatchDetailPage: React.FC = () => {
                   </select>
                 </div>
 
+                <fieldset>
+                  <legend className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Equipo</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: match.home_team, name: match.home_team_detail?.name || 'Local' },
+                      { id: match.away_team, name: match.away_team_detail?.name || 'Visitante' },
+                    ].map((team) => (
+                      <label
+                        key={team.id}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl border cursor-pointer text-sm font-medium ${
+                          editEventForm.team === team.id
+                            ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/30 text-violet-800 dark:text-violet-200'
+                            : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="edit-event-team"
+                          value={team.id}
+                          checked={editEventForm.team === team.id}
+                          onChange={() => setEditEventForm((prev) => ({
+                            ...prev,
+                            team: team.id,
+                            player: prev.team === team.id ? prev.player : '',
+                          }))}
+                          className="text-violet-600"
+                        />
+                        <span className="truncate">{team.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Minuto</label>
                   <input
@@ -1910,36 +1987,18 @@ const MatchDetailPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Jugador</label>
                   <select
                     value={editEventForm.player}
-                    onChange={(e) => {
-                      const playerId = e.target.value;
-                      const selected = roster.find((player) => player.id === playerId);
-                      setEditEventForm((prev) => ({
-                        ...prev,
-                        player: playerId,
-                        team: selected?.teamId || prev.team,
-                      }));
-                    }}
+                    onChange={(e) => setEditEventForm((prev) => ({
+                      ...prev,
+                      player: e.target.value,
+                    }))}
                     className="w-full rounded-3xl border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-green-500/20 px-4 py-2.5 bg-white dark:bg-gray-900"
                   >
                     <option value="">Sin jugador</option>
-                    {homeRoster.length > 0 && (
-                      <optgroup label={match.home_team_detail?.name || 'Local'}>
-                        {homeRoster.map((player) => (
-                          <option key={player.id} value={player.id}>
-                            {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {awayRoster.length > 0 && (
-                      <optgroup label={match.away_team_detail?.name || 'Visitante'}>
-                        {awayRoster.map((player) => (
-                          <option key={player.id} value={player.id}>
-                            {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
+                    {playerOptions.map((player) => (
+                      <option key={player.id} value={player.id}>
+                        {player.jersey_number != null ? `#${player.jersey_number} ` : ''}{player.full_name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
