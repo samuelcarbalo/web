@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getTournaments, 
@@ -60,7 +61,7 @@ import {
   getTeamPlayers,
   importTeamRoster,
 } from '../lib/sportsApi';
-import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData, ConfigureSecondPhaseData } from '../types/sports';
+import type { CreateTournamentData, CreateTeamData, CreateMatchData, StandingsScope, AdvancePhaseData, CreatePlayerSuspensionData, ConfigureSecondPhaseData, TournamentStructure } from '../types/sports';
 
 const TOURNAMENTS_KEY = 'tournaments';
 const TEAMS_KEY = 'teams';
@@ -607,13 +608,77 @@ export const usePlayerStats = (playerId: string) => {
 
 // ============ TABLA DE POSICIONES ============
 
+export const STANDINGS_STALE_TIME_MS = 1000 * 60 * 5;
+const STANDINGS_GC_TIME_MS = 1000 * 60 * 30;
+
+export interface StandingsTab {
+  id: string;
+  label: string;
+  phase?: string;
+  group?: string;
+}
+
+/** Pestañas de la tabla: General, cada grupo y cada fase de playoff. */
+export function listStandingsTabs(structure?: TournamentStructure): StandingsTab[] {
+  const tabs: StandingsTab[] = [{ id: 'general', label: 'General' }];
+  if (!structure || structure.structure_mode !== 'structured') return tabs;
+
+  for (const phase of structure.phases) {
+    if (phase.phase_type === 'knockout' || phase.groups.length === 0) {
+      tabs.push({ id: `phase:${phase.slug}`, label: phase.name, phase: phase.slug });
+      continue;
+    }
+    for (const group of phase.groups) {
+      tabs.push({
+        id: `group:${phase.slug}:${group.slug}`,
+        label: group.name,
+        phase: phase.slug,
+        group: group.slug,
+      });
+    }
+  }
+  return tabs;
+}
+
+export function tournamentStandingsQueryOptions(slug: string, scope?: StandingsScope) {
+  return {
+    queryKey: [TOURNAMENTS_KEY, 'standings', slug, scope?.phase, scope?.group] as const,
+    queryFn: ({ signal }: { signal?: AbortSignal }) => getTournamentStandings(slug, scope, signal),
+    staleTime: STANDINGS_STALE_TIME_MS,
+    gcTime: STANDINGS_GC_TIME_MS,
+  };
+}
+
 export const useTournamentStandings = (slug: string, scope?: StandingsScope) => {
   return useQuery({
-    queryKey: [TOURNAMENTS_KEY, 'standings', slug, scope?.phase, scope?.group],
-    queryFn: () => getTournamentStandings(slug, scope),
+    ...tournamentStandingsQueryOptions(slug, scope),
     enabled: !!slug,
   });
 };
+
+/** Precarga General, grupos y fases. Al salir o cambiar de torneo aborta lo que siga en vuelo. */
+export function usePrefetchTournamentStandings(
+  slug: string,
+  structure: TournamentStructure | undefined,
+) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!slug) return;
+    return () => {
+      void queryClient.cancelQueries({ queryKey: [TOURNAMENTS_KEY, 'standings', slug] });
+    };
+  }, [slug, queryClient]);
+
+  useEffect(() => {
+    if (!slug) return;
+    for (const tab of listStandingsTabs(structure)) {
+      void queryClient
+        .prefetchQuery(tournamentStandingsQueryOptions(slug, { phase: tab.phase, group: tab.group }))
+        .catch(() => undefined);
+    }
+  }, [slug, structure, queryClient]);
+}
 
 export const useFormatTemplates = (sportType?: string) => {
   return useQuery({

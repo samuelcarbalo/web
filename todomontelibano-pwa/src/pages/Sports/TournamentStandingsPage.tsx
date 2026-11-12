@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 
-import { useTournament, useTournamentStandings, useTournamentStructure } from '../../hooks/useSports';
+import { listStandingsTabs, usePrefetchTournamentStandings, useTournament, useTournamentStandings, useTournamentStructure } from '../../hooks/useSports';
 
 import { Trophy, Crown } from 'lucide-react';
 
@@ -100,6 +100,56 @@ const StatCell: React.FC<{ value: number | string; highlight?: boolean; color?: 
 
 
 
+const StandingsSkeleton: React.FC = () => (
+  <div aria-busy="true" aria-live="polite">
+    {Array.from({ length: 6 }, (_, i) => (
+      <div key={i} className="px-3 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+      </div>
+    ))}
+  </div>
+);
+
+const StandingsMessage: React.FC<{ title: string; text: string }> = ({ title, text }) => (
+  <div className="px-6 py-12 text-center">
+    <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+      <Trophy className="w-8 h-8 text-gray-300" />
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
+    <p className="text-gray-500 max-w-sm mx-auto">{text}</p>
+  </div>
+);
+
+const StandingsColumnHeader: React.FC<{ isSoftball: boolean; statCols: number }> = ({ isSoftball, statCols }) => (
+  <div
+    className="grid gap-x-2 gap-y-0 px-3 py-3 bg-gray-50/80 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-[10px] font-semibold text-gray-500 uppercase tracking-wide items-center min-w-[520px]"
+    style={{
+      gridTemplateColumns: `2.5rem minmax(9rem, 1fr) repeat(${statCols}, 2.25rem) 2.5rem`,
+    }}
+  >
+    <div className="text-center">#</div>
+    <div>Equipo</div>
+    <div className="text-center">PJ</div>
+    <div className="text-center">G</div>
+    {!isSoftball && <div className="text-center">E</div>}
+    <div className="text-center">P</div>
+    {isSoftball ? (
+      <>
+        <div className="text-center">CR</div>
+        <div className="text-center">CC</div>
+        <div className="text-center">AVG</div>
+      </>
+    ) : (
+      <>
+        <div className="text-center">GF</div>
+        <div className="text-center">GC</div>
+        <div className="text-center">DG</div>
+      </>
+    )}
+    <div className="text-center">Pts</div>
+  </div>
+);
+
 const TeamAvatar: React.FC<{ team: TeamStanding['team'] }> = ({ team }) =>
 
   team.logo ? (
@@ -144,13 +194,16 @@ const TournamentStandingsPage: React.FC = () => {
 
   const { data: structure } = useTournamentStructure(slug || '');
 
-  const { data: standings, isLoading: standingsLoading } = useTournamentStandings(slug || '', {
-
+  const {
+    data: standings,
+    isLoading: standingsLoading,
+    isError: standingsError,
+  } = useTournamentStandings(slug || '', {
     phase: phaseSlug,
-
     group: groupSlug,
-
   });
+
+  usePrefetchTournamentStandings(slug || '', structure);
 
   const { data: sponsorshipAvailability } = useSponsorshipAvailability(slug || '');
 
@@ -220,9 +273,23 @@ const TournamentStandingsPage: React.FC = () => {
 
   const statCols = isSoftball ? 6 : 7;
 
+  const tabs = useMemo(() => listStandingsTabs(structure), [structure]);
+
+  const rows = standings ?? [];
+
+  const showStandingsSkeleton = standings === undefined && standingsLoading;
+
+  const showStandingsError = standingsError && rows.length === 0;
+
+  const showStandingsEmpty = !showStandingsSkeleton && !showStandingsError && rows.length === 0;
+
+  const emptyText = scopeLabel
+    ? `No hay resultados registrados para ${scopeLabel}.`
+    : 'Las posiciones del torneo aún no han sido generadas o no hay suficientes partidos jugados.';
 
 
-  if (tournamentLoading || standingsLoading) {
+
+  if (tournamentLoading && !tournament) {
 
     return (
 
@@ -243,42 +310,6 @@ const TournamentStandingsPage: React.FC = () => {
             ))}
 
           </div>
-
-        </div>
-
-      </div>
-
-    );
-
-  }
-
-
-
-  if (!standings || standings.length === 0) {
-
-    return (
-
-      <div className="max-w-5xl mx-auto px-4 py-12">
-
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 p-12 text-center">
-
-          <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
-
-            <Trophy className="w-10 h-10 text-gray-300" />
-
-          </div>
-
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No hay datos disponibles</h3>
-
-          <p className="text-gray-500 max-w-sm mx-auto">
-
-            {scopeLabel
-
-              ? `No hay resultados registrados para ${scopeLabel}.`
-
-              : 'Las posiciones del torneo aún no han sido generadas o no hay suficientes partidos jugados.'}
-
-          </p>
 
         </div>
 
@@ -354,96 +385,26 @@ const TournamentStandingsPage: React.FC = () => {
 
 
 
-      {isStructured && structure && structure.phases.length > 0 && (
-
+      {tabs.length > 1 && (
         <div className="mb-6 flex flex-wrap gap-2">
-
-          <button
-
-            type="button"
-
-            onClick={() => handleScopeChange()}
-
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-
-              !phaseSlug
-
-                ? 'bg-green-600 text-white border-green-600'
-
-                : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'
-
-            }`}
-
-          >
-
-            General
-
-          </button>
-
-          {structure.phases.map((phase) =>
-
-            phase.phase_type === 'knockout' || phase.groups.length === 0 ? (
-
+          {tabs.map((tab) => {
+            const active = (phaseSlug || undefined) === tab.phase && (groupSlug || undefined) === tab.group;
+            return (
               <button
-
-                key={phase.id}
-
+                key={tab.id}
                 type="button"
-
-                onClick={() => handleScopeChange(phase.slug)}
-
+                onClick={() => handleScopeChange(tab.phase, tab.group)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-
-                  phaseSlug === phase.slug && !groupSlug
-
+                  active
                     ? 'bg-green-600 text-white border-green-600'
-
                     : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'
-
                 }`}
-
               >
-
-                {phase.name}
-
+                {tab.label}
               </button>
-
-            ) : (
-
-              phase.groups.map((group) => (
-
-                <button
-
-                  key={group.id}
-
-                  type="button"
-
-                  onClick={() => handleScopeChange(phase.slug, group.slug)}
-
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-
-                    phaseSlug === phase.slug && groupSlug === group.slug
-
-                      ? 'bg-green-600 text-white border-green-600'
-
-                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'
-
-                  }`}
-
-                >
-
-                  {group.name}
-
-                </button>
-
-              ))
-
-            )
-
-          )}
-
+            );
+          })}
         </div>
-
       )}
 
 
@@ -520,13 +481,16 @@ const TournamentStandingsPage: React.FC = () => {
 
         </div>
 
-
-
-        {standings.map((team: TeamStanding) => {
+        {showStandingsSkeleton && <StandingsSkeleton />}
+        {showStandingsError && (
+          <StandingsMessage title="No se pudo cargar" text="No se pudo cargar esta tabla. Intenta de nuevo." />
+        )}
+        {showStandingsEmpty && <StandingsMessage title="No hay datos disponibles" text={emptyText} />}
+        {!showStandingsSkeleton && !showStandingsError && rows.map((team: TeamStanding) => {
 
           const isChampion = champion?.teamId === team.team.id;
 
-          const isLeader = isScopeLeader(team.team.id, standings, champion?.teamId ?? null);
+          const isLeader = isScopeLeader(team.team.id, rows, champion?.teamId ?? null);
 
 
 
@@ -700,13 +664,24 @@ const TournamentStandingsPage: React.FC = () => {
 
       {/* Mobile */}
 
-      <div className="md:hidden space-y-3">
-
-        {standings.map((team: TeamStanding) => {
+      <div className="md:hidden">
+        {(showStandingsSkeleton || showStandingsError || showStandingsEmpty) && (
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+            <StandingsColumnHeader isSoftball={!!isSoftball} statCols={statCols} />
+            {showStandingsSkeleton && <StandingsSkeleton />}
+            {showStandingsError && (
+              <StandingsMessage title="No se pudo cargar" text="No se pudo cargar esta tabla. Intenta de nuevo." />
+            )}
+            {showStandingsEmpty && <StandingsMessage title="No hay datos disponibles" text={emptyText} />}
+          </div>
+        )}
+        {!showStandingsSkeleton && !showStandingsError && (
+          <div className="space-y-3">
+        {rows.map((team: TeamStanding) => {
 
           const isChampion = champion?.teamId === team.team.id;
 
-          const isLeader = isScopeLeader(team.team.id, standings, champion?.teamId ?? null);
+          const isLeader = isScopeLeader(team.team.id, rows, champion?.teamId ?? null);
 
 
 
@@ -869,7 +844,8 @@ const TournamentStandingsPage: React.FC = () => {
           );
 
         })}
-
+          </div>
+        )}
       </div>
 
 
@@ -880,7 +856,7 @@ const TournamentStandingsPage: React.FC = () => {
 
           <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Equipos</p>
 
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{standings.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{showStandingsSkeleton ? '—' : rows.length}</p>
 
         </div>
 
@@ -890,7 +866,7 @@ const TournamentStandingsPage: React.FC = () => {
 
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
 
-            {standings.reduce((acc: number, t: TeamStanding) => acc + t.played, 0) / 2}
+            {showStandingsSkeleton ? '—' : rows.reduce((acc: number, t: TeamStanding) => acc + t.played, 0) / 2}
 
           </p>
 
