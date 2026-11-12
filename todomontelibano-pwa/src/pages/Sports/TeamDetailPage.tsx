@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-  ChevronLeft,
   Edit3,
   Users,
   Trophy,
@@ -18,6 +17,7 @@ import { useTournament, useTeam, usePlayers } from '../../hooks/useSports';
 import { usePermissions, canEditTeam, isSportsSuperAdmin } from '../../hooks/usePermissions';
 import { sportTypeLabels } from '../../types/sports';
 import EditTeamModal from '../../components/Sports/EditTeamModal';
+import BackToTournamentLink from '../../components/Sports/BackToTournamentLink';
 
 const TeamDetailPage: React.FC = () => {
   const { tournamentSlug, teamSlug } = useParams<{ tournamentSlug: string; teamSlug: string }>();
@@ -41,8 +41,13 @@ const TeamDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900/50">
+        <div className="page-container pt-6">
+          <BackToTournamentLink tournamentSlug={tournamentSlug} className="mb-4" />
+        </div>
+        <div className="flex items-center justify-center py-24">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+        </div>
       </div>
     );
   }
@@ -52,9 +57,7 @@ const TeamDetailPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Equipo no encontrado</h2>
-          <Link to={`/sports/tournaments/${tournamentSlug}`} className="text-green-600 mt-4 inline-block">
-            ← Volver al torneo
-          </Link>
+          <BackToTournamentLink tournamentSlug={tournamentSlug} className="mt-4" />
         </div>
       </div>
     );
@@ -76,13 +79,7 @@ const TeamDetailPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         
         <div className="absolute bottom-0 left-0 right-0 page-container py-6">
-          <Link 
-            to={`/sports/tournaments/${tournamentSlug}`}
-            className="inline-flex items-center text-white/80 hover:text-white mb-3 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Volver al torneo
-          </Link>
+          <BackToTournamentLink tournamentSlug={tournamentSlug} tone="onDark" className="mb-3" />
           <div className="flex items-center gap-4">
             {team.logo ? (
               <img 

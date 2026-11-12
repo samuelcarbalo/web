@@ -33,6 +33,7 @@ import {
   toBogotaInputValue,
 } from '../../lib/bogotaTime';
 import TeamName from '../../components/Sports/TeamName';
+import BackToTournamentLink from '../../components/Sports/BackToTournamentLink';
 import {
   useMatch,
   useTournament,
@@ -707,7 +708,7 @@ const MatchDetailPage: React.FC = () => {
   const handleDelete = () => {
     if (!match) return;
     deleteMutation.mutate(match.id, {
-      onSuccess: () => navigate(`/sports/tournaments/${match.tournament}`),
+      onSuccess: () => navigate(`/deportes/torneos/${match.tournament_slug}`),
     });
   };
 
@@ -786,15 +787,10 @@ const MatchDetailPage: React.FC = () => {
       <div className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/80 dark:border-gray-800/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
-            <Link
-              to={`/sports/tournaments/${match.tournament_slug}`}
-              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors text-sm font-medium"
-            >
-              <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-3xl hover:bg-gray-200 transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-              </div>
-              <span className="hidden sm:inline">{match.tournament_name}</span>
-            </Link>
+            <BackToTournamentLink
+              tournamentSlug={match.tournament_slug}
+              label={match.tournament_name}
+            />
 
             {/* Status pill en header */}
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${statusConfig.bg} ${statusConfig.text}`}>

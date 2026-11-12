@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  ChevronLeft,
   Layers,
   Users,
   Calendar,
@@ -36,6 +35,7 @@ import type {
   TournamentPhase,
 } from '../../types/sports';
 import { getMatchAwayScore, getMatchHomeScore } from '../../lib/matchScoring';
+import BackToTournamentLink from '../../components/Sports/BackToTournamentLink';
 
 const TournamentStructurePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -237,8 +237,11 @@ const TournamentStructurePage: React.FC = () => {
 
   if (loadingTournament || loadingStructure) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+      <div className="max-w-4xl mx-auto px-4 pt-8">
+        <BackToTournamentLink tournamentSlug={slug} className="mb-4" />
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        </div>
       </div>
     );
   }
@@ -248,9 +251,7 @@ const TournamentStructurePage: React.FC = () => {
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <p className="text-red-600 mb-4">No se pudo cargar la estructura del torneo.</p>
         <p className="text-sm text-gray-500 mb-6">Verifica que el backend esté activo en el puerto 8000.</p>
-        <Link to={`/deportes/tournaments/${slug}`} className="btn-primary inline-flex">
-          Volver al torneo
-        </Link>
+        <BackToTournamentLink tournamentSlug={slug} className="justify-center" />
       </div>
     );
   }
@@ -268,22 +269,14 @@ const TournamentStructurePage: React.FC = () => {
         <p className="text-gray-500 mb-6">
           Este torneo no usa fases ni cuadrangulares. Crea partidos manualmente desde el calendario.
         </p>
-        <Link to={`/deportes/tournaments/${slug}`} className="btn-primary inline-flex">
-          Volver al torneo
-        </Link>
+        <BackToTournamentLink tournamentSlug={slug} className="justify-center" />
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
-      <Link
-        to={`/deportes/tournaments/${slug}`}
-        className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 text-sm"
-      >
-        <ChevronLeft className="w-4 h-4 mr-1" />
-        {tournament?.name}
-      </Link>
+      <BackToTournamentLink tournamentSlug={slug || tournament?.slug} className="mb-4" />
 
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 bg-violet-100 dark:bg-violet-950/40 rounded-xl">
