@@ -14,6 +14,8 @@ import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 
 import { isScopeLeader, resolveTournamentChampion } from '../../lib/tournamentChampion';
 
+import BackToTournamentLink from '../../components/Sports/BackToTournamentLink';
+
 
 
 import type { TeamStanding } from '../../types/sports';
@@ -295,6 +297,8 @@ const TournamentStandingsPage: React.FC = () => {
 
       <div className="max-w-5xl mx-auto px-4 py-12">
 
+        <BackToTournamentLink tournamentSlug={slug} className="mb-4" />
+
         <div className="animate-pulse space-y-4">
 
           <div className="h-8 bg-gray-200 rounded w-1/3" />
@@ -326,6 +330,8 @@ const TournamentStandingsPage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 py-8">
 
       <div className="mb-6">
+
+        <BackToTournamentLink tournamentSlug={slug || tournament?.slug} className="mb-4" />
 
         <div className="flex items-center gap-3 mb-2">
 

@@ -4,7 +4,8 @@ import { useTournament, useTournamentPlayerStats } from '../../hooks/useSports';
 import { useSponsorshipAvailability } from '../../hooks/useAdvertising';
 import SponsorshipAvailabilityBanner from '../../components/Advertising/SponsorshipAvailabilityBanner';
 import TournamentAdSlot from '../../components/Advertising/TournamentAdSlot';
-import { Trophy, Loader2, ChevronLeft, Goal, Shield, AlertTriangle, Zap, Home } from 'lucide-react';
+import { Trophy, Loader2, Goal, Shield, AlertTriangle, Zap, Home } from 'lucide-react';
+import BackToTournamentLink from '../../components/Sports/BackToTournamentLink';
 
 const TournamentPlayerStatsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,8 +16,13 @@ const TournamentPlayerStatsPage: React.FC = () => {
 
   if (tournamentLoading || statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+      <div className="min-h-screen">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <BackToTournamentLink tournamentSlug={slug} className="mb-4" />
+        </div>
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+        </div>
       </div>
     );
   }
@@ -131,13 +137,7 @@ const TournamentPlayerStatsPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link
-            to={`/sports/tournaments/${slug}`}
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Volver al torneo
-          </Link>
+          <BackToTournamentLink tournamentSlug={slug} />
         </div>
       </div>
 
