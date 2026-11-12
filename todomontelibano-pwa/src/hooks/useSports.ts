@@ -635,8 +635,15 @@ export const useTournamentStructure = (slug: string) => {
 export const useAssignGroupTeams = (slug: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ groupId, teamIds }: { groupId: string; teamIds: string[] }) =>
-      assignGroupTeams(slug, groupId, teamIds),
+    mutationFn: ({
+      groupId,
+      teamIds,
+      maxTeams,
+    }: {
+      groupId: string;
+      teamIds: string[];
+      maxTeams?: number;
+    }) => assignGroupTeams(slug, groupId, teamIds, maxTeams),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TOURNAMENTS_KEY, 'structure', slug] });
     },

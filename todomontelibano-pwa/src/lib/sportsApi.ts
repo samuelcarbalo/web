@@ -410,10 +410,19 @@ export const getTournamentStructure = async (slug: string) => {
   return response.data;
 };
 
-export const assignGroupTeams = async (slug: string, groupId: string, teamIds: string[]) => {
+export const assignGroupTeams = async (
+  slug: string,
+  groupId: string,
+  teamIds: string[],
+  maxTeams?: number,
+) => {
   const response = await api.post<CompetitionGroup>(
     `/sports/tournaments/${slug}/assign_group_teams/`,
-    { group_id: groupId, team_ids: teamIds }
+    {
+      group_id: groupId,
+      team_ids: teamIds,
+      ...(maxTeams != null ? { max_teams: maxTeams } : {}),
+    },
   );
   return response.data;
 };
