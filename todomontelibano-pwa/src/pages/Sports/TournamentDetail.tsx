@@ -171,23 +171,23 @@ const TournamentDetail: React.FC = () => {
     <>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50">
         {/* Banner Hero */}
-        <div className="relative h-72 md:h-80 bg-gray-900 overflow-hidden">
+        <div className="relative h-72 md:h-80 bg-gray-950 overflow-hidden">
           {tournament.banner ? (
-            <img 
-              src={tournament.banner} 
-              alt={tournament.name}
-              className="w-full h-full object-cover opacity-50"
+            <img
+              src={tournament.banner}
+              alt=""
+              className="absolute inset-0 z-0 w-full h-full object-cover"
               crossOrigin="anonymous"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           ) : (
-            <div className={`w-full h-full ${sportTypeColors[tournament.sport_type]} opacity-80`} />
+            <div className={`absolute inset-0 z-0 ${sportTypeColors[tournament.sport_type]} opacity-80`} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/70 to-transparent z-0" />
 
-          <div className="absolute bottom-0 left-0 right-0 page-container pb-8 pt-20">
+          <div className="relative z-10 flex h-full flex-col justify-end page-container pb-8 pt-20">
             <Link 
               to="/sports" 
               className="inline-flex items-center text-white/70 hover:text-white mb-3 transition-colors text-sm"
@@ -215,7 +215,7 @@ const TournamentDetail: React.FC = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
                   {tournament.name}
                 </h1>
-                <p className="text-white/60 mt-2 text-sm md:text-base flex items-center gap-1.5">
+                <p className="text-white/85 mt-2 text-sm md:text-base flex items-center gap-1.5">
                   <MapPin className="w-4 h-4" />
                   {tournament.organization_name || 'Organización'}
                 </p>

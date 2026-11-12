@@ -18,7 +18,6 @@ import {
   Activity,
   Shield,
   Star,
-  Zap,
   Loader2,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -210,10 +209,12 @@ const TournamentsList: React.FC = () => {
 
   const [nearbyDirection, setNearbyDirection] = useState<NearbyDirection>('upcoming');
   const [nearbyOffset, setNearbyOffset] = useState(0);
+  const [revealNearby, setRevealNearby] = useState(false);
 
   useEffect(() => {
     setNearbyDirection('upcoming');
     setNearbyOffset(0);
+    setRevealNearby(false);
   }, [offset]);
 
   const {
@@ -225,15 +226,15 @@ const TournamentsList: React.FC = () => {
     currentDay,
     nearbyDirection,
     nearbyOffset,
-    isMatchesTab && dayIsEmpty
+    isMatchesTab && dayIsEmpty && revealNearby
   );
   const nearbyMatches: Match[] = nearbyData?.results ?? [];
   const nearbyHasMore = Boolean(nearbyData?.has_more);
-  const nearbyCanGoBack = nearbyOffset > 0;
 
   const startNearby = (direction: NearbyDirection) => {
     setNearbyDirection(direction);
     setNearbyOffset(0);
+    setRevealNearby(true);
   };
 
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -743,95 +744,66 @@ const TournamentsList: React.FC = () => {
                 ))}
               </div>
             ) : dayMatches.length === 0 ? (
-              <div className="space-y-4">
-                <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-3xl border border-emerald-200/80 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/20 px-4 py-3">
-                      <div className="flex items-start gap-3">
-                        <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {isToday ? 'No hay partidos hoy.' : `No hay partidos el ${dateLabel}.`}{' '}
-                          {nearbyDirection === 'upcoming'
-                            ? 'Próximos encuentros programados:'
-                            : 'Partidos anteriores más recientes:'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => startNearby(nearbyDirection === 'upcoming' ? 'past' : 'upcoming')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          {nearbyDirection === 'upcoming' ? (
-                            <>
-                              <ChevronLeft className="w-3.5 h-3.5" />
-                              Ver anteriores
-                            </>
-                          ) : (
-                            <>
-                              Ver próximos
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </>
-                          )}
-                        </button>
-                        {offset !== 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setOffset(0)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
-                          >
-                            <Zap className="w-3.5 h-3.5" />
-                            Ir a hoy
-                          </button>
-                        )}
-                      </div>
-                    </div>
+              <div className="mx-auto max-w-md">
+                <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-8 text-center shadow-sm">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40">
+                    <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    {isToday ? 'No hay partidos hoy' : `No hay partidos el ${dateLabel}`}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Esta fecha no tiene encuentros. Puedes ver lo que viene a continuación.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => startNearby('upcoming')}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
+                  >
+                    Ver próximos partidos
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
 
+                {revealNearby && (
+                  <div className="mt-4 space-y-3">
                     {loadingNearby || fetchingNearby ? (
                       <div className="space-y-3">
-                        {[...Array(3)].map((_, i) => (
+                        {[...Array(2)].map((_, i) => (
                           <MatchCardSkeleton key={i} />
                         ))}
                       </div>
                     ) : nearbyError ? (
-                      <div className="rounded-3xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-6 text-center text-sm text-red-700 dark:text-red-300">
+                      <div className="rounded-3xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-4 text-center text-sm text-red-700 dark:text-red-300">
                         No se pudieron cargar los partidos. Intenta de nuevo.
                       </div>
                     ) : nearbyMatches.length === 0 ? (
-                      <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center text-sm text-gray-500">
-                        {nearbyOffset > 0
-                          ? 'No hay más partidos en esta dirección.'
-                          : nearbyDirection === 'upcoming'
-                            ? 'Aún no hay próximos partidos programados.'
-                            : 'No hay partidos anteriores registrados.'}
-                      </div>
+                      <p className="text-center text-sm text-gray-500">
+                        Aún no hay próximos partidos programados.
+                      </p>
                     ) : (
-                      <div className="space-y-3">
-                        {nearbyMatches.map((match) => renderMatchCard(match, true))}
-                      </div>
+                      <>
+                        <div className="space-y-3">
+                          {nearbyMatches.map((match) => renderMatchCard(match, true))}
+                        </div>
+                        {nearbyHasMore && (
+                          <div className="flex justify-center pt-1">
+                            <button
+                              type="button"
+                              disabled={fetchingNearby}
+                              onClick={() => setNearbyOffset((o) => o + 5)}
+                              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40"
+                            >
+                              {fetchingNearby ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                              Cargar 5 siguientes
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
-
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                      <button
-                        type="button"
-                        disabled={!nearbyCanGoBack || fetchingNearby}
-                        onClick={() => setNearbyOffset((o) => Math.max(0, o - 5))}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        {nearbyDirection === 'past' ? 'Cargar 5 siguientes' : 'Cargar 5 anteriores'}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!nearbyHasMore || fetchingNearby}
-                        onClick={() => setNearbyOffset((o) => o + 5)}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-500"
-                      >
-                        {fetchingNearby ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {nearbyDirection === 'past' ? 'Cargar 5 anteriores' : 'Cargar 5 siguientes'}
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
