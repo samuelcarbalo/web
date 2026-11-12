@@ -1,6 +1,6 @@
 import { api } from './api';
 import { getViewerHash } from './viewerHash';
-import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData, SecondPhasePreview, ConfigureSecondPhaseData, RosterImportResult } from '../types/sports';
+import type { Tournament, CreateTournamentData, PaginatedResponse, Team, CreateTeamData, Player, CreatePlayerData, Match, CreateMatchData, MatchPeriod, CreateBannerData, FormatTemplate, TournamentStructure, StandingsScope, CompetitionGroup, Bracket, AdvancePhaseData, AdvancePhaseResult, PlayerSuspension, CreatePlayerSuspensionData, SecondPhasePreview, ConfigureSecondPhaseData, RosterImportResult, TeamStanding } from '../types/sports';
 
 export const getTournaments = async (params?: { 
   sport_type?: string; 
@@ -389,11 +389,18 @@ export const getPlayerStats = async (id: string) => {
 
 // ============ TABLA DE POSICIONES ============
 
-export const getTournamentStandings = async (slug: string, scope?: StandingsScope) => {
+export const getTournamentStandings = async (
+  slug: string,
+  scope?: StandingsScope,
+  signal?: AbortSignal,
+) => {
   const params: Record<string, string> = {};
   if (scope?.phase) params.phase = scope.phase;
   if (scope?.group) params.group = scope.group;
-  const response = await api.get(`/sports/tournaments/${slug}/standings/`, { params });
+  const response = await api.get<TeamStanding[]>(`/sports/tournaments/${slug}/standings/`, {
+    params,
+    signal,
+  });
   return response.data;
 };
 
