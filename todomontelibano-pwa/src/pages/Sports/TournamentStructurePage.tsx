@@ -51,6 +51,7 @@ const TournamentStructurePage: React.FC = () => {
 
   const [selectedGroup, setSelectedGroup] = useState<CompetitionGroup | null>(null);
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
+  const [groupMaxTeams, setGroupMaxTeams] = useState(4);
   const [fixturePhase, setFixturePhase] = useState<TournamentPhase | null>(null);
   const [advanceFromPhase, setAdvanceFromPhase] = useState<TournamentPhase | null>(null);
   const [fixtureGroupId, setFixtureGroupId] = useState<string>('');
@@ -82,6 +83,7 @@ const TournamentStructurePage: React.FC = () => {
   const openAssignModal = (group: CompetitionGroup) => {
     setSelectedGroup(group);
     setSelectedTeamIds(group.memberships.map((m) => m.team.id));
+    setGroupMaxTeams(Math.max(group.max_teams || 4, group.memberships.length, 2));
   };
 
   const toggleTeam = (teamId: string) => {
@@ -93,11 +95,19 @@ const TournamentStructurePage: React.FC = () => {
   const handleAssign = () => {
     if (!selectedGroup) return;
     assignMutation.mutate(
-      { groupId: selectedGroup.id, teamIds: selectedTeamIds },
+      { groupId: selectedGroup.id, teamIds: selectedTeamIds, maxTeams: groupMaxTeams },
       {
         onSuccess: () => {
           setSelectedGroup(null);
           setSelectedTeamIds([]);
+        },
+        onError: (error) => {
+          const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
+          const detail =
+            (typeof data?.error === 'string' && data.error) ||
+            (typeof data?.detail === 'string' && data.detail) ||
+            'No se pudo guardar el grupo.';
+          alert(detail);
         },
       }
     );
@@ -476,9 +486,26 @@ const TournamentStructurePage: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
             <h3 className="font-bold text-lg mb-1">{selectedGroup.name}</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Selecciona hasta {selectedGroup.max_teams} equipos
-            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Máximo de equipos en el grupo
+              </label>
+              <input
+                type="number"
+                min={Math.max(2, selectedTeamIds.length)}
+                max={32}
+                value={groupMaxTeams}
+                onChange={(e) => {
+                  const next = parseInt(e.target.value, 10);
+                  if (!Number.isFinite(next)) return;
+                  setGroupMaxTeams(Math.min(32, Math.max(Math.max(2, selectedTeamIds.length), next)));
+                }}
+                className="input-field w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Puedes ampliar el cupo aunque el torneo ya esté creado. Ahora: {selectedTeamIds.length}/{groupMaxTeams}.
+              </p>
+            </div>
             <div className="space-y-2 mb-6">
               {teams.map((team) => {
                 const isSelected = selectedTeamIds.includes(team.id);
@@ -499,7 +526,7 @@ const TournamentStructurePage: React.FC = () => {
                       checked={isSelected}
                       disabled={
                         !isSelected &&
-                        (selectedTeamIds.length >= selectedGroup.max_teams || isAssignedElsewhere)
+                        (selectedTeamIds.length >= groupMaxTeams || isAssignedElsewhere)
                       }
                       onChange={() => toggleTeam(team.id)}
                       className="rounded border-gray-300"

@@ -31,6 +31,7 @@ const CreateTournament: React.FC = () => {
     category: 'libre' as TournamentCategory,
     format_template: 'round_robin_single',
     format_group_count: 2,
+    format_teams_per_group: 4,
     start_date: '',
     end_date: '',
     registration_deadline: '',
@@ -66,15 +67,19 @@ const CreateTournament: React.FC = () => {
   }, [formData.sport_type]);
 
   const selectedFormat = formatTemplates?.find((t) => t.id === formData.format_template);
-  const teamsPerGroup = selectedFormat?.teams_per_group ?? 4;
+  const teamsPerGroup = Math.min(32, Math.max(2, formData.format_teams_per_group || selectedFormat?.teams_per_group || 4));
+  const formatHasGroups = selectedFormat?.grouping === 'multi_group' || selectedFormat?.grouping === 'fixed_group';
 
   useEffect(() => {
     const template = formatTemplates?.find((t) => t.id === formData.format_template);
     if (!template) return;
     setFormData((prev) => {
+      const perGroup = Math.min(32, Math.max(2, prev.format_teams_per_group || template.teams_per_group || 4));
       const maxTeams = template.allows_group_count
-        ? Math.max(2, prev.format_group_count || 2) * (template.teams_per_group ?? 4)
-        : template.default_max_teams;
+        ? Math.max(2, prev.format_group_count || 2) * perGroup
+        : template.grouping === 'fixed_group'
+          ? perGroup
+          : template.default_max_teams;
       const clearSecond = !template.supports_second_group_phase && prev.has_second_group_phase;
       const maxChanged = typeof maxTeams === 'number' && prev.max_teams !== maxTeams;
       if (!clearSecond && !maxChanged) return prev;
@@ -84,7 +89,7 @@ const CreateTournament: React.FC = () => {
         ...(clearSecond ? { has_second_group_phase: false } : {}),
       };
     });
-  }, [formData.format_template, formData.format_group_count, formatTemplates]);
+  }, [formData.format_template, formData.format_group_count, formData.format_teams_per_group, formatTemplates]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -165,6 +170,7 @@ const CreateTournament: React.FC = () => {
       organization: user?.organization || '',
       format_template: formData.format_template,
       format_group_count: formData.format_group_count,
+      ...(formatHasGroups ? { format_teams_per_group: teamsPerGroup } : {}),
       has_second_group_phase: Boolean(
         selectedFormat?.supports_second_group_phase && formData.has_second_group_phase
       ),
@@ -303,12 +309,32 @@ const CreateTournament: React.FC = () => {
                   <p className="mt-1.5 text-xs text-gray-500">
                     Se crean Grupo A, B, C… con {teamsPerGroup} equipos cada uno
                     ({Math.max(2, formData.format_group_count || 2) * teamsPerGroup} equipos en total).
+                    Puedes cambiar el cupo de cada grupo después de crear el torneo.
                     {formData.has_second_group_phase
                       ? ` Clasifican ${formData.first_phase_qualified_per_group} por grupo a una segunda fase, y de ahí ${formData.second_phase_qualified_per_group} por grupo a playoffs.`
                       : selectedFormat.qualifiers_per_group
                       ? ` Clasifican ${selectedFormat.qualifiers_per_group} por grupo a la eliminatoria. El 1.º de cada grupo juega contra el 2.º del siguiente.`
                       : ' Cada grupo juega todos contra todos y no hay fase eliminatoria.'}
                     {' '}El calendario de la fase de grupos no cruza equipos de grupos distintos.
+                  </p>
+                </div>
+              )}
+
+              {formatHasGroups && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Equipos por grupo
+                  </label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={32}
+                    value={formData.format_teams_per_group}
+                    onChange={(e) => handleChange('format_teams_per_group', Math.min(32, Math.max(2, parseInt(e.target.value) || 2)))}
+                    className="input-field"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Cupo inicial de cada grupo. Se puede modificar después, al asignar los equipos.
                   </p>
                 </div>
               )}

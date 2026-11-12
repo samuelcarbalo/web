@@ -95,6 +95,7 @@ export interface CreateTournamentData {
   structure_mode?: StructureMode;
   format_template?: string;
   format_group_count?: number;
+  format_teams_per_group?: number;
   has_second_group_phase?: boolean;
   first_phase_qualified_per_group?: number;
   second_phase_groups_count?: number | null;
