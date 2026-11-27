@@ -57,7 +57,10 @@ const STATUS_LABELS: Record<string, string> = {
 
 const TournamentSchedulePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { isOwner: checkIsOwner } = usePermissions();
+  const {
+    canManageTournament: checkCanManageTournament,
+    canManageMatch: checkCanManageMatch,
+  } = usePermissions();
 
   const { data: tournament } = useTournament(slug || '');
   const { data: sponsorshipAvailability } = useSponsorshipAvailability(slug || '');
@@ -89,7 +92,10 @@ const TournamentSchedulePage: React.FC = () => {
     );
   };
 
-  const isOwner = checkIsOwner(tournament);
+  // Super Admin L1/L2 o creador del torneo (misma regla que el detalle del partido).
+  const isOwner = checkCanManageTournament(tournament);
+  const canManageThisMatch = (match: Match) =>
+    checkCanManageMatch(match, tournament) || isOwner;
 
   const teams = (teamsData?.results || []) as Team[];
   const matches = matchesData?.results || [];
@@ -604,7 +610,7 @@ const TournamentSchedulePage: React.FC = () => {
                             <span>Ver Detalle</span>
                           </Link>
 
-                            {isOwner && (
+                            {canManageThisMatch(match) && (
                               <>
                                 {match.status === 'scheduled' && (
                                   <button

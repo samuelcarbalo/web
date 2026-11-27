@@ -4,9 +4,20 @@ const ORG_ROLES = new Set(['user', 'manager', 'admin']);
 const HIERARCHY_ROLES = new Set([
   'SUPER_ADMIN_L1',
   'SUPER_ADMIN_L2',
+  'SUPER_ADMIN_LEVEL_1',
+  'SUPER_ADMIN_LEVEL_2',
   'SUPER_ADMIN',
   'super_admin',
 ]);
+
+const HIERARCHY_L1 = new Set([
+  'SUPER_ADMIN_L1',
+  'SUPER_ADMIN_LEVEL_1',
+  'SUPER_ADMIN',
+  'super_admin',
+]);
+
+const HIERARCHY_L2 = new Set(['SUPER_ADMIN_L2', 'SUPER_ADMIN_LEVEL_2']);
 
 function unwrapUserPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== 'object') return {};
@@ -58,12 +69,18 @@ export function mapAuthUser(
   const payload = unwrapUserPayload(raw);
   const rawRole = String(payload.role ?? '');
   const hierarchyFromRole = HIERARCHY_ROLES.has(rawRole) ? rawRole : '';
-  const hierarchy = String(payload.hierarchy_role ?? payload.panel_role ?? hierarchyFromRole ?? '') || null;
+  const hierarchyRaw = String(
+    payload.hierarchy_role ?? payload.panel_role ?? hierarchyFromRole ?? '',
+  );
+  const hierarchy = hierarchyRaw && hierarchyRaw !== 'null' ? hierarchyRaw : null;
   let adminLevel = asAdminLevel(payload.admin_level);
   const isSuperuser = asBool(payload.is_superuser) || asBool(payload.is_super_admin_l1);
-  const isL2 = asBool(payload.is_super_admin_l2) || hierarchy === 'SUPER_ADMIN_L2' || adminLevel === 2;
+  const isL2 =
+    asBool(payload.is_super_admin_l2) ||
+    (hierarchy != null && HIERARCHY_L2.has(hierarchy)) ||
+    adminLevel === 2;
   if (isL2) adminLevel = 2;
-  else if (isSuperuser || hierarchy === 'SUPER_ADMIN_L1' || hierarchy === 'SUPER_ADMIN' || hierarchy === 'super_admin') {
+  else if (isSuperuser || (hierarchy != null && HIERARCHY_L1.has(hierarchy))) {
     if (adminLevel !== 2) adminLevel = 1;
   }
 
