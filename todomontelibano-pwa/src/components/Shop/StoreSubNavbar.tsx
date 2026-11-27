@@ -8,7 +8,11 @@ import { useShopCategories, useShopSettings } from '../../hooks/useShop';
 /**
  * Sub-navbar fijo (no colapsable) bajo el header principal.
  * El logo se consulta de la configuración de tienda; la edición vive solo en Admin.
+ *
+ * Temporalmente deshabilitado en todas las páginas. Cambiar a `true` para reactivar.
  */
+export const STORE_SUBNAVBAR_ENABLED = false;
+
 const StoreSubNavbar: React.FC = () => {
   const { pathname } = useLocation();
   const { data } = useShopCategories();

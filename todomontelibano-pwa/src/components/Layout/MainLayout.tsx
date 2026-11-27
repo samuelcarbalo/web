@@ -30,7 +30,7 @@ import BrandLogo from "../Brand/BrandLogo";
 import { canManageContent } from "../../hooks/usePermissions";
 import PwaInstallBanner from "../PWA/PwaInstallBanner";
 import SportsSubscriptionRequiredModal from "../Sports/SportsSubscriptionRequiredModal";
-import StoreSubNavbar from "../Shop/StoreSubNavbar";
+import StoreSubNavbar, { STORE_SUBNAVBAR_ENABLED } from "../Shop/StoreSubNavbar";
 import MobileNavMenu, { type MobileNavService } from "./MobileNavMenu";
 
 const MOBILE_SERVICES: MobileNavService[] = [
@@ -476,9 +476,11 @@ const MainLayout: React.FC = () => {
         />
       )}
 
-      <div className="print:hidden">
-        <StoreSubNavbar />
-      </div>
+      {STORE_SUBNAVBAR_ENABLED && (
+        <div className="print:hidden">
+          <StoreSubNavbar />
+        </div>
+      )}
 
       <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
