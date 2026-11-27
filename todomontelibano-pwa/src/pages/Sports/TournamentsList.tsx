@@ -933,7 +933,17 @@ const TournamentsList: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {filteredTournaments?.map((tournament: any) => (
+                {filteredTournaments?.map((tournament: any) => {
+                  const teamsCount = Number(tournament.teams_count) || 0;
+                  const maxTeams = Number(tournament.max_teams) || 0;
+                  const hasTeamCap = maxTeams > 0;
+                  const minPlayers = Number(tournament.min_players_per_team) || 0;
+                  const maxPlayers = Number(tournament.max_players_per_team) || 0;
+                  const occupancyPct = hasTeamCap
+                    ? Math.min(100, Math.round((teamsCount / maxTeams) * 100))
+                    : null;
+
+                  return (
                   <Link
                     key={tournament.id}
                     to={`/sports/tournaments/${tournament.slug}`}
@@ -1004,35 +1014,43 @@ const TournamentsList: React.FC = () => {
                         </span>
                         <span className="flex items-center gap-1.5">
                           <Users className="w-3.5 h-3.5" />
-                          {tournament.teams_count} / {tournament.max_teams}
+                          {hasTeamCap ? `${teamsCount} / ${maxTeams}` : `${teamsCount} equipos`}
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <Shield className="w-3.5 h-3.5" />
-                          {tournament.min_players_per_team}-{tournament.max_players_per_team} jug.
-                        </span>
+                        {(minPlayers > 0 || maxPlayers > 0) && (
+                          <span className="flex items-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5" />
+                            {minPlayers > 0 && maxPlayers > 0
+                              ? `${minPlayers}-${maxPlayers} jug.`
+                              : maxPlayers > 0
+                                ? `hasta ${maxPlayers} jug.`
+                                : `desde ${minPlayers} jug.`}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Progress bar de equipos */}
+                      {/* Progress bar de equipos (solo con cupo máximo definido) */}
+                      {hasTeamCap && occupancyPct !== null && (
                       <div className="mt-3">
                         <div className="flex justify-between text-[10px] text-gray-400 mb-1">
                           <span>Cupos ocupados</span>
                           <span className="font-medium text-gray-600 dark:text-gray-400">
-                            {Math.round((tournament.teams_count / tournament.max_teams) * 100)}%
+                            {occupancyPct}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
                           <div 
                             className={`h-1.5 rounded-full transition-all duration-500 ${
-                              tournament.teams_count >= tournament.max_teams 
+                              teamsCount >= maxTeams 
                                 ? 'bg-red-500' 
-                                : tournament.teams_count >= tournament.max_teams * 0.8 
+                                : teamsCount >= maxTeams * 0.8 
                                   ? 'bg-yellow-500' 
                                   : 'bg-green-500'
                             }`}
-                            style={{ width: `${Math.min(100, (tournament.teams_count / tournament.max_teams) * 100)}%` }}
+                            style={{ width: `${occupancyPct}%` }}
                           />
                         </div>
                       </div>
+                      )}
 
                       {/* Footer */}
                       <div className="mt-auto pt-4 flex items-center justify-between">
@@ -1046,7 +1064,8 @@ const TournamentsList: React.FC = () => {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
