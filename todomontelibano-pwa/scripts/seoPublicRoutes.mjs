@@ -1,3 +1,5 @@
+import { PRIVACY_SECTIONS, TERMS_SECTIONS } from '../src/content/legalContent.mjs';
+
 /** Origen canónico oficial: HTTPS, sin www. */
 export const CANONICAL_ORIGIN = 'https://chever.co';
 
@@ -29,7 +31,22 @@ export const SITEMAP_ROUTES = [
       'Explora el catálogo de productos locales en la tienda Chéver. Ofertas y comercios de Montelíbano y Córdoba. Compra con Mercado Pago.',
     h1: 'Tienda local de Montelíbano y Córdoba',
     h2: 'Productos, comercios y ofertas cerca de ti',
-    body: 'Navega el catálogo de la comunidad, filtra por categoría y compra productos locales con pago seguro.',
+    body: 'La tienda de Chéver es el catálogo de comercios de Montelíbano y Córdoba. Puedes ver productos, filtrar por categoría y pagar con Mercado Pago sin depender de una cuenta para navegar.',
+    sections: [
+      {
+        title: 'Qué hay en el catálogo',
+        paragraphs: [
+          'Aquí se publican productos de negocios locales: abarrotes, comida, ropa, tecnología, servicios y ofertas de temporada. Cada ficha muestra precio, descripción y el comercio que vende.',
+          'Si un filtro no devuelve resultados, la tienda sigue activa. Quita la categoría o la búsqueda para ver el catálogo completo.',
+        ],
+      },
+      {
+        title: 'Cómo comprar',
+        paragraphs: [
+          'Elige un producto, agrégalo al carrito y paga con Mercado Pago. No hace falta registrarse para mirar precios ni recorrer categorías.',
+        ],
+      },
+    ],
     prerender: true,
   },
   {
@@ -100,6 +117,7 @@ export const SITEMAP_ROUTES = [
     h1: 'Política de privacidad',
     h2: 'Tus datos en Chéver',
     body: 'Consulta cómo recolectamos, usamos y protegemos la información de la comunidad.',
+    sections: PRIVACY_SECTIONS,
     prerender: true,
   },
   {
@@ -111,11 +129,28 @@ export const SITEMAP_ROUTES = [
     h1: 'Términos de servicio',
     h2: 'Condiciones de uso',
     body: 'Revisa las reglas para publicar, comprar y participar en Chéver.',
+    sections: TERMS_SECTIONS,
     prerender: true,
   },
 ];
 
 export const PRERENDER_ROUTES = SITEMAP_ROUTES.filter((route) => route.prerender);
+
+/**
+ * HTML estático con canónica propia y noindex.
+ * /register no debe heredar la canónica de la home (eso la marca como página alternativa).
+ */
+export const NOINDEX_PRERENDER_ROUTES = [
+  {
+    path: '/register',
+    title: 'Crear cuenta | Chéver',
+    description: 'Crea tu cuenta en Chéver para publicar y participar en Córdoba. Esta pantalla no se indexa.',
+    h1: 'Crear cuenta en Chéver',
+    h2: 'Registro de usuarios',
+    body: 'Usa este formulario para crear tu cuenta. El contenido público está en la tienda, empleos, deportes, bienes raíces y eventos.',
+    robots: 'noindex, nofollow',
+  },
+];
 
 export function canonicalUrl(path) {
   const clean = path === '/' ? '/' : path.replace(/\/+$/, '');
@@ -158,6 +193,23 @@ export function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
+function renderSections(sections) {
+  if (!sections?.length) return '';
+  return sections
+    .map((section) => {
+      const paragraphs = (section.paragraphs || [])
+        .map((paragraph) => `<p style="margin:0 0 .75rem">${escapeHtml(paragraph)}</p>`)
+        .join('');
+      const bullets = (section.bullets || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+      const list = bullets ? `<ul style="padding-left:1.2rem;margin:0 0 1rem">${bullets}</ul>` : '';
+      return `<section style="margin:0 0 1.25rem">
+    <h2 style="font-size:1.15rem;font-weight:700;margin:0 0 .75rem;color:#334155">${escapeHtml(section.title)}</h2>
+    ${paragraphs}${list}
+  </section>`;
+    })
+    .join('');
+}
+
 export function prerenderShell(route) {
   const title = escapeHtml(route.h1);
   const h2 = escapeHtml(route.h2);
@@ -167,6 +219,7 @@ export function prerenderShell(route) {
   <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);line-height:1.15;margin:0 0 1rem">${title}</h1>
   <h2 style="font-size:1.15rem;font-weight:700;margin:0 0 .75rem;color:#334155">${h2}</h2>
   <p style="margin:0 0 1.5rem;font-size:1.05rem">${body}</p>
+  ${renderSections(route.sections)}
   <nav aria-label="Secciones principales">
     <ul style="padding-left:1.2rem">
       <li><a href="/tienda">Tienda</a></li>
@@ -174,6 +227,9 @@ export function prerenderShell(route) {
       <li><a href="/deportes">Deportes</a></li>
       <li><a href="/bienes-raices">Bienes raíces</a></li>
       <li><a href="/eventos">Eventos</a></li>
+      <li><a href="/politica-de-privacidad">Política de privacidad</a></li>
+      <li><a href="/terminos-y-condiciones">Términos y condiciones</a></li>
+      <li><a href="/contact">Contacto</a></li>
     </ul>
   </nav>
 </main>`;

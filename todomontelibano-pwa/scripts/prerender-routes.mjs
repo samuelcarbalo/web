@@ -5,6 +5,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  NOINDEX_PRERENDER_ROUTES,
   PRERENDER_ROUTES,
   buildSitemapXml,
   canonicalUrl,
@@ -36,7 +37,7 @@ function applyRouteToHtml(template, route) {
   html = replaceOnce(
     html,
     /<meta name="robots" content="[^"]*"\s*\/?>/,
-    '<meta name="robots" content="index, follow" />',
+    `<meta name="robots" content="${route.robots || 'index, follow'}" />`,
   );
   html = replaceOnce(
     html,
@@ -100,7 +101,7 @@ if (!template.includes('<title>') || !template.includes('<!--prerender-start-->'
   throw new Error('dist/index.html no tiene las marcas SEO esperadas. ¿falló vite build?');
 }
 
-for (const route of PRERENDER_ROUTES) {
+for (const route of [...PRERENDER_ROUTES, ...NOINDEX_PRERENDER_ROUTES]) {
   const html = applyRouteToHtml(template, route);
   if (route.path === '/') {
     writeFileSync(templatePath, html, 'utf8');
