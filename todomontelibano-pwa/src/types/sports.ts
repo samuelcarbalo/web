@@ -464,6 +464,8 @@ export interface Match {
   /** Dueño del torneo (posted_by). Misma persona que created_by en esta API. */
   tournament_owner_id?: string | null;
   tournament_created_by?: string | null;
+  /** Super Admin L1/L2 o dueño del torneo. Lo calcula el API. */
+  can_manage?: boolean;
   events: MatchEvent[];
   start_time?: string;
   end_time?: string;

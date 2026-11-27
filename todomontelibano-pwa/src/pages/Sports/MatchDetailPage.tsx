@@ -343,7 +343,8 @@ const MatchDetailPage: React.FC = () => {
     description: '',
   });
 
-  const canManage = checkCanManageMatch(match, tournament);
+  // Fuente de verdad: can_manage del API; fallback local Super Admin L1/L2 o dueño del torneo.
+  const canManage = Boolean(match && checkCanManageMatch(match, tournament));
   const isScheduled = match?.status === 'scheduled';
   const isFinished = match?.status === 'finished';
   const isSoftball = sportType === 'softball';

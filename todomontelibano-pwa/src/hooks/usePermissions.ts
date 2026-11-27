@@ -216,6 +216,8 @@ export type MatchPermissionFields = {
   tournament_owner_id?: unknown;
   tournament_created_by?: unknown;
   tournament_posted_by?: unknown;
+  /** Fuente de verdad del API (Super Admin L1/L2 o dueño del torneo). */
+  can_manage?: boolean | null;
 };
 
 function entityId(value: unknown): string {
@@ -267,8 +269,19 @@ export function canManageMatch(
   match: MatchPermissionFields | null | undefined,
   tournament?: Resource | null,
 ): boolean {
-  if (!user || !match) return false;
+  if (!match) return false;
+  // Preferir el flag del API cuando viene informado.
+  if (match.can_manage === true) return true;
+  if (match.can_manage === false) {
+    // Aún así permitir Super Admin local si el flag llegó stale/anónimo.
+    if (user && (isMatchSuperAdminLevel1(user) || isMatchSuperAdminLevel2(user))) {
+      return true;
+    }
+    return false;
+  }
+  if (!user) return false;
   if (isMatchSuperAdminLevel1(user) || isMatchSuperAdminLevel2(user)) return true;
+  if (isSportsSuperAdmin(user)) return true;
   const ownerId = tournamentOwnerId(match, tournament);
   const userId = entityId(user.id);
   return Boolean(ownerId && userId && ownerId === userId);
