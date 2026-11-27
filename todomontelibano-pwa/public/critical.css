@@ -31,9 +31,9 @@ html.dark body {
   color: #f1f5f9;
 }
 
-/* Ocultar app hasta rehidratación; el overlay cubre la pantalla */
+/* El overlay tapa la pantalla al arrancar, pero #root (HTML prerenderizado) sigue
+   en el árbol visible. visibility:hidden dejaba solo «Cargando» y Google lo trataba como soft 404. */
 html.app-booting #root {
-  visibility: hidden;
   pointer-events: none;
 }
 

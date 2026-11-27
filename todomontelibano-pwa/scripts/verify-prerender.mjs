@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PRERENDER_ROUTES, canonicalUrl } from './seoPublicRoutes.mjs';
+import { NOINDEX_PRERENDER_ROUTES, PRERENDER_ROUTES, canonicalUrl } from './seoPublicRoutes.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(root, 'dist');
@@ -41,16 +41,37 @@ function verifyFile(route) {
   console.log(`ok  ${route.path} → ${file.replace(root, '.')}`);
 }
 
+function verifyNoindex(route) {
+  const file = htmlPath(route.path);
+  assert(existsSync(file), `Falta HTML noindex: ${file}`);
+  const html = readFileSync(file, 'utf8');
+  const canonical = canonicalUrl(route.path);
+  assert(html.includes(`rel="canonical" href="${canonical}"`), `${route.path}: canonical debe ser la propia URL`);
+  assert(!html.includes('rel="canonical" href="https://chever.co/"'), `${route.path}: no debe canibalizar la home`);
+  assert(html.includes('name="robots" content="noindex, nofollow"'), `${route.path}: falta noindex`);
+  assert(html.includes('<h1'), `${route.path}: falta H1`);
+  console.log(`ok  ${route.path} → noindex + canonical propia`);
+}
+
 function verifySitemap() {
   const file = join(distDir, 'sitemap.xml');
   assert(existsSync(file), 'Falta dist/sitemap.xml');
   const xml = readFileSync(file, 'utf8');
   assert(!xml.includes('google2d8cfb01b92b319a'), 'sitemap.xml todavía incluye la verificación de Google');
   assert(!xml.includes('/google'), 'sitemap.xml no debe listar /google*');
+  assert(!xml.includes('manifest.webmanifest'), 'sitemap.xml no debe listar el manifest PWA');
+  assert(!xml.includes('/register'), 'sitemap.xml no debe listar /register');
   for (const route of PRERENDER_ROUTES) {
     assert(xml.includes(`<loc>${canonicalUrl(route.path)}</loc>`), `sitemap.xml sin ${route.path}`);
   }
-  console.log('ok  sitemap.xml sin archivo de verificación y con URLs canónicas');
+  const privacy = readFileSync(htmlPath('/politica-de-privacidad'), 'utf8');
+  const terms = readFileSync(htmlPath('/terminos-y-condiciones'), 'utf8');
+  const shop = readFileSync(htmlPath('/tienda'), 'utf8');
+  assert(privacy.includes('Ley 1581'), 'privacidad prerenderizada sin el texto legal');
+  assert(terms.includes('Mercado Pago'), 'términos prerenderizados sin el texto legal');
+  assert(shop.includes('catálogo de comercios'), 'tienda prerenderizada sin contenido de catálogo');
+  assert(!shop.includes('No hay productos'), 'tienda prerenderizada no debe parecer un soft 404');
+  console.log('ok  sitemap.xml sin manifest ni /register, con URLs canónicas');
 }
 
 async function verifyLiveGooglebot() {
@@ -73,6 +94,9 @@ try {
   assert(existsSync(distDir), 'No existe dist/. Ejecuta npm run build primero.');
   for (const route of PRERENDER_ROUTES) {
     verifyFile(route);
+  }
+  for (const route of NOINDEX_PRERENDER_ROUTES) {
+    verifyNoindex(route);
   }
   verifySitemap();
   await verifyLiveGooglebot();

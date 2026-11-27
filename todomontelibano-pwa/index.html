@@ -27,7 +27,13 @@
     <link rel="apple-touch-icon" href="/chever-oficial-pwa.svg?v=1.2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#FFFFFF" />
-    <!-- manifest se inyecta tras load (no compite con el JS crítico) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      if (/Googlebot|Google-InspectionTool|Storebot-Google|bingbot|Slurp|DuckDuckBot|Baiduspider|Applebot/i.test(navigator.userAgent || '')) {
+        document.documentElement.classList.remove('app-booting');
+        document.documentElement.classList.add('app-ready');
+      }
+    </script>
     <script>
       (function () {
         // Solo marca versión + limpia Cache Storage. Sin location.reload() (evita bucles con el SW).

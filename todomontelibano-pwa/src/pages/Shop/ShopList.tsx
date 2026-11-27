@@ -140,6 +140,19 @@ const ShopList: React.FC = () => {
       </div>
 
       <div className="page-container mt-10">
+        <section className="mb-8 max-w-3xl" aria-labelledby="shop-about-heading">
+          <h2 id="shop-about-heading" className="text-xl font-bold text-gray-900 dark:text-white">
+            Catálogo local de Montelíbano y Córdoba
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-300 leading-relaxed">
+            La tienda de {SITE_NAME} reúne productos de comercios de la región. Recorre categorías,
+            compara precios y paga con Mercado Pago. Mirar el catálogo no exige cuenta.
+          </p>
+          <p className="mt-2 text-gray-600 dark:text-gray-300 leading-relaxed">
+            Si una búsqueda queda vacía, la tienda sigue publicada: quita el filtro o elige «Todas»
+            para ver los productos disponibles.
+          </p>
+        </section>
         <div
           className={`flex flex-wrap gap-2 mb-8 min-h-[2.25rem] ${showFilters ? '' : 'hidden md:flex'}`}
           role="tablist"
@@ -222,8 +235,11 @@ const ShopList: React.FC = () => {
         {!isLoading && !catalogError && !catalogDegraded && products.length === 0 && (
           <div className="text-center py-16 card-static max-w-xl mx-auto">
             <ShoppingBag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-bold">No hay productos con estos filtros</h3>
-            <p className="text-gray-500 mt-2">Intenta ajustar la búsqueda o la categoría.</p>
+            <h3 className="text-xl font-bold">Ningún producto coincide con este filtro</h3>
+            <p className="text-gray-500 mt-2">
+              El catálogo sigue activo. Quita la búsqueda o vuelve a «Todas» para ver lo que publican
+              los comercios de Córdoba.
+            </p>
           </div>
         )}
       </div>

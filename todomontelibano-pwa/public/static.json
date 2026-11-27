@@ -1,5 +1,14 @@
 {
   "routes": [
+    { "src": "/tienda/?", "dest": "/tienda/index.html", "status": 200 },
+    { "src": "/deportes/?", "dest": "/deportes/index.html", "status": 200 },
+    { "src": "/empleos/?", "dest": "/empleos/index.html", "status": 200 },
+    { "src": "/bienes-raices/?", "dest": "/bienes-raices/index.html", "status": 200 },
+    { "src": "/eventos/?", "dest": "/eventos/index.html", "status": 200 },
+    { "src": "/contact/?", "dest": "/contact/index.html", "status": 200 },
+    { "src": "/politica-de-privacidad/?", "dest": "/politica-de-privacidad/index.html", "status": 200 },
+    { "src": "/terminos-y-condiciones/?", "dest": "/terminos-y-condiciones/index.html", "status": 200 },
+    { "src": "/register/?", "dest": "/register/index.html", "status": 200 },
     {
       "src": "/[^.]+",
       "dest": "/index.html",
@@ -36,6 +45,8 @@
     {
       "source": "/manifest.webmanifest",
       "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
     },
