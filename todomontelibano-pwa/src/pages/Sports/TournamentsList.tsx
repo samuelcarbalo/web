@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy,
   Calendar,
@@ -151,6 +151,7 @@ const MatchCardSkeleton: React.FC = () => (
 
 const TournamentsList: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isTournamentIndex = location.pathname.replace(/\/$/, '') === '/deportes/torneos';
   const [activeTab, setActiveTab] = useState<Tab>(isTournamentIndex ? '' : 'matches');
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -172,8 +173,14 @@ const TournamentsList: React.FC = () => {
   });
 
   useEffect(() => {
-    if (location.pathname.replace(/\/$/, '') === '/deportes/torneos') {
+    const path = location.pathname.replace(/\/$/, '');
+    // /deportes = Partidos (calendario). /deportes/torneos = Todos (buscar torneos activos).
+    if (path === '/deportes/torneos') {
       setActiveTab('');
+      return;
+    }
+    if (path === '/deportes' || path.endsWith('/deportes')) {
+      setActiveTab('matches');
     }
   }, [location.pathname]);
 
@@ -572,6 +579,12 @@ const TournamentsList: React.FC = () => {
                 onClick={() => {
                   setActiveTab(tab.value);
                   setSearchQuery('');
+                  // Mantener rutas alineadas: principal = Partidos; Todos = índice de torneos.
+                  if (tab.value === 'matches' && isTournamentIndex) {
+                    navigate('/deportes', { replace: true });
+                  } else if (tab.value === '' && !isTournamentIndex) {
+                    navigate('/deportes/torneos', { replace: true });
+                  }
                 }}
                 className={`
                   flex items-center gap-2 px-4 py-2.5 rounded-3xl text-sm font-semibold whitespace-nowrap transition-all
@@ -777,12 +790,12 @@ const TournamentsList: React.FC = () => {
                       ¿Buscas un torneo?
                     </p>
                     <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 leading-snug">
-                      Explora los torneos activos y encuentra el de tu equipo.
+                      Ve a Todos y busca entre los torneos activos.
                     </p>
                   </div>
                   <span className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white group-hover:bg-emerald-500 transition-colors">
                     <Search className="h-3.5 w-3.5" />
-                    Buscar
+                    Ir a Todos
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
                 </Link>
