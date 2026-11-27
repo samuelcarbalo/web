@@ -12,9 +12,10 @@
   RewriteRule ^(llms|robots)\.txt$ - [L]
   RewriteRule ^sitemap\.xml$ - [L]
 
-  # HTML prerenderizado por ruta pública (Googlebot ve H1/H2 sin hidratar React)
+  # HTML prerenderizado: index.html interno, sin 301 de DirectorySlash.
+  RewriteCond %{REQUEST_URI} !\.[a-zA-Z0-9]{1,8}$
   RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
-  RewriteRule ^(tienda|deportes|empleos|bienes-raices|eventos|contact|privacy|terms)/?$ $1/index.html [L]
+  RewriteRule ^(.+?)/?$ $1/index.html [L]
 
   # No reescribir archivos ni directorios reales (public/*.html, assets, etc.)
   RewriteCond %{REQUEST_FILENAME} !-f
