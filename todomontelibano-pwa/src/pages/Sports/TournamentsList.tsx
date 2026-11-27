@@ -765,6 +765,28 @@ const TournamentsList: React.FC = () => {
                   </button>
                 </div>
 
+                <Link
+                  to="/deportes/torneos"
+                  className="mt-4 group flex items-center gap-4 rounded-3xl border border-emerald-200/80 dark:border-emerald-800/60 bg-gradient-to-r from-emerald-50 via-white to-teal-50 dark:from-emerald-950/40 dark:via-gray-900 dark:to-teal-950/30 px-4 py-4 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm shadow-emerald-600/25">
+                    <Trophy className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      ¿Buscas un torneo?
+                    </p>
+                    <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 leading-snug">
+                      Explora los torneos activos y encuentra el de tu equipo.
+                    </p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white group-hover:bg-emerald-500 transition-colors">
+                    <Search className="h-3.5 w-3.5" />
+                    Buscar
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+
                 {revealNearby && (
                   <div className="mt-4 space-y-3">
                     {loadingNearby || fetchingNearby ? (
