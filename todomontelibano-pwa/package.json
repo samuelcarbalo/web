@@ -58,7 +58,7 @@
   "overrides": {
     "form-data": "^4.0.6",
     "esbuild": "^0.28.1",
-    "dompurify": "^3.4.17",
+    "dompurify": "^3.5.0",
     "follow-redirects": "^1.16.3",
     "zod": "^4.6.7",
     "launch-editor": "^2.14.2",
